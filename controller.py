@@ -198,10 +198,7 @@ while (True):
             state = STATE.error
     if state == STATE.error:
         # Error lock
-        if pfio.digital_read(buttonReset) == True:
   	    # Reset button
-	    state = STATE.off
-            print("\nResetting")
             
 	h2.switch(False)
         purge.switch(False)
@@ -209,6 +206,10 @@ while (True):
 	    fan.switch(True)
 	else:
 	    fan.switch(False)
+            
+            if pfio.digital_read(buttonReset) == True:
+	        state = STATE.off
+                print("\nResetting")
 
     ## end STATE MACHINE ##
 # end main
