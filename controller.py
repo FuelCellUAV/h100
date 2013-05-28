@@ -197,16 +197,14 @@ while (True):
             print ("Shutdown Error")
             state = STATE.error
     if state == STATE.error:
-        # Error lock
-  	    # Reset button
-            
+        # Error lock           
 	h2.switch(False)
         purge.switch(False)
         if blue() >= cutoff or earth() >= cutoff or red() >= cutoff or yellow() >= cutoff:
 	    fan.switch(True)
 	else:
 	    fan.switch(False)
-            
+            # Reset button
             if pfio.digital_read(buttonReset) == True:
 	        state = STATE.off
                 print("\nResetting")
