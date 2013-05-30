@@ -8,3 +8,4 @@ Note that this contains submodules (repositories within repositories). Some of w
 1. git submodule init
 2. git submodule update
 3. Navigate to "piface/", run "./install.sh"
+4. sudo python setup.py install
