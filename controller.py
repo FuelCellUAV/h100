@@ -179,18 +179,18 @@ print("Loughborough University\n")
 
 # Main
 while (True):
-    changechannel(adc_address1, 0x9C)
-    print ("ADC= 1:%02f,\t" % getadcreading(adc_address1,0x9C)),
-    changechannel(adc_address1, 0xBC)
-    print ("2:%02f,\t" % getadcreading(adc_address1,0xBC)),
-    changechannel(adc_address1, 0xDC)
-    print ("3:%02f,\t" % getadcreading(adc_address1, 0xDC)),
-    changechannel(adc_address1, 0xFC)
-    print ("4:%02f,\t" % getadcreading(adc_address1, 0xFC)),
-    changechannel(adc_address2, 0x9C)
-    print ("5:%02f,\t" % getadcreading(adc_address2, 0x9C)),
-    changechannel(adc_address2, 0xBC)
-    print ("6:%02f." % getadcreading(adc_address2, 0xBC))
+    adc.changechannel(bus, 0x68, 0x9C)
+    print ("ADC= 1:%02f,\t" % adc.getadcreading(bus, 0x68, 0x9C)),
+    adc.changechannel(bus, 0x68, 0xBC)
+    print ("2:%02f,\t" % adc.getadcreading(bus, 0x68, 0xBC)),
+    adc.changechannel(bus, 0x68, 0xDC)
+    print ("3:%02f,\t" % adc.getadcreading(bus, 0x68, 0xDC)),
+    adc.changechannel(bus, 0x68, 0xFC)
+    print ("4:%02f,\t" % adc.getadcreading(bus, 0x68, 0xFC)),
+    adc.changechannel(bus, 0x69, 0x9C)
+    print ("5:%02f,\t" % adc.getadcreading(bus, 0x69, 0x9C)),
+    adc.changechannel(bus, 0x69, 0xBC)
+    print ("6:%02f." % adc.getadcreading(bus, 0x69, 0xBC))
 
     # TEMP SHUTDOWN
     if blue() >= cutoff or earth() >= cutoff or red() >= cutoff or yellow() >= cutoff:
