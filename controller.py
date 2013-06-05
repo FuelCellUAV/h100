@@ -77,8 +77,7 @@ class Adc:
 	adcreading.append(0x00)
 	adcreading.append(0x00)
 
-	varDivisior = 64 # from pdf sheet on adc addresses and config
-	varMultiplier = (2.4705882/varDivisior)/1000
+	resolution = 15.625 / 1000000 # 15.625uV
 
 	def changechannel(self, bus, address, adcConfig):
 		tmp= bus.write_byte(address, adcConfig)
@@ -102,7 +101,7 @@ class Adc:
 		# check if positive or negative number and invert if needed
 		if (h > 128):
 			t = ~(0x020000 - t)
-		return t * self.varMultiplier
+		return t * self.resolution
 
 # Class to enable controlled switching
 class Switch:
