@@ -7,6 +7,9 @@ import piface.pfio as pfio
 import RPi.GPIO as GPIO
 import smbus
 import argparse
+from adcpi import *
+from tmp102 import *
+from switch import *
 
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
@@ -64,159 +67,23 @@ cutoff 	    = args.cutoff
 class STATE:
 	startup, on, shutdown, off, error = range(5)
 
-# Class to read ADC
-class AdcPiV1:
-	# create byte array and fill with initial values to define size
-	adcreading = bytearray()
-
-	adcreading.append(0x00)
-	adcreading.append(0x00)
-	adcreading.append(0x00)
-	adcreading.append(0x00)
-
-	calibration= 1.0
-	config = 0b10010000
-	
-	def __init__(self, bus, channel, resolution, calibration):
-		self.bus = bus
-		if   channel in [1,2,3,4]:
-			self.address = 0x68
-		elif channel in [5,6,7,8]:
-			self.address = 0x69
-		self.config = self.config | ((channel-1) << 5) | (((resolution/2)-6) << 2)
-		self.resolution = resolution
-		self.calibration= calibration
-
-	def get(self):
-		try:
-			self.bus.write_byte(self.address, self.config)
-			self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
-
-			if self.resolution is 18:
-				h = self.adcreading[0]
-				m = self.adcreading[1]
-				l = self.adcreading[2]
-				s = self.adcreading[3]
-				# wait for new data ***BLOCKING FUNCTION***
-				while (s & 128):
-					self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
-					h = self.adcreading[0]
-					m = self.adcreading[1]
-					l = self.adcreading[2]
-					s = self.adcreading[3]
-			else:
-				h = self.adcreading[0]
-				m = self.adcreading[1]
-				l = self.adcreading[2]
-				# wait for new data ***BLOCKING FUNCTION***
-				while (l & 128):
-					self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
-					h = self.adcreading[0]
-					m = self.adcreading[1]
-					l = self.adcreading[2]
-
-			# shift bits to product result
-			if self.resolution is 18:
-				t = ((h & 0b00000001) << 16) | (m << 8) | l
-				# check if positive or negative number and invert if needed
-				if (h > 128):
-					t = ~(131072 - t)
-				t = t * 0.000015625 * self.calibration
-				return t
-			elif self.resolution is 16:
-        	                t = ((h & 0b01111111) << 8) | m
-   	                     # check if positive or negative number and invert if needed
-              	          	if (h > 128):
-                                	t = ~(32768 - t)
-                        	t = t * 0.0000625 * self.calibration
-                        	return t
-			elif self.resolution is 14:
-				t = ((h & 0b00011111) << 8) | m
-				# check if positive or negative number and invert if needed
-				if (h > 128):
-					t = ~(8192 - t)
-				t = t * 0.000250 * self.calibration
-				return t
-			elif self.resolution is 12:
-				t = ((h & 0b00000111) << 8) | m
-				# check if positive or negative number and invert if needed
-				if (h > 128):
-					t = ~(2048 - t)
-				t = t * 0.001 * self.calibration
-				return t
-		except Exception as e:
-           	   print ("I2C ADC Error")
-		   return -1
-
-# Class to enable controlled switching
-class Switch:
-	pin   = 0
-	state = False
-	lastTime = 0
-	lastOff= 0
-	
-	def __init__(self, pin):
-		self.pin = pin
-		
-	def timed(self, freq, duration):
-		# Deactivate if time is up
-		if (time()-self.lastTime) >= duration and self.state == True:
-		    self.lastTime = time()
-		    self.state = False
-		    return self.write()
-
-		# Activate
-		if (time()-self.lastTime) >= freq and self.state == False:
-		    self.lastTime = time()
-		    self.state = True
-		    return self.write()
-
-	def switch(self, state):
-		self.state = state
-		return self.write()
-
-	def write(self):
-		try:
-		    pfio.digital_write(self.pin,self.state)
-		except Exception as e:
-    		    print ("Timer digital write error")
-                
-		return self.state
-
-# Class to read I2c TMP102 Temperature Sensor
-class I2cTemp:
-	address = 0x00
-	
-	def __init__(self, address):
-		self.address = address
-		
-	def __call__(self):
-		try:
-		   tmp  = bus.read_word_data(self.address , 0 )
-		   msb  = (tmp & 0x00ff)
-		   lsb  = (tmp & 0xff00) >> 8
-		   temp = ((( msb * 256 ) + lsb) >> 4 ) * 0.0625
-		   return temp
-		except Exception as e:
-           	   print ("I2C Temp Error")
-		   return -1
-
 # Define class instances
 adcRes    = 12
+adcGain   = 2
 bus       = smbus.SMBus(0)
-adc1	  = AdcPiV1(bus,1,adcRes,(1000/63.69))
-adc2	  = AdcPiV1(bus,2,adcRes,(1000/36.60))
-adc3	  = AdcPiV1(bus,3,adcRes,(1000/63.69))
-adc4	  = AdcPiV1(bus,4,adcRes,(1000/36.60))
-adc5	  = AdcPiV1(bus,5,adcRes,(1000/63.69))
-adc6	  = AdcPiV1(bus,6,adcRes,(1000/36.60))
+adc1	  = AdcPiV1(bus,1,adcRes,adcGain,(1000/63.69))
+adc2	  = AdcPiV1(bus,2,adcRes,adcGain,(1000/36.60))
+adc3	  = AdcPiV1(bus,3,adcRes,adcGain,(1000/63.69))
+adc4	  = AdcPiV1(bus,4,adcRes,adcGain,(1000/36.60))
+adc5	  = AdcPiV1(bus,5,adcRes,adcGain,(1000/63.69))
+adc6	  = AdcPiV1(bus,6,adcRes,adcGain,(1000/36.60))
 purge     = Switch(purgePin)
 h2        = Switch(h2Pin)
 fan       = Switch(fanPin)
-blue      = I2cTemp(BLUE)
-earth     = I2cTemp(EARTH)
-red       = I2cTemp(RED)
-yellow    = I2cTemp(YELLOW)
+blue      = I2cTemp(bus,BLUE)
+earth     = I2cTemp(bus,EARTH)
+red       = I2cTemp(bus,RED)
+yellow    = I2cTemp(bus,YELLOW)
 
 
 # Setup
