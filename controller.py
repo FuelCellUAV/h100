@@ -75,10 +75,16 @@ class AdcPiV1:
 	adcreading.append(0x00)
 
 	resolution = 15.625 / 1000000 # 15.625uV for 18bit sampling
+	calibration= 1.0
 	#attoVolt   = 1/(63.69*1000)
 	#attoAmps   = 1/(36.60*1000)
 	
 	def __init__(self, bus, address, config):
+		self.bus     = bus
+		self.address = address
+		self.config  = config
+		
+	def __init__(self, bus, address, config, calibration):
 		self.bus     = bus
 		self.address = address
 		self.config  = config
@@ -103,7 +109,7 @@ class AdcPiV1:
 		# check if positive or negative number and invert if needed
 		if (h > 128):
 			t = ~(0x020000 - t)
-		return t * self.resolution
+		return t * self.resolution * self.calibration
 
 # Class to enable controlled switching
 class Switch:
@@ -160,7 +166,7 @@ class I2cTemp:
 
 # Define class instances
 bus       = smbus.SMBus(0)
-adc1	  = AdcPiV1(bus,0x68,0x9C)
+adc1	  = AdcPiV1(bus,0x68,0x9C,(1000/63.69))
 purge     = Switch(purgePin)
 h2        = Switch(h2Pin)
 fan       = Switch(fanPin)
@@ -181,7 +187,7 @@ print("Loughborough University\n")
 # Main
 while (True):
     #adc.changechannel(bus, 0x68, 0x9C)
-    print ("ADC= 1:%02f,\t" % (adc1.get()/63.69*1000)),
+    print ("ADC= 1:%02f,\t" % (adc1.get())),
     #adc.changechannel(bus, 0x68, 0xBC)
     #print ("2:%02f,\t" % adc.getadcreading(bus, 0x68, 0xBC)),
     #adc.changechannel(bus, 0x68, 0xDC)
