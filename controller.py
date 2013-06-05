@@ -10,12 +10,12 @@ import argparse
 
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
-parser.add_argument('--out'	   		,help='Name of the output logfile')
-parser.add_argument('--BLUE'       	,type=int, 		default=0x4a,	help='I2C address')
-parser.add_argument('--EARTH'      	,type=int, 		default=0x49, 	help='I2C address')
-parser.add_argument('--RED'        	,type=int, 		default=0x48, 	help='I2C address')
-parser.add_argument('--YELLOW'     	,type=int, 		default=0x4b, 	help='I2C address')
-parser.add_argument('--h2Pin'      	,type=float,	default=0,		help='H2 supply relay') # Relay
+parser.add_argument('--out'	   	,help='Name of the output logfile')
+parser.add_argument('--BLUE'       	,type=int, 	default=0x4a,	help='I2C address')
+parser.add_argument('--EARTH'      	,type=int, 	default=0x49, 	help='I2C address')
+parser.add_argument('--RED'        	,type=int, 	default=0x48, 	help='I2C address')
+parser.add_argument('--YELLOW'     	,type=int, 	default=0x4b, 	help='I2C address')
+parser.add_argument('--h2Pin'      	,type=float,	default=0,	help='H2 supply relay') # Relay
 parser.add_argument('--fanPin'     	,type=float, 	default=1,    	help='Fan relay') 	# Relay
 parser.add_argument('--purgePin'   	,type=float, 	default=2,    	help='Purge switch')
 parser.add_argument('--buttonOn'   	,type=float, 	default=0,   	help='On button')
@@ -23,8 +23,8 @@ parser.add_argument('--buttonOff'  	,type=float, 	default=1,    	help='Off butto
 parser.add_argument('--buttonReset'	,type=float, 	default=2,    	help='Reset button')
 parser.add_argument('--purgeFreq'  	,type=float, 	default=30, 	help='How often to purge in seconds')
 parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
-parser.add_argument('--startTime'  	,type=float, 	default=2,		help='Duration of the startup routine')
-parser.add_argument('--stopTime'   	,type=float, 	default=10,		help='Duration of the shutdown routine')
+parser.add_argument('--startTime'  	,type=float, 	default=2,	help='Duration of the startup routine')
+parser.add_argument('--stopTime'   	,type=float, 	default=10,	help='Duration of the shutdown routine')
 parser.add_argument('--cutoff'     	,type=float, 	default=25.0,	help='Temperature cutoff in celcius')
 args = parser.parse_args()
 
@@ -66,9 +66,6 @@ class STATE:
 
 # Class to read ADC
 class AdcPiV1:
-	#adc_address1 = 0x68
-	#adc_address2 = 0x69
-
 	# create byte array and fill with initial values to define size
 	adcreading = bytearray()
 
@@ -77,47 +74,25 @@ class AdcPiV1:
 	adcreading.append(0x00)
 	adcreading.append(0x00)
 
-	resolution = 15.625 / 1000000 # 15.625uV
+	resolution = 15.625 / 1000000 # 15.625uV for 18bit sampling
+	#attoVolt   = 1/(63.69*1000)
+	#attoAmps   = 1/(36.60*1000)
 	
-	def __init_(self, bus, address, config):
+	def __init__(self, bus, address, config):
 		self.bus     = bus
 		self.address = address
 		self.config  = config
 		
 	def get(self):
 		self.bus.write_byte(self.address, self.config)
-		self.adcreading = self.bus.read_i2c_block_data(address,adcConfig)
+		self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
 		h = self.adcreading[0]
 		m = self.adcreading[1]
 		l = self.adcreading[2]
 		s = self.adcreading[3]
-		# wait for new data
+		# wait for new data ***BLOCKING FUNCTION***
 		while (s & 128):
-			self.adcreading = selfbus.read_i2c_block_data(address,adcConfig)
-			h = self.adcreading[0]
-			m = self.adcreading[1]
-			l = self.adcreading[2]
-			s = self.adcreading[3]
-
-		# shift bits to product result
-		t = ((h & 0b00000001) << 16) | (m << 8) | l
-		# check if positive or negative number and invert if needed
-		if (h > 128):
-			t = ~(0x020000 - t)
-		return t * self.resolution
-
-	def changechannel(self, bus, address, adcConfig):
-		tmp= bus.write_byte(address, adcConfig)
-
-	def getadcreading(self, bus, address, adcConfig):
-		self.adcreading = bus.read_i2c_block_data(address,adcConfig)
-		h = self.adcreading[0]
-		m = self.adcreading[1]
-		l = self.adcreading[2]
-		s = self.adcreading[3]
-		# wait for new data
-		while (s & 128):
-			self.adcreading = bus.read_i2c_block_data(address,adcConfig)
+			self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
 			h = self.adcreading[0]
 			m = self.adcreading[1]
 			l = self.adcreading[2]
@@ -206,7 +181,7 @@ print("Loughborough University\n")
 # Main
 while (True):
     #adc.changechannel(bus, 0x68, 0x9C)
-    print ("ADC= 1:%02f,\t" % adc1.get()),
+    print ("ADC= 1:%02f,\t" % (adc1.get()/63.69*1000)),
     #adc.changechannel(bus, 0x68, 0xBC)
     #print ("2:%02f,\t" % adc.getadcreading(bus, 0x68, 0xBC)),
     #adc.changechannel(bus, 0x68, 0xDC)
@@ -290,3 +265,4 @@ while (True):
 
     ## end STATE MACHINE ##
 # end main
+
