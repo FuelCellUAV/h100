@@ -74,52 +74,74 @@ class AdcPiV1:
 	adcreading.append(0x00)
 	adcreading.append(0x00)
 
-	resolution = 15.625 / 1000000 # 15.625uV for 18bit sampling
 	calibration= 1.0
-	#attoVolt   = 1/(63.69*1000)
-	#attoAmps   = 1/(36.60*1000)
+	config = 0b10010000
 	
-	res = 14
-	
-	def __init__(self, bus, address, config):
-		self.bus     = bus
-		self.address = address
-		self.config  = config
-		
-	def __init__(self, bus, address, config, calibration):
-		self.bus         = bus
-		self.address     = address
-		self.config      = config
-		self.calibration = calibration
-		
+	def __init__(self, bus, channel, resolution, calibration):
+		self.bus = bus
+		if   channel is 1 or 2 or 3 or 4:
+			self.address = 0x68
+		elif channel is 5 or 6 or 7 or 8:
+			self.address = 0x69
+		self.config = self.config | ((channel-1) << 5) | (((resolution/2)-6) << 2)
+		self.resolution = resolution
+		self.calibration= calibration
+
 	def get(self):
 		self.bus.write_byte(self.address, self.config)
 		self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
-		h = self.adcreading[0]
-		m = self.adcreading[1]
-		l = self.adcreading[2]
-		s = self.adcreading[3]
-		# wait for new data ***BLOCKING FUNCTION***
-		while (s & 128):
-			self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
+		if self.resolution is 18:
 			h = self.adcreading[0]
 			m = self.adcreading[1]
 			l = self.adcreading[2]
 			s = self.adcreading[3]
+			# wait for new data ***BLOCKING FUNCTION***
+			while (s & 128):
+				self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
+				h = self.adcreading[0]
+				m = self.adcreading[1]
+				l = self.adcreading[2]
+				s = self.adcreading[3]
+		else:
+			h = self.adcreading[0]
+			m = self.adcreading[1]
+			l = self.adcreading[2]
+			# wait for new data ***BLOCKING FUNCTION***
+			while (l & 128):
+				self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
+				h = self.adcreading[0]
+				m = self.adcreading[1]
+				l = self.adcreading[2]
 
 		# shift bits to product result
-		if res is 18:
+		if self.resolution is 18:
 			t = ((h & 0b00000001) << 16) | (m << 8) | l
 			# check if positive or negative number and invert if needed
 			if (h > 128):
-				t = ~(0x020000 - t)
-			t = t * 15.625 / 1000000 * self.calibration
-		elif res is 14:
-			t = (h & 0b00011111) << 8) | m
+				t = ~(131072 - t)
+			t = t * 0.000015625 * self.calibration
+			return t
+		elif self.resolution is 16:
+                        t = ((h & 0b01111111) << 8) | m
+                        # check if positive or negative number and invert if needed
+                        if (h > 128):
+                                t = ~(32768 - t)
+                        t = t * 0.0000625 * self.calibration
+                        return t
+		elif self.resolution is 14:
+			t = ((h & 0b00011111) << 8) | m
 			# check if positive or negative number and invert if needed
 			if (h > 128):
-				t = ~(0x020000 - t)
-		return t * 250 / 1000000 * self.calibration
+				t = ~(8192 - t)
+			t = t * 0.000250 * self.calibration
+			return t
+		elif self.resolution is 12:
+			t = ((h & 0b00000111) << 8) | m
+			# check if positive or negative number and invert if needed
+			if (h > 128):
+				t = ~(2048 - t)
+			t = t * 0.001 * self.calibration
+			return t
 
 # Class to enable controlled switching
 class Switch:
@@ -175,13 +197,14 @@ class I2cTemp:
 		   return -1
 
 # Define class instances
+adcRes    = 12
 bus       = smbus.SMBus(0)
-adc1	  = AdcPiV1(bus,0x68,0x94,(1000/63.69))
-adc2	  = AdcPiV1(bus,0x68,0xB4,(1000/36.60))
-adc3	  = AdcPiV1(bus,0x68,0xD4,(1000/63.69))
-adc4	  = AdcPiV1(bus,0x68,0xF4,(1000/36.60))
-adc5	  = AdcPiV1(bus,0x69,0x94,(1000/63.69))
-adc6	  = AdcPiV1(bus,0x69,0xB4,(1000/36.60))
+adc1	  = AdcPiV1(bus,1,adcRes,(1000/63.69))
+adc2	  = AdcPiV1(bus,2,adcRes,(1000/36.60))
+adc3	  = AdcPiV1(bus,3,adcRes,(1000/63.69))
+adc4	  = AdcPiV1(bus,4,adcRes,(1000/36.60))
+adc5	  = AdcPiV1(bus,5,adcRes,(1000/63.69))
+adc6	  = AdcPiV1(bus,6,adcRes,(1000/36.60))
 purge     = Switch(purgePin)
 h2        = Switch(h2Pin)
 fan       = Switch(fanPin)
@@ -201,7 +224,7 @@ print("Loughborough University\n")
 
 # Main
 while (True):
-    print ("ADC= 1:%02f,\t" % (adc1.get())),
+    print ("ADC\t1:%02f,\t" % (adc1.get())),
     print ("2:%02f,\t" % (adc2.get())),
     print ("3:%02f,\t" % (adc3.get())),
     print ("4:%02f,\t" % (adc4.get())),
