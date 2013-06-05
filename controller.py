@@ -85,9 +85,10 @@ class AdcPiV1:
 		self.config  = config
 		
 	def __init__(self, bus, address, config, calibration):
-		self.bus     = bus
-		self.address = address
-		self.config  = config
+		self.bus         = bus
+		self.address     = address
+		self.config      = config
+		self.calibration = calibration
 		
 	def get(self):
 		self.bus.write_byte(self.address, self.config)
@@ -167,6 +168,11 @@ class I2cTemp:
 # Define class instances
 bus       = smbus.SMBus(0)
 adc1	  = AdcPiV1(bus,0x68,0x9C,(1000/63.69))
+adc2	  = AdcPiV1(bus,0x68,0xBC,(1000/36.60))
+adc3	  = AdcPiV1(bus,0x68,0xDC,(1000/63.69))
+adc4	  = AdcPiV1(bus,0x68,0xFC,(1000/36.60))
+adc5	  = AdcPiV1(bus,0x69,0x9C,(1000/63.69))
+adc6	  = AdcPiV1(bus,0x69,0xBC,(1000/36.60))
 purge     = Switch(purgePin)
 h2        = Switch(h2Pin)
 fan       = Switch(fanPin)
@@ -186,18 +192,12 @@ print("Loughborough University\n")
 
 # Main
 while (True):
-    #adc.changechannel(bus, 0x68, 0x9C)
     print ("ADC= 1:%02f,\t" % (adc1.get())),
-    #adc.changechannel(bus, 0x68, 0xBC)
-    #print ("2:%02f,\t" % adc.getadcreading(bus, 0x68, 0xBC)),
-    #adc.changechannel(bus, 0x68, 0xDC)
-    #print ("3:%02f,\t" % adc.getadcreading(bus, 0x68, 0xDC)),
-    #adc.changechannel(bus, 0x68, 0xFC)
-    #print ("4:%02f,\t" % adc.getadcreading(bus, 0x68, 0xFC)),
-    #adc.changechannel(bus, 0x69, 0x9C)
-    #print ("5:%02f,\t" % adc.getadcreading(bus, 0x69, 0x9C)),
-    #adc.changechannel(bus, 0x69, 0xBC)
-    #print ("6:%02f." % adc.getadcreading(bus, 0x69, 0xBC))
+    print ("2:%02f,\t" % (adc2.get())),
+    print ("3:%02f,\t" % (adc3.get())),
+    print ("4:%02f,\t" % (adc4.get())),
+    print ("5:%02f,\t" % (adc5.get())),
+    print ("6:%02f,\t" % (adc6.get()))
 
     # TEMP SHUTDOWN
     if blue() >= cutoff or earth() >= cutoff or red() >= cutoff or yellow() >= cutoff:
