@@ -64,6 +64,46 @@ cutoff 	    = args.cutoff
 class STATE:
 	startup, on, shutdown, off, error = range(5)
 
+# Class to read ADC
+class Adc:
+	adc_address1 = 0x68
+	adc_address2 = 0x69
+
+	# create byte array and fill with initial values to define size
+	adcreading = bytearray()
+
+	adcreading.append(0x00)
+	adcreading.append(0x00)
+	adcreading.append(0x00)
+	adcreading.append(0x00)
+
+	varDivisior = 64 # from pdf sheet on adc addresses and config
+	varMultiplier = (2.4705882/varDivisior)/1000
+
+	def changechannel(self, bus, address, adcConfig):
+		tmp= bus.write_byte(address, adcConfig)
+
+	def getadcreading(self, bus, address, adcConfig):
+		self.adcreading = bus.read_i2c_block_data(address,adcConfig)
+		h = self.adcreading[0]
+		m = self.adcreading[1]
+		l = self.adcreading[2]
+		s = self.adcreading[3]
+		# wait for new data
+		while (s & 128):
+			self.adcreading = bus.read_i2c_block_data(address,adcConfig)
+			h = self.adcreading[0]
+			m = self.adcreading[1]
+			l = self.adcreading[2]
+			s = self.adcreading[3]
+
+		# shift bits to product result
+		t = ((h & 0b00000001) << 16) | (m << 8) | l
+		# check if positive or negative number and invert if needed
+		if (h > 128):
+			t = ~(0x020000 - t)
+		return t * self.varMultiplier
+
 # Class to enable controlled switching
 class Switch:
 	pin   = 0
@@ -119,6 +159,7 @@ class I2cTemp:
 
 # Define class instances
 bus       = smbus.SMBus(0)
+adc	  = Adc()
 purge     = Switch(purgePin)
 h2        = Switch(h2Pin)
 fan       = Switch(fanPin)
@@ -138,6 +179,18 @@ print("Loughborough University\n")
 
 # Main
 while (True):
+    changechannel(adc_address1, 0x9C)
+    print ("ADC= 1:%02f,\t" % getadcreading(adc_address1,0x9C)),
+    changechannel(adc_address1, 0xBC)
+    print ("2:%02f,\t" % getadcreading(adc_address1,0xBC)),
+    changechannel(adc_address1, 0xDC)
+    print ("3:%02f,\t" % getadcreading(adc_address1, 0xDC)),
+    changechannel(adc_address1, 0xFC)
+    print ("4:%02f,\t" % getadcreading(adc_address1, 0xFC)),
+    changechannel(adc_address2, 0x9C)
+    print ("5:%02f,\t" % getadcreading(adc_address2, 0x9C)),
+    changechannel(adc_address2, 0xBC)
+    print ("6:%02f." % getadcreading(adc_address2, 0xBC))
 
     # TEMP SHUTDOWN
     if blue() >= cutoff or earth() >= cutoff or red() >= cutoff or yellow() >= cutoff:
