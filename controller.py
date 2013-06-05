@@ -79,6 +79,8 @@ class AdcPiV1:
 	#attoVolt   = 1/(63.69*1000)
 	#attoAmps   = 1/(36.60*1000)
 	
+	res = 14
+	
 	def __init__(self, bus, address, config):
 		self.bus     = bus
 		self.address = address
@@ -106,11 +108,18 @@ class AdcPiV1:
 			s = self.adcreading[3]
 
 		# shift bits to product result
-		t = ((h & 0b00000001) << 16) | (m << 8) | l
-		# check if positive or negative number and invert if needed
-		if (h > 128):
-			t = ~(0x020000 - t)
-		return t * self.resolution * self.calibration
+		if res is 18:
+			t = ((h & 0b00000001) << 16) | (m << 8) | l
+			# check if positive or negative number and invert if needed
+			if (h > 128):
+				t = ~(0x020000 - t)
+			t = t * 15.625 / 1000000 * self.calibration
+		elif res is 14:
+			t = (h & 0b00011111) << 8) | m
+			# check if positive or negative number and invert if needed
+			if (h > 128):
+				t = ~(0x020000 - t)
+		return t * 250 / 1000000 * self.calibration
 
 # Class to enable controlled switching
 class Switch:
@@ -167,12 +176,12 @@ class I2cTemp:
 
 # Define class instances
 bus       = smbus.SMBus(0)
-adc1	  = AdcPiV1(bus,0x68,0x9C,(1000/63.69))
-adc2	  = AdcPiV1(bus,0x68,0xBC,(1000/36.60))
-adc3	  = AdcPiV1(bus,0x68,0xDC,(1000/63.69))
-adc4	  = AdcPiV1(bus,0x68,0xFC,(1000/36.60))
-adc5	  = AdcPiV1(bus,0x69,0x9C,(1000/63.69))
-adc6	  = AdcPiV1(bus,0x69,0xBC,(1000/36.60))
+adc1	  = AdcPiV1(bus,0x68,0x94,(1000/63.69))
+adc2	  = AdcPiV1(bus,0x68,0xB4,(1000/36.60))
+adc3	  = AdcPiV1(bus,0x68,0xD4,(1000/63.69))
+adc4	  = AdcPiV1(bus,0x68,0xF4,(1000/36.60))
+adc5	  = AdcPiV1(bus,0x69,0x94,(1000/63.69))
+adc6	  = AdcPiV1(bus,0x69,0xB4,(1000/36.60))
 purge     = Switch(purgePin)
 h2        = Switch(h2Pin)
 fan       = Switch(fanPin)
