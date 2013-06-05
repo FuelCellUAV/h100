@@ -17,6 +17,6 @@ class I2cTemp:
                    temp = ((( msb * 256 ) + lsb) >> 4 ) * 0.0625
                    return temp
                 except Exception as e:
-                   print ("I2C Temp Error")
+                   #print ("I2C Temp Error")
                    return -1
 

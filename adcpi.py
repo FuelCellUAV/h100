@@ -84,5 +84,5 @@ class AdcPiV1:
 				t = t * 0.001 * self.calibration
 			return t/self.gain
 		except Exception as e:
-           	   print ("I2C ADC Error")
+           	   #print ("I2C ADC Error")
 		   return -1

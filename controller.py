@@ -66,6 +66,19 @@ cutoff 	    = args.cutoff
 # State machine cases
 class STATE:
 	startup, on, shutdown, off, error = range(5)
+state = STATE.off
+
+# Define global constants
+tmpBlue    = 0
+tmpEarth   = 0
+tmpRed     = 0
+tmpYellow  = 0
+volts1     = 0
+amps1      = 0
+volts2     = 0
+amps2      = 0
+volts3     = 0
+amps3      = 0
 
 # Define class instances
 adcRes    = 12
@@ -85,10 +98,8 @@ earth     = I2cTemp(bus,EARTH)
 red       = I2cTemp(bus,RED)
 yellow    = I2cTemp(bus,YELLOW)
 
-
 # Setup
 pfio.init()
-state = STATE.off
 print("\nFuel Cell Controller")
 print("Horizon H-100 Stack")
 print("(c) Simon Howroyd 2013")
@@ -96,25 +107,57 @@ print("Loughborough University\n")
 
 # Main
 while (True):
-    print ("ADC\t1:%02f,\t" % (adc1.get())),
-    print ("2:%02f,\t" % (adc2.get())),
-    print ("3:%02f,\t" % (adc3.get())),
-    print ("4:%02f,\t" % (adc4.get())),
-    print ("5:%02f,\t" % (adc5.get())),
-    print ("6:%02f,\t" % (adc6.get()))
+    print "\n"
 
-    # TEMP SHUTDOWN
-    if blue() >= cutoff or earth() >= cutoff or red() >= cutoff or yellow() >= cutoff:
-	print '\rToo hot! (cutoff={} degC)'.format(cutoff),
-	print '\tBlue={0}\tEarth={1}\tRed={2}\tYellow={3}'.format(blue(),earth(),red(),yellow()),
-	state = STATE.error
+    # STATE
+    if state == STATE.off:
+	print ("OFF  :\t"),
+    elif state == STATE.startup:
+	print ("START:\t"),
+    elif state == STATE.on:
+	print ("ON   :\t"),
+    elif state == STATE.shutdown:
+	print ("STOP :\t"),
+    elif state == STATE.error:
+	print ("ERROR:\t"),
+
+    tmpBlue    = blue()
+    tmpEarth   = earth()
+    tmpRed     = red()
+    tmpYellow  = yellow()
+    volts1     = adc1.get()
+    amps1      = adc2.get()
+    volts2     = adc3.get()
+    amps2      = adc4.get()
+    volts3     = adc5.get()
+    amps3      = adc6.get()
 
     # STOP BUTTON
     if pfio.digital_read(buttonOn) == False and pfio.digital_read(buttonOff) == True:
         if state == STATE.startup or state == STATE.on:
             state = STATE.shutdown
             timeChange = time()
-            print ("Shutting down")
+     
+    # ELECTRIC
+    print ("ADC\t"),
+    print ("v1:%02f,\t" % (volts1)),
+    print ("a1:%02f,\t" % (amps1)),
+    print ("v2:%02f,\t" % (volts2)),
+    print ("a2:%02f,\t" % (amps2)),
+    print ("v3:%02f,\t" % (volts3)),
+    print ("a3:%02f,\t" % (amps3)),
+
+    # TEMPERATURE
+    print ("TMP\t"), 
+    print ("tB:%02f,\t" % (tmpBlue)),
+    print ("tE:%02f,\t" % (tmpEarth)),
+    print ("tR:%02f,\t" % (tmpRed)),
+    print ("tY:%02f,\t" % (tmpYellow)),
+    if tmpBlue >= cutoff or tmpEarth >= cutoff or tmpRed >= cutoff or tmpYellow >= cutoff:
+	print ("HOT"),
+	state = STATE.error
+    else:
+	print ("OK!"),
 
     ## STATE MACHINE ##
     if state == STATE.off:
@@ -126,7 +169,6 @@ while (True):
         if pfio.digital_read(buttonOn) == True and pfio.digital_read(buttonOff) == False:
 	    state = STATE.startup
             timeChange = time()
-            print ("Starting")
     if state == STATE.startup:
         # Startup
         try:
@@ -135,9 +177,8 @@ while (True):
             purge.timed(0,startTime)
             if (time() - timeChange) > startTime:
                 state = STATE.on
-                print ("Running")
         except Exception as e:
-            print ("Startup Error")
+            #print ("Startup Error")
             state = STATE.error
     if state == STATE.on:
         # Running
@@ -146,7 +187,7 @@ while (True):
             fan.switch(True)
             purge.timed(purgeFreq,purgeTime)
         except Exception as e:
-            print ("Running Error")
+            #print ("Running Error")
             state = STATE.error
     if state == STATE.shutdown:
         # Shutdown
@@ -156,9 +197,8 @@ while (True):
             purge.timed(0,stopTime)
             if (time() - timeChange) > stopTime:
                 state = STATE.off
-                print("Stopped")
         except Exception as e:
-            print ("Shutdown Error")
+            #print ("Shutdown Error")
             state = STATE.error
     if state == STATE.error:
         # Error lock           
@@ -171,8 +211,9 @@ while (True):
             # Reset button
             if pfio.digital_read(buttonReset) == True:
 	        state = STATE.off
-                print("\nResetting")
+                #print("\nResetting")
 
     ## end STATE MACHINE ##
+
 # end main
 
