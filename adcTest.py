@@ -45,6 +45,7 @@ for line in open('/proc/cpuinfo').readlines():
                
 
 bus = SMBus(i2c_bus)
+#bus = SMBus(0)
  
 def changechannel(address, adcConfig):
 	tmp= bus.write_byte(address, adcConfig)
@@ -71,19 +72,20 @@ def getadcreading(address, adcConfig):
 	return t * varMultiplier
 
 while True:
+	print '\r'
 	changechannel(adc_address1, 0x9C)
-	print ("Channel 1: %02f" % getadcreading(adc_address1,0x9C))
+	print ("1:%02f,\t" % getadcreading(adc_address1,0x9C)),
 	changechannel(adc_address1, 0xBC)
-	print ("Channel 2: %02f" % getadcreading(adc_address1,0xBC))
+	print ("2:%02f,\t" % getadcreading(adc_address1,0xBC)),
 	changechannel(adc_address1, 0xDC)
-	print ("Channel 3 :%02f" % getadcreading(adc_address1, 0xDC))
+	print ("3:%02f,\t" % getadcreading(adc_address1, 0xDC)),
 	changechannel(adc_address1, 0xFC)
-	print ("Channel 4: %02f" % getadcreading(adc_address1, 0xFC))
+	print ("4:%02f,\t" % getadcreading(adc_address1, 0xFC)),
 	changechannel(adc_address2, 0x9C)
-	print ("Channel 5: %02f" % getadcreading(adc_address2, 0x9C))
+	print ("5:%02f,\t" % getadcreading(adc_address2, 0x9C)),
 	changechannel(adc_address2, 0xBC)
-	print ("Channel 6: %02f" % getadcreading(adc_address2, 0xBC))
-	changechannel(adc_address2, 0xDC)
-	print ("Channel 7: %02f" % getadcreading(adc_address2, 0xDC))
-	changechannel(adc_address2, 0xFC)
-	print ("Channel 8: %02f" % getadcreading(adc_address2, 0xFC))
+	print ("6:%02f,\t" % getadcreading(adc_address2, 0xBC)),
+#	changechannel(adc_address2, 0xDC)
+#	print ("7:%02f,\t" % getadcreading(adc_address2, 0xDC)),
+#	changechannel(adc_address2, 0xFC)
+#	print ("8:%02f." % getadcreading(adc_address2, 0xFC)),
