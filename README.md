@@ -1,7 +1,9 @@
 h100
 ====
 
-Software for the Horizon H-100 Fuel Cell Stack
+Software for the Horizon H-100 Fuel Cell Stack.
+
+Main logic in controller.py
 
 Note that this contains submodules (repositories within repositories). Some of which need setting up:
 
