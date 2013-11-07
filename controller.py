@@ -28,7 +28,7 @@ parser.add_argument('--purgeFreq'  	,type=float, 	default=30, 	help='How often t
 parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
 parser.add_argument('--startTime'  	,type=float, 	default=2,	help='Duration of the startup routine')
 parser.add_argument('--stopTime'   	,type=float, 	default=10,	help='Duration of the shutdown routine')
-parser.add_argument('--cutoff'     	,type=float, 	default=25.0,	help='Temperature cutoff in celcius')
+parser.add_argument('--cutoff'     	,type=float, 	default=31.0,	help='Temperature cutoff in celcius')
 args = parser.parse_args()
 
 # Class to save to file & print to screen
@@ -109,7 +109,7 @@ print("Loughborough University\n")
 while (True):
     print "\n"
 
-    # PRINT STATE TO SCREEN FOR USER
+    # STATE
     if state == STATE.off:
 	print ("OFF  :\t"),
     elif state == STATE.startup:
@@ -121,7 +121,6 @@ while (True):
     elif state == STATE.error:
 	print ("ERROR:\t"),
 
-    # UPDATE ALL THE NUMBERS FROM HARDWARE
     tmpBlue    = blue()
     tmpEarth   = earth()
     tmpRed     = red()
@@ -133,13 +132,13 @@ while (True):
     volts3     = adc5.get()
     amps3      = adc6.get()
 
-    # HAS THE STOP BUTTON BEEN PRESSED?
+    # STOP BUTTON
     if pfio.digital_read(buttonOn) == False and pfio.digital_read(buttonOff) == True:
         if state == STATE.startup or state == STATE.on:
             state = STATE.shutdown
             timeChange = time()
      
-    # PRINT ELECTRIC DATA TO SCREEN FOR USER
+    # ELECTRIC
     print ("ADC\t"),
     print ("v1:%02f,\t" % (volts1)),
     print ("a1:%02f,\t" % (amps1)),
@@ -148,7 +147,7 @@ while (True):
     print ("v3:%02f,\t" % (volts3)),
     print ("a3:%02f,\t" % (amps3)),
 
-    # PRINT TEMPERATURE DATA TO SCREEN FOR USER
+    # TEMPERATURE
     print ("TMP\t"), 
     print ("tB:%02f,\t" % (tmpBlue)),
     print ("tE:%02f,\t" % (tmpEarth)),
@@ -160,73 +159,56 @@ while (True):
     else:
 	print ("OK!"),
 
-
     ## STATE MACHINE ##
-    # Controller logic:
-    
     if state == STATE.off:
-        # State = Off
-        # Turn all hardware off
+        # Off
         h2.switch(False)
         fan.switch(False)
         purge.switch(False)
-	
-	# Has the on button been pressed?
+
         if pfio.digital_read(buttonOn) == True and pfio.digital_read(buttonOff) == False:
 	    state = STATE.startup
             timeChange = time()
-            
     if state == STATE.startup:
-        # State = Startup
-        # Everything on for "startTime" seconds
+        # Startup
         try:
 	    h2.timed(0,startTime)
             fan.timed(0,startTime)
             purge.timed(0,startTime)
             if (time() - timeChange) > startTime:
                 state = STATE.on
-        # If this doesn;t work then exception occurs
         except Exception as e:
             #print ("Startup Error")
             state = STATE.error
-            
     if state == STATE.on:
-        # State = Running
-        # H2 on, Fan on, purging every so often
+        # Running
         try:
             h2.switch(True)
             fan.switch(True)
             purge.timed(purgeFreq,purgeTime)
-        # If this doesn;t work then exception occurs
         except Exception as e:
             #print ("Running Error")
             state = STATE.error
-            
     if state == STATE.shutdown:
-        # State = Shutdown
-        # H2 off, fan & purge on
+        # Shutdown
         try:
             h2.switch(False)
             fan.timed(0,stopTime)
             purge.timed(0,stopTime)
             if (time() - timeChange) > stopTime:
                 state = STATE.off
-        # If this doesn;t work then exception occurs
         except Exception as e:
             #print ("Shutdown Error")
             state = STATE.error
-            
     if state == STATE.error:
-        # Error lock, infinite loop
-        # H2 off & purge off for safety
+        # Error lock           
 	h2.switch(False)
         purge.switch(False)
-        # If any of the 4 temp sensors are too hot, turn fan on for safety
         if blue() >= cutoff or earth() >= cutoff or red() >= cutoff or yellow() >= cutoff:
 	    fan.switch(True)
 	else:
 	    fan.switch(False)
-            # Has reset button been pushed?
+            # Reset button
             if pfio.digital_read(buttonReset) == True:
 	        state = STATE.off
                 #print("\nResetting")
