@@ -7,18 +7,18 @@ import piface.pfio as pfio
 import RPi.GPIO as GPIO
 import smbus
 import argparse
-from adcpi import *
+from adcpi  import *
 from tmp102 import *
 from switch import *
 
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
-parser.add_argument('--out'	   	,help='Name of the output logfile')
-parser.add_argument('--BLUE'       	,type=int, 	default=0x4a,	help='I2C address')
-parser.add_argument('--EARTH'      	,type=int, 	default=0x49, 	help='I2C address')
-parser.add_argument('--RED'        	,type=int, 	default=0x48, 	help='I2C address')
-parser.add_argument('--YELLOW'     	,type=int, 	default=0x4b, 	help='I2C address')
-parser.add_argument('--h2Pin'      	,type=float,	default=0,	help='H2 supply relay') # Relay
+parser.add_argument('--out'	   		,								help='Name of the output logfile')
+parser.add_argument('--BLUE'       	,type=int, 		default=0x4a,	help='I2C address')
+parser.add_argument('--EARTH'      	,type=int, 		default=0x49, 	help='I2C address')
+parser.add_argument('--RED'        	,type=int, 		default=0x48, 	help='I2C address')
+parser.add_argument('--YELLOW'     	,type=int, 		default=0x4b, 	help='I2C address')
+parser.add_argument('--h2Pin'      	,type=float,	default=0,		help='H2 supply relay') # Relay
 parser.add_argument('--fanPin'     	,type=float, 	default=1,    	help='Fan relay') 	# Relay
 parser.add_argument('--purgePin'   	,type=float, 	default=2,    	help='Purge switch')
 parser.add_argument('--buttonOn'   	,type=float, 	default=0,   	help='On button')
@@ -26,8 +26,8 @@ parser.add_argument('--buttonOff'  	,type=float, 	default=1,    	help='Off butto
 parser.add_argument('--buttonReset'	,type=float, 	default=2,    	help='Reset button')
 parser.add_argument('--purgeFreq'  	,type=float, 	default=30, 	help='How often to purge in seconds')
 parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
-parser.add_argument('--startTime'  	,type=float, 	default=2,	help='Duration of the startup routine')
-parser.add_argument('--stopTime'   	,type=float, 	default=10,	help='Duration of the shutdown routine')
+parser.add_argument('--startTime'  	,type=float, 	default=2,		help='Duration of the startup routine')
+parser.add_argument('--stopTime'   	,type=float, 	default=10,		help='Duration of the shutdown routine')
 parser.add_argument('--cutoff'     	,type=float, 	default=31.0,	help='Temperature cutoff in celcius')
 args = parser.parse_args()
 
@@ -45,8 +45,9 @@ class MyWriter:
 
 # Look at user arguments
 if args.out: # save to output file
-        writer = MyWriter(sys.stdout, args.out)
+    writer     = MyWriter(sys.stdout, args.out)
 	sys.stdout = writer
+	
 BLUE 	    = args.BLUE
 EARTH 	    = args.EARTH
 RED 	    = args.RED
