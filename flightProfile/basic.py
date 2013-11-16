@@ -1,123 +1,95 @@
+#!/usr/bin/python2
+
+# Basic Flight Profile
+
+# Copyright (C) 2013  India Barber
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #basic flight profile
-#throttle is not considered at this stage but + 1 is added to altitude
-#altitude will come fromg gps reading
-#controller can be inputted into 'initialise' 'safety check' and 'shut down' stages
+#throttle is not considered at this stage, constant rates are assumed
+#altitude will come from gps reading in air tests
 
-#Time
 import time
+import interface
 
-#Global Variables
-ground_alt = 2
-alt = 0
-cruise_alt = 15
-cruise_time = 10
+class BasicProfile(Interface): # Inherits the functionality of "Interface"
+	#Initialise
+	def __init__(self):
+		#Runs automatically at start of programme
+		print ('Initialising flight profile')
+		self.ground_alt = 2
+		self.alt = 0
+		self.cruise_alt = 15
+		self.cruise_time = 10
+		self.timeStart = time.time()
+		self.timeRun = 0
+		self.safetyChecks = False
+		self.SafetyCheck()
+		return
 
-#Climb
-def climb(alt):
-    print ('Climbing')
-    alt += 1
-    time.sleep(1)
-    print ('alt: ',alt)
-    return alt
+	#**FLIGHT PROFILE**
+	def run(self):
+		if self.safetyChecks == False:
+			print ("Can't run, safety check failed at init")
+			break # Don't allow this to run if not safe
+			
+		if self.runtime() < 5:
+			# Do nothing yet, ready to go!
+		elif self.runtime() < 15:
+			# Takeoff
+			self.alt = Interface.climb(self.alt, 2)# 2m/s climb
+		elif self.runtime() < 360:
+			# Cruise
+			Interface.setClimbRate(1) # 1m/s climb
+			Interface.setDecRate(1)   # 1m/s descent
+			self.alt = Interface.cruise(self.alt, self.cruise_alt)
+		elif self.runtime() < 420:
+			# Land
+			self.Landing
+		else:
+			self.Shutdown()
 
-#Descend
-def descend(alt):
-    print ('Descending')
-    alt = alt - 1
-    time.sleep(1)
-    print ('alt: ',alt)
-    return alt
-
-#Cruise
-def cruise(alt, cruise_alt):
-    t = 0
-    print('Cruising for ', cruise_time, ' seconds')
-    while (t<cruise_time):
-        # adding a gust
-        if (t==3):
-            alt += 4
-            print('Upgust')
-            print('alt: ', alt)
-        # adding a downgust
-        if (t==5):
-            alt += -5
-            print('Downgust')
-            print('alt: ', alt)
-            
-        if (alt == cruise_alt):
-            t = t + 1
-            time.sleep(1)
-            print('Cruising')
-            print ('alt: ',alt)
-        elif (alt < cruise_alt):
-            alt = climb(alt)
-            t = t + 1
-            time.sleep(1)
-        elif (alt > cruise_alt):
-            alt = descend(alt)
-            t = t + 1
-            time.sleep(1)
-    return alt
-
-#Initialise
-def Initialise():
-    print ('Initialising')
-    return
-
-#SafetyCheck
-def SafetyCheck():
-    print ('Safety Checks')
-    return
-
-#Shut Down
-def Shutdown():
-    print ('Shutting Down')
-    #shut down
-    print ('Shut Down Good Bye')
-    return
-
-#Takeoff
-def Takeoff(alt, cruise_alt):
-    print('Starting Takeoff')
-    while (alt < cruise_alt):
-        alt = climb(alt)
-    return alt
-
-#Landing
-def Landing(alt, ground_alt):
-    print('Starting Landing')
-    while (alt > ground_alt):
-        alt = descend(alt)
-    return alt
-
-#Flight
-
-Initialise()
-
-SafetyCheck()
-
-#Possibly add in button to press to start
-
-alt = Takeoff(alt, cruise_alt)
-
-alt = cruise(alt, cruise_alt)
-
-alt = Landing(alt, ground_alt)
-
-Shutdown()
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
+	#Safety Check
+	def SafetyCheck(self):
+		print ('Starting Safety Checks')
+		try:
+			# Do checks here #
+			self.safetyChecks = True # All ok
+		except Exception as e:
+			self.safetyChecks = False # Went wrong
+		return
+		
+	#Landing - special method needed to account for ground
+	def Landing(self):
+		Interface.setDecRate(1) # 1m/s
+		if self.alt > self.ground_alt:
+			print('Landing')
+			self.alt = Interface.descend(self.alt)
+		else:
+			print ("On ground")
+		return self.alt
+		
+	#Shut Down
+	def Shutdown(self):
+		print ('Shutting Down')
+		#shut down
+		print ('Shut Down Good Bye')
+		return
+		
+	# Time since start of profile
+	def runtime(self):
+		# Calc real time since start
+		self.timeRun = time.time() - self.timeStart
+		return self.timeRun
