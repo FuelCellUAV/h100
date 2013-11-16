@@ -18,7 +18,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from time import time
-import piface.pfio as pfio
+import ../piface.pfio as pfio
 
 # Class to enable controlled switching
 class Switch:

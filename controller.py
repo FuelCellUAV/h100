@@ -24,9 +24,9 @@ import piface.pfio as pfio
 import RPi.GPIO as GPIO
 import smbus
 import argparse
-from adcpi  import *
+from adc/adcpi  import *
 from tmp102 import *
-from switch import *
+from switch/switch import *
 
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
