@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Fuel Cell Controller for the Horizon H100
 
@@ -20,13 +20,15 @@
 # Import libraries
 import sys
 from   time import time
-import piface.pfio as pfio
+#import piface.pfio as pfio
+#import pifacecommon as pfcom
+import piface.pifacedigitalio as pfio
 import RPi.GPIO as GPIO
 import smbus
 import argparse
-from adc/adcpi  import *
+from adc.adcpi  import *
 from tmp102 import *
-from switch/switch import *
+from switch.switch import *
 
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
@@ -63,7 +65,7 @@ class MyWriter:
 # Look at user arguments
 if args.out: # save to output file
     writer     = MyWriter(sys.stdout, args.out)
-	sys.stdout = writer
+    sys.stdout = writer
 	
 BLUE 	    = args.BLUE
 EARTH 	    = args.EARTH
@@ -117,7 +119,7 @@ red       = I2cTemp(bus,RED)
 yellow    = I2cTemp(bus,YELLOW)
 
 # Setup
-pfio.init()
+pfio.PiFaceDigital()
 print("\nFuel Cell Controller")
 print("Horizon H-100 Stack")
 print("(c) Simon Howroyd 2013")
@@ -130,19 +132,19 @@ print("under certain conditions; type `show c' for details.")
 
 # Main
 while (True):
-    print "\n"
+    print ("\n")
 
     # STATE
     if state == STATE.off:
-	print ("OFF  :\t"),
+        print ("OFF  :\t"),
     elif state == STATE.startup:
-	print ("START:\t"),
+        print ("START:\t"),
     elif state == STATE.on:
-	print ("ON   :\t"),
+        print ("ON   :\t"),
     elif state == STATE.shutdown:
-	print ("STOP :\t"),
+        print ("STOP :\t"),
     elif state == STATE.error:
-	print ("ERROR:\t"),
+        print ("ERROR:\t"),
 
     tmpBlue    = blue()
     tmpEarth   = earth()
@@ -177,10 +179,10 @@ while (True):
     print ("tR:%02f,\t" % (tmpRed)),
     print ("tY:%02f,\t" % (tmpYellow)),
     if tmpBlue >= cutoff or tmpEarth >= cutoff or tmpRed >= cutoff or tmpYellow >= cutoff:
-	print ("HOT"),
-	state = STATE.error
+        print ("HOT"),
+        state = STATE.error
     else:
-	print ("OK!"),
+        print ("OK!"),
 
     ## STATE MACHINE ##
     if state == STATE.off:
@@ -190,12 +192,12 @@ while (True):
         purge.switch(False)
 
         if pfio.digital_read(buttonOn) == True and pfio.digital_read(buttonOff) == False:
-	    state = STATE.startup
+            state = STATE.startup
             timeChange = time()
     if state == STATE.startup:
         # Startup
         try:
-	    h2.timed(0,startTime)
+            h2.timed(0,startTime)
             fan.timed(0,startTime)
             purge.timed(0,startTime)
             if (time() - timeChange) > startTime:
@@ -225,15 +227,15 @@ while (True):
             state = STATE.error
     if state == STATE.error:
         # Error lock           
-	h2.switch(False)
+        h2.switch(False)
         purge.switch(False)
         if blue() >= cutoff or earth() >= cutoff or red() >= cutoff or yellow() >= cutoff:
-	    fan.switch(True)
-	else:
-	    fan.switch(False)
+            fan.switch(True)
+        else:
+            fan.switch(False)
             # Reset button
             if pfio.digital_read(buttonReset) == True:
-	        state = STATE.off
+                state = STATE.off
                 #print("\nResetting")
 
     ## end STATE MACHINE ##
