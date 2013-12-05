@@ -18,7 +18,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from time import time
-import ../piface.pfio as pfio
+import pifacedigitalio
 
 # Class to enable controlled switching
 class Switch:
@@ -26,9 +26,13 @@ class Switch:
 	state = False
 	lastTime = 0
 	lastOff= 0
+	#pfio = 0
+	#pfio = pifacedigitalio.PiFaceDigital()
 	
 	def __init__(self, pin):
 		self.pin = pin
+		#DELAY = 1.0  # seconds
+		self.pfio = pifacedigitalio.PiFaceDigital()
 		
 	def timed(self, freq, duration):
 		# Deactivate if time is up
@@ -49,8 +53,11 @@ class Switch:
 
 	def write(self):
 		try:
-		    pfio.digital_write(self.pin,self.state)
+		    if self.state:
+		    	self.pfio.output_pins[self.pin].turn_on()
+		    else:
+			self.pfio.output_pins[self.pin].turn_off()
 		except Exception as e:
-    		    print ("Timer digital write error")
+    		    print ("Write error to output %d" % self.pin)
                 
 		return self.state

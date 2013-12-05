@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 
 # Fuel Cell Controller for the Horizon H100
 
@@ -17,18 +17,23 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Import libraries
+# Define Paths
 import sys
+sys.path.append('/home/pi/h100/adc')
+sys.path.append('/home/pi/h100/switch')
+
+# Import libraries
 from   time import time
 #import piface.pfio as pfio
 #import pifacecommon as pfcom
-import piface.pifacedigitalio as pfio
+import pifacedigitalio
 import RPi.GPIO as GPIO
 import smbus
 import argparse
-from adc.adcpi  import *
+#import adcpi
+from adcpi2  import *
 from tmp102 import *
-from switch.switch import *
+from switch import *
 
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
@@ -119,7 +124,7 @@ red       = I2cTemp(bus,RED)
 yellow    = I2cTemp(bus,YELLOW)
 
 # Setup
-pfio.PiFaceDigital()
+pfio = pifacedigitalio.PiFaceDigital() # Start piface
 print("\nFuel Cell Controller")
 print("Horizon H-100 Stack")
 print("(c) Simon Howroyd 2013")
@@ -158,7 +163,7 @@ while (True):
     amps3      = adc6.get()
 
     # STOP BUTTON
-    if pfio.digital_read(buttonOn) == False and pfio.digital_read(buttonOff) == True:
+    if pfio.input_pins[buttonOn].value == False and pfio.input_pins[buttonOff].value == True:
         if state == STATE.startup or state == STATE.on:
             state = STATE.shutdown
             timeChange = time()
@@ -191,7 +196,7 @@ while (True):
         fan.switch(False)
         purge.switch(False)
 
-        if pfio.digital_read(buttonOn) == True and pfio.digital_read(buttonOff) == False:
+        if pfio.input_pins[buttonOn].value == True and pfio.input_pins[buttonOff].value == False:
             state = STATE.startup
             timeChange = time()
     if state == STATE.startup:
@@ -234,7 +239,7 @@ while (True):
         else:
             fan.switch(False)
             # Reset button
-            if pfio.digital_read(buttonReset) == True:
+            if pfio.input_pins[buttonReset].value == True:
                 state = STATE.off
                 #print("\nResetting")
 
