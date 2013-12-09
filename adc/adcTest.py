@@ -22,12 +22,12 @@ import sys
 from   time import time
 import RPi.GPIO as GPIO
 import smbus
-from adcpi import *
+from   adcpi2 import *
 
 # Define class instances
-adcRes    = 12
+adcRes    = 18
 adcGain   = 2
-bus       = smbus.SMBus(0)
+bus       = smbus.SMBus(1)
 adc1      = AdcPiV1(bus,1,adcRes,adcGain,1)
 adc2      = AdcPiV1(bus,2,adcRes,adcGain,1)
 adc3      = AdcPiV1(bus,3,adcRes,adcGain,1)
@@ -37,13 +37,16 @@ adc6      = AdcPiV1(bus,6,adcRes,adcGain,1)
 adc7      = AdcPiV1(bus,7,adcRes,adcGain,1)
 adc8      = AdcPiV1(bus,8,adcRes,adcGain,1)
 
-
-# Setup
+#########
+# Setup #
+#########
 print("\nADC Tester")
 print("(c) Simon Howroyd 2013")
 print("Loughborough University\n")
 
-# Main
+########
+# Main #
+########
 while (True):
     print "\n"
     print ("1:%02f,\t" % (adc1.get())),

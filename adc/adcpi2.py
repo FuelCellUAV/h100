@@ -39,10 +39,10 @@ class AdcPiV1:
 			self.address = 0x68
 		elif channel in [5,6,7,8]:
 			self.address = 0x69
-		self.config = self.config | ((channel-1) << 5) | (((resolution/2)-6) << 2) | int(math.log(gain,2))
-		self.gain   = gain 
-		self.resolution = resolution
-		self.calibration= calibration
+		self.config      = self.config | ((channel-1) << 5) | (((resolution/2)-6) << 2) | int(math.log(gain,2))
+		self.gain        = gain 
+		self.resolution  = resolution
+		self.calibration = calibration
 
 	def get(self):
 		try:
