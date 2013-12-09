@@ -29,3 +29,8 @@ sudo nano /boot/cmdline.txt
 % Delete the two ttyAMA0 references to leave:
 dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline rootwait
 ```
+
+The use this command to stop you needing sudo for talking to i2c devices
+```
+sudo usermod -aG i2c pi
+```
