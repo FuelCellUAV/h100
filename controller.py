@@ -23,17 +23,17 @@ sys.path.append('/home/pi/h100/adc')
 sys.path.append('/home/pi/h100/switch')
 
 # Import libraries
-from   time import time
-#import piface.pfio as pfio
-#import pifacecommon as pfcom
+from   time      import time, sleep
 import pifacedigitalio
-import RPi.GPIO as GPIO
+import pifacecad
+import RPi.GPIO  as GPIO
 import smbus
 import argparse
-#import adcpi
-from adcpi2 import *
-from tmp102 import *
-from switch import *
+import math
+from adcpi2      import *
+from tmp102      import *
+from switch      import *
+from h100Display import *
 
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
@@ -89,8 +89,12 @@ stopTime       = args.stopTime
 cutoff 	       = args.cutoff
 
 # State machine cases
-class STATE:
-	startup, on, shutdown, off, error = range(5)
+def enum(*sequential, **named):
+    enums = dict(zip(sequential, range(len(sequential))), **named)
+    reverse = dict((value, key) for key, value in enums.iteritems())
+    enums['reverse_mapping'] = reverse
+    return type('Enum', (), enums)
+STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
 state = STATE.off
 
 # Define global constants
@@ -127,7 +131,9 @@ yellow    = I2cTemp(bus,YELLOW)
 #########
 # Setup #
 #########
-pfio = pifacedigitalio.PiFaceDigital() # Start piface
+pfio    = pifacedigitalio.PiFaceDigital() # Start piface
+display = FuelCellDisplay()
+
 print("\nFuel Cell Controller")
 print("Horizon H-100 Stack")
 print("(c) Simon Howroyd 2013")
@@ -138,11 +144,13 @@ print("This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'
 print("This is free software, and you are welcome to redistribute it,")
 print("under certain conditions; type `show c' for details.")
 
+
 ########
 # Main #
 ########
 while (True):
     print ("\n")
+    display.write()
 
     # STATE
     if state == STATE.off:
@@ -155,17 +163,18 @@ while (True):
         print ("STOP :\t"),
     elif state == STATE.error:
         print ("ERROR:\t"),
+    display.state(STATE.reverse_mapping[state])
 
     tmpBlue    = blue()
     tmpEarth   = earth()
     tmpRed     = red()
     tmpYellow  = yellow()
-    volts1     = adc1.get()
-    amps1      = adc2.get()
-    volts2     = adc3.get()
-    amps2      = adc4.get()
-    volts3     = adc5.get()
-    amps3      = adc6.get()
+    volts1     = abs(adc1.get())
+    amps1      = abs(adc2.get())
+    volts2     = abs(adc3.get())
+    amps2      = abs(adc4.get())
+    volts3     = abs(adc5.get())
+    amps3      = abs(adc6.get())
 
     # STOP BUTTON
     if pfio.input_pins[buttonOn].value == False and pfio.input_pins[buttonOff].value == True:
@@ -181,6 +190,9 @@ while (True):
     print ("a2:%02f,\t" % (amps2)),
     print ("v3:%02f,\t" % (volts3)),
     print ("a3:%02f,\t" % (amps3)),
+    display.voltage(volts1)
+    display.current(amps1)
+    
 
     # TEMPERATURE
     print ("TMP\t"), 
@@ -193,6 +205,8 @@ while (True):
         state = STATE.error
     else:
         print ("OK!"),
+    display.temperature(tmpEarth)
+
 
     ## STATE MACHINE ##
     if state == STATE.off:

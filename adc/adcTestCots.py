@@ -16,76 +16,44 @@
 
 from smbus import SMBus
 import re
+from time import sleep
 
-adc_address1 = 0x68
-adc_address2 = 0x69
+DSPi_address1 = 0x68
+DSPi_address2 = 0x69
 
-# create byte array and fill with initial values to define size
-adcreading = bytearray()
+varDivisor    = 64 # from pdf sheet on adc addresses and config
+varMultiplier = 2.4705882/1000;
 
-adcreading.append(0x00)
-adcreading.append(0x00)
-adcreading.append(0x00)
-adcreading.append(0x00)
-
-varDivisior = 64 # from pdf sheet on adc addresses and config
-varMultiplier = (2.4705882/varDivisior)/1000
-
-# detect i2C port number and assign to i2c_bus
-for line in open('/proc/cpuinfo').readlines():
-    m = re.match('(.*?)\s*:\s*(.*)', line)
-    if m:
-        (name, value) = (m.group(1), m.group(2))
-        if name == "Revision":
-            if value [-4:] in ('0002', '0003'):
-                i2c_bus = 0
-            else:
-                i2c_bus = 1
-            break
-               
-
-bus = SMBus(i2c_bus)
-#bus = SMBus(0)
+bus = SMBus(1)
  
-def changechannel(address, adcConfig):
-	tmp= bus.write_byte(address, adcConfig)
-
 def getadcreading(address, adcConfig):
-	adcreading = bus.read_i2c_block_data(address,adcConfig)
-	h = adcreading[0]
-	m = adcreading[1]
-	l = adcreading[2]
-	s = adcreading[3]
+#	bus.write_i2c_block_data(address,0x00,[adcConfig])
+	h, m, l, s = bus.read_i2c_block_data(address,adcConfig,4)
+
 	# wait for new data
 	while (s & 128):
-		adcreading = bus.read_i2c_block_data(address,adcConfig)
-		h = adcreading[0]
-		m = adcreading[1]
-		l = adcreading[2]
-		s = adcreading[3]
-
+	        h, m, l, s = bus.read_i2c_block_data(address,adcConfig,4)
+		data = bus.read_i2c_block_data(address,adcConfig,4)
+	
+	print data
+	return -1
 	# shift bits to product result
 	t = ((h & 0b00000001) << 16) | (m << 8) | l
+	print ("h:%d m:%d l:%d s:%d" % (h, m, l, s)),
+
 	# check if positive or negative number and invert if needed
 	if (h > 128):
 		t = ~(0x020000 - t)
-	return t * varMultiplier
+	# return result
+	return t * (varMultiplier / varDivisor)
 
 while True:
-	print '\r'
-	changechannel(adc_address1, 0x9C)
-	print ("1:%02f,\t" % getadcreading(adc_address1,0x9C)),
-	changechannel(adc_address1, 0xBC)
-	print ("2:%02f,\t" % getadcreading(adc_address1,0xBC)),
-	changechannel(adc_address1, 0xDC)
-	print ("3:%02f,\t" % getadcreading(adc_address1, 0xDC)),
-	changechannel(adc_address1, 0xFC)
-	print ("4:%02f,\t" % getadcreading(adc_address1, 0xFC)),
-	changechannel(adc_address2, 0x9C)
-	print ("5:%02f,\t" % getadcreading(adc_address2, 0x9C)),
-	changechannel(adc_address2, 0xBC)
-	print ("6:%02f,\t" % getadcreading(adc_address2, 0xBC)),
-#	changechannel(adc_address2, 0xDC)
-#	print ("7:%02f,\t" % getadcreading(adc_address2, 0xDC)),
-#	changechannel(adc_address2, 0xFC)
-#	print ("8:%02f." % getadcreading(adc_address2, 0xFC)),
+        print ("1:%02.2f " % getadcreading(DSPi_address1, 0x8C))
+        print ("2:%02.2f " % getadcreading(DSPi_address1, 0xAC))
+        #print ("3:%02.2f " % getadcreading(DSPi_address1, 0xDC)),
+        #print ("4:%02.2f " % getadcreading(DSPi_address1, 0xFC)),
+        #print ("5:%02.2f " % getadcreading(DSPi_address2, 0x9C)),
+        #print ("6:%02.2f " % getadcreading(DSPi_address2, 0xBC)),
+        #print ("7:%02.2f " % getadcreading(DSPi_address2, 0xDC)),
+        #print ("8:%02.2f " % getadcreading(DSPi_address2, 0xFC))
+	sleep(1)
