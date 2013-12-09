@@ -31,18 +31,18 @@ import RPi.GPIO as GPIO
 import smbus
 import argparse
 #import adcpi
-from adcpi2  import *
+from adcpi2 import *
 from tmp102 import *
 from switch import *
 
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
-parser.add_argument('--out'	   		,								help='Name of the output logfile')
-parser.add_argument('--BLUE'       	,type=int, 		default=0x4a,	help='I2C address')
-parser.add_argument('--EARTH'      	,type=int, 		default=0x49, 	help='I2C address')
-parser.add_argument('--RED'        	,type=int, 		default=0x48, 	help='I2C address')
-parser.add_argument('--YELLOW'     	,type=int, 		default=0x4b, 	help='I2C address')
-parser.add_argument('--h2Pin'      	,type=float,	default=0,		help='H2 supply relay') # Relay
+parser.add_argument('--out'	   	,				help='Name of the output logfile')
+parser.add_argument('--BLUE'       	,type=int, 	default=0x4a,	help='I2C address')
+parser.add_argument('--EARTH'      	,type=int, 	default=0x49, 	help='I2C address')
+parser.add_argument('--RED'        	,type=int, 	default=0x48, 	help='I2C address')
+parser.add_argument('--YELLOW'     	,type=int, 	default=0x4b, 	help='I2C address')
+parser.add_argument('--h2Pin'      	,type=float,	default=0,	help='H2 supply relay') # Relay
 parser.add_argument('--fanPin'     	,type=float, 	default=1,    	help='Fan relay') 	# Relay
 parser.add_argument('--purgePin'   	,type=float, 	default=2,    	help='Purge switch')
 parser.add_argument('--buttonOn'   	,type=float, 	default=0,   	help='On button')
@@ -50,8 +50,8 @@ parser.add_argument('--buttonOff'  	,type=float, 	default=1,    	help='Off butto
 parser.add_argument('--buttonReset'	,type=float, 	default=2,    	help='Reset button')
 parser.add_argument('--purgeFreq'  	,type=float, 	default=30, 	help='How often to purge in seconds')
 parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
-parser.add_argument('--startTime'  	,type=float, 	default=2,		help='Duration of the startup routine')
-parser.add_argument('--stopTime'   	,type=float, 	default=10,		help='Duration of the shutdown routine')
+parser.add_argument('--startTime'  	,type=float, 	default=2,	help='Duration of the startup routine')
+parser.add_argument('--stopTime'   	,type=float, 	default=10,	help='Duration of the shutdown routine')
 parser.add_argument('--cutoff'     	,type=float, 	default=31.0,	help='Temperature cutoff in celcius')
 args = parser.parse_args()
 
@@ -72,21 +72,21 @@ if args.out: # save to output file
     writer     = MyWriter(sys.stdout, args.out)
     sys.stdout = writer
 	
-BLUE 	    = args.BLUE
-EARTH 	    = args.EARTH
-RED 	    = args.RED
-YELLOW 	    = args.YELLOW
-h2Pin 	    = args.h2Pin
-fanPin 	    = args.fanPin
-purgePin    = args.purgePin
-buttonOn    = args.buttonOn
-buttonOff   = args.buttonOff
-buttonReset = args.buttonReset
-purgeFreq   = args.purgeFreq
-purgeTime   = args.purgeTime
-startTime   = args.startTime
-stopTime    = args.stopTime
-cutoff 	    = args.cutoff
+BLUE 	       = args.BLUE
+EARTH 	       = args.EARTH
+RED 	       = args.RED
+YELLOW 	       = args.YELLOW
+h2Pin 	       = args.h2Pin
+fanPin 	       = args.fanPin
+purgePin       = args.purgePin
+buttonOn       = args.buttonOn
+buttonOff      = args.buttonOff
+buttonReset    = args.buttonReset
+purgeFreq      = args.purgeFreq
+purgeTime      = args.purgeTime
+startTime      = args.startTime
+stopTime       = args.stopTime
+cutoff 	       = args.cutoff
 
 # State machine cases
 class STATE:
@@ -94,21 +94,21 @@ class STATE:
 state = STATE.off
 
 # Define global constants
-tmpBlue    = 0
-tmpEarth   = 0
-tmpRed     = 0
-tmpYellow  = 0
-volts1     = 0
-amps1      = 0
-volts2     = 0
-amps2      = 0
-volts3     = 0
-amps3      = 0
+tmpBlue   = 0
+tmpEarth  = 0
+tmpRed    = 0
+tmpYellow = 0
+volts1    = 0
+amps1     = 0
+volts2    = 0
+amps2     = 0
+volts3    = 0
+amps3     = 0
 
 # Define class instances
 adcRes    = 12
 adcGain   = 2
-bus       = smbus.SMBus(0)
+bus       = smbus.SMBus(1)
 adc1	  = AdcPiV1(bus,1,adcRes,adcGain,(1000/63.69))
 adc2	  = AdcPiV1(bus,2,adcRes,adcGain,(1000/36.60))
 adc3	  = AdcPiV1(bus,3,adcRes,adcGain,(1000/63.69))
@@ -123,7 +123,10 @@ earth     = I2cTemp(bus,EARTH)
 red       = I2cTemp(bus,RED)
 yellow    = I2cTemp(bus,YELLOW)
 
-# Setup
+
+#########
+# Setup #
+#########
 pfio = pifacedigitalio.PiFaceDigital() # Start piface
 print("\nFuel Cell Controller")
 print("Horizon H-100 Stack")
@@ -135,7 +138,9 @@ print("This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'
 print("This is free software, and you are welcome to redistribute it,")
 print("under certain conditions; type `show c' for details.")
 
-# Main
+########
+# Main #
+########
 while (True):
     print ("\n")
 
@@ -245,5 +250,6 @@ while (True):
 
     ## end STATE MACHINE ##
 
-# end main
-
+#######
+# End #
+#######
