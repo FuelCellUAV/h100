@@ -132,9 +132,9 @@ yellow    = I2cTemp(bus,YELLOW)
 # Setup #
 #########
 pfio    = pifacedigitalio.PiFaceDigital() # Start piface
-display = FuelCellDisplay(1, "PF Display", 1)
-display.daemon = True
-display.start()
+display = FuelCellDisplay(1, "PF Display")
+display.daemon = True # To ensure the process is killed on exit
+display.start() # Turn the display on
 
 print("\nFuel Cell Controller")
 print("Horizon H-100 Stack")
