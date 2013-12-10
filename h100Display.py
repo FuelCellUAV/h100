@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 import sys
 import pifacecad
-import threading
+#import threading
+import multiprocessing
+import ctypes
 from time import sleep
 
-class FuelCellDisplay (threading.Thread):
+#class FuelCellDisplay (threading.Thread):
+class FuelCellDisplay (multiprocessing.Process):
     cad = pifacecad.PiFaceCAD()
     temp_symbol_index = 0
     progress_symbol_1 = 1
@@ -33,16 +36,17 @@ class FuelCellDisplay (threading.Thread):
         [0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f])
 
     fcName  = 'H100'
-    fcState = ''
-    temp    = 10.0
-    power   = 000
-    vFc     = 9.0
-    iFc     = 10.0
+    fcState = multiprocessing.Value(ctypes.c_char_p,'')
+    temp    = multiprocessing.Value('d',10.0)
+    power   = multiprocessing.Value('d',000)
+    vFc     = multiprocessing.Value('d',9.0)
+    iFc     = multiprocessing.Value('d',10.0)
     vBatt   = 0.0
     iBatt   = 0.0
 
     def __init__(self, threadID, name, counter):
-        threading.Thread.__init__(self)
+#        threading.Thread.__init__(self)
+        multiprocessing.Process.__init__(self)
         self.threadID = threadID
         self.name     = name
         self.counter  = counter
@@ -63,7 +67,7 @@ class FuelCellDisplay (threading.Thread):
         while(True):
 #            self.counter = self.counter + 1
             self.cad.lcd.home()
-            self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'.format(self.fcName, self.fcState, self.temp))
+            self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'.format(self.fcName, self.fcState.value[:3], self.temp.value))
             self.cad.lcd.write_custom_bitmap(self.temp_symbol_index)
             self.cad.lcd.write(' ')
 
@@ -97,30 +101,31 @@ class FuelCellDisplay (threading.Thread):
                 self.counter = 1
 
             self.cad.lcd.write(' {:1}'.format(self.counter))
-            self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W'.format(self.vFc, self.iFc, self.vFc*self.iFc))
+            self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W'.format(self.vFc.value, self.iFc.value, self.vFc.value*self.iFc.value))
             #sleep(1)
 
     def stop(self):
-        self._Thread__stop()
+#        self._Thread__stop()
+         self._Process__stop()
 
 #    def name(self, fcName):
  #       self.fcName = fcName
   #      return
 
     def state(self, fcState):
-        self.fcState = fcState[:5]
+        self.fcState.value = fcState#[:3]# + '\0'
         return
 
     def temperature(self, temperature):
-        self.temp = temperature
+        self.temp.value = temperature
         return
 
     def voltage(self, voltage):
-        self.vFc = voltage
+        self.vFc.value = voltage
         return
 
     def current(self, current):
-        self.iFc = current
+        self.iFc.value = current
         return
 
     def __exit__(self):
