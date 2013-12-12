@@ -1,103 +1,92 @@
-#!/usr/bin/python2
-# A class to configure and read the AdcPi V1 by abElectronics
-# Written by Simon Howroyd, with assistance from abElectronics
+#!/usr/bin/env python3
+# read abelectronics ADC Pi V2 board inputs with repeating reading from each channel.
+# # Requries Python 2.7
+# Requires SMBus 
+# I2C API depends on I2C support in the kernel
 
-# Copyright (C) 2013  Simon Howroyd
-# 
-#     This program is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
-#     (at your option) any later version.
-# 
-#     This program is distributed in the hope that it will be useful,
-#     but WITHOUT ANY WARRANTY; without even the implied warranty of
-#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#     GNU General Public License for more details.
-# 
-#     You should have received a copy of the GNU General Public License
-#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Version 1.0  - 06/02/2013
+# Version History:
+# 1.0 - Initial Release
 
-from   time import time
-import smbus
-import math
+#
+# Usage: changechannel(address, hexvalue) to change to new channel on adc chips
+# Usage: getadcreading(address, hexvalue) to return value in volts from selected channel.
+#
+# address = adc_address1 or adc_address2 - Hex address of I2C chips as configured by board header pins.
 
-# Class to read ADC
-class AdcPiV1:
+from smbus import SMBus
+import re
+
+class AdcPi2:
+    
+    adc_address1 = 0x68
+    adc_address2 = 0x69
+
+    varDivisior = 64 # from pdf sheet on adc addresses and config
+    varMultiplier = (2.4705882/varDivisior)/1000
+    
+    ## Constructor can receive the I2C bus or find it itself
+    def __init__(self):
+        # detect i2C port number and assign to i2c_bus
+        for line in open('/proc/cpuinfo').readlines():
+            m = re.match('(.*?)\s*:\s*(.*)', line)
+            if m:
+                (name, value) = (m.group(1), m.group(2))
+                if name == "Revision":
+                    if value [-4:] in ('0002', '0003'):
+                        i2c_bus = 0
+                    else:
+                        i2c_bus = 1
+                    break
+        self.bus = SMBus(i2c_bus)
+
+    @classmethod
+    def i2cBus(cls, i2c_bus):
+        self.bus = i2c_bus
+ 
+    def changechannel(self, address, adcConfig):
+            tmp= self.bus.write_byte(address, adcConfig)
+
+    def getadcreading(self, address, adcConfig):
         # create byte array and fill with initial values to define size
         adcreading = bytearray()
+ 
         adcreading.append(0x00)
         adcreading.append(0x00)
         adcreading.append(0x00)
         adcreading.append(0x00)
+    
+        adcreading = self.bus.read_i2c_block_data(address,adcConfig)
+        h = adcreading[0]
+        m = adcreading[1]
+        l = adcreading[2]
+        s = adcreading[3]
+        # wait for new data
+        while (s & 128):
+                adcreading = self.bus.read_i2c_block_data(address,adcConfig)
+                h = adcreading[0]
+                m = adcreading[1]
+                l = adcreading[2]
+                s = adcreading[3]
         
-        # Default ADC configuration
-        config = 0b10010000
-        
-        def __init__(self, bus, channel, resolution, gain, calibration):
-                self.bus = bus
-                if   channel in [1,2,3,4]:
-                        self.address = 0x68
-                elif channel in [5,6,7,8]:
-                        self.address = 0x69
-                self.config = self.config | ((channel-1) << 5) | (((resolution/2)-6) << 2) | int(math.log(gain,2))
-                self.gain   = gain 
-                self.resolution = resolution
-                self.calibration= calibration
+        # shift bits to product result
+        t = ((h & 0b00000001) << 16) | (m << 8) | l
+        # check if positive or negative number and invert if needed
+        if (h > 128):
+                t = ~(0x020000 - t)
+        return t * self.varMultiplier
 
-        def get(self):
-                try:
-                        self.bus.write_byte(self.address, self.config)
-                        self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
+    def get(self, address, config):
+        self.changechannel(address, config)
+        return self.getadcreading(address, config)        
 
-                        if self.resolution is 18:
-                                h = self.adcreading[0]
-                                m = self.adcreading[1]
-                                l = self.adcreading[2]
-                                s = self.adcreading[3]
-                                # wait for new data ***BLOCKING FUNCTION***
-                                while (s & 128):
-                                        self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
-                                        h = self.adcreading[0]
-                                        m = self.adcreading[1]
-                                        l = self.adcreading[2]
-                                        s = self.adcreading[3]
-                        else:
-                                h = self.adcreading[0]
-                                m = self.adcreading[1]
-                                l = self.adcreading[2]
-                                # wait for new data ***BLOCKING FUNCTION***
-                                while (l & 128):
-                                        self.adcreading = self.bus.read_i2c_block_data(self.address,self.config)
-                                        h = self.adcreading[0]
-                                        m = self.adcreading[1]
-                                        l = self.adcreading[2]
-
-                        # shift bits to product result
-                        if self.resolution is 18:
-                                t = ((h & 0b00000001) << 16) | (m << 8) | l
-                                # check if positive or negative number and invert if needed
-                                if (h > 128):
-                                        t = ~(131072 - t)
-                                t = t * 0.000015625 * self.calibration
-                        elif self.resolution is 16:
-                                t = ((h & 0b01111111) << 8) | m
-                                # check if positive or negative number and invert if needed
-                                        if (h > 128):
-                                        t = ~(32768 - t)
-                                t = t * 0.0000625 * self.calibration
-                        elif self.resolution is 14:
-                                t = ((h & 0b00011111) << 8) | m
-                                # check if positive or negative number and invert if needed
-                                if (h > 128):
-                                        t = ~(8192 - t)
-                                t = t * 0.000250 * self.calibration
-                        elif self.resolution is 12:
-                                t = ((h & 0b00000111) << 8) | m
-                                # check if positive or negative number and invert if needed
-                                if (h > 128):
-                                        t = ~(2048 - t)
-                                t = t * 0.001 * self.calibration
-                        return t/self.gain
-                except Exception as e:
-                      #print ("I2C ADC Error")
-                   return -1
+    def printall(self):
+        print ("Channel 1: %02f" % self.get(self.adc_address1, 0x9C)),
+        print ("2: %02f" % self.get(self.adc_address1, 0xBC)),
+        print ("3: %02f" % self.get(self.adc_address1, 0xDC)),
+        print ("4: %02f" % self.get(self.adc_address1, 0xFC)),
+        print ("5: %02f" % self.get(self.adc_address2, 0x9C)),
+        print ("6: %02f" % self.get(self.adc_address2, 0xBC)),
+        print ("7: %02f" % self.get(self.adc_address2, 0xDC)),
+        print ("8: %02f" % self.get(self.adc_address2, 0xFC)),
+        print ("\n")

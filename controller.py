@@ -30,7 +30,7 @@ import RPi.GPIO  as GPIO
 import smbus
 import argparse
 import math
-from adcpi2      import *
+from adcpi       import *
 from tmp102      import *
 from switch      import *
 from h100Display import *
@@ -42,15 +42,15 @@ parser.add_argument('--BLUE'       	,type=int, 	default=0x4a,	help='I2C address'
 parser.add_argument('--EARTH'      	,type=int, 	default=0x49, 	help='I2C address')
 parser.add_argument('--RED'        	,type=int, 	default=0x48, 	help='I2C address')
 parser.add_argument('--YELLOW'     	,type=int, 	default=0x4b, 	help='I2C address')
-parser.add_argument('--h2Pin'      	,type=float,	default=0,	help='H2 supply relay') # Relay
-parser.add_argument('--fanPin'     	,type=float, 	default=1,    	help='Fan relay') 	# Relay
-parser.add_argument('--purgePin'   	,type=float, 	default=2,    	help='Purge switch')
+parser.add_argument('--h2Pin'      	,type=float,	default=1,	help='H2 supply relay') # Relay
+parser.add_argument('--fanPin'     	,type=float, 	default=2,    	help='Fan relay') 	# Relay
+parser.add_argument('--purgePin'   	,type=float, 	default=0,    	help='Purge switch')
 parser.add_argument('--buttonOn'   	,type=float, 	default=0,   	help='On button')
 parser.add_argument('--buttonOff'  	,type=float, 	default=1,    	help='Off button')
 parser.add_argument('--buttonReset'	,type=float, 	default=2,    	help='Reset button')
 parser.add_argument('--purgeFreq'  	,type=float, 	default=30, 	help='How often to purge in seconds')
 parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
-parser.add_argument('--startTime'  	,type=float, 	default=2,	help='Duration of the startup routine')
+parser.add_argument('--startTime'  	,type=float, 	default=4,	help='Duration of the startup routine')
 parser.add_argument('--stopTime'   	,type=float, 	default=10,	help='Duration of the shutdown routine')
 parser.add_argument('--cutoff'     	,type=float, 	default=31.0,	help='Temperature cutoff in celcius')
 args = parser.parse_args()
@@ -59,13 +59,15 @@ args = parser.parse_args()
 class MyWriter:
     def __init__(self, stdout, filename):
         self.stdout = stdout
-        self.logfile = file(filename, 'a')
+        self.logfile = open(filename, 'a')
     def write(self, text):
         self.stdout.write(text)
         self.logfile.write(text)
     def close(self):
         self.stdout.close()
         self.logfile.close()
+    def flush(self):
+        self.stdout.flush()
 
 # Look at user arguments
 if args.out: # save to output file
@@ -113,12 +115,12 @@ amps3     = 0
 adcRes    = 12
 adcGain   = 2
 bus       = smbus.SMBus(1)
-adc1	  = AdcPiV1(bus,1,adcRes,adcGain,(1000/63.69))
-adc2	  = AdcPiV1(bus,2,adcRes,adcGain,(1000/36.60))
-adc3	  = AdcPiV1(bus,3,adcRes,adcGain,(1000/63.69))
-adc4	  = AdcPiV1(bus,4,adcRes,adcGain,(1000/36.60))
-adc5	  = AdcPiV1(bus,5,adcRes,adcGain,(1000/63.69))
-adc6	  = AdcPiV1(bus,6,adcRes,adcGain,(1000/36.60))
+adc1	  = AdcPi2()
+adc2	  = AdcPi2()
+adc3	  = AdcPi2()
+adc4	  = AdcPi2()
+adc5	  = AdcPi2()
+adc6	  = AdcPi2()
 purge     = Switch(purgePin)
 h2        = Switch(h2Pin)
 fan       = Switch(fanPin)
@@ -171,12 +173,12 @@ while (True):
     tmpEarth   = earth()
     tmpRed     = red()
     tmpYellow  = yellow()
-    volts1     = abs(adc1.get())
-    amps1      = abs(adc2.get())
-    volts2     = abs(adc3.get())
-    amps2      = abs(adc4.get())
-    volts3     = abs(adc5.get())
-    amps3      = abs(adc6.get())
+    volts1     = abs(adc1.get(0x68,0x9C))*1000/63.69
+    amps1      = abs(adc2.get(0x68,0xBC))*1000/7.4
+    volts2     = abs(adc3.get(0x68,0xDC))
+    amps2      = abs(adc4.get(0x68,0xFC))
+    #volts3     = abs(adc5.get())
+    #amps3      = abs(adc6.get())
 
     # STOP BUTTON
     if pfio.input_pins[buttonOn].value == False and pfio.input_pins[buttonOff].value == True:
@@ -190,8 +192,8 @@ while (True):
     print ("a1:%02f,\t" % (amps1)),
     print ("v2:%02f,\t" % (volts2)),
     print ("a2:%02f,\t" % (amps2)),
-    print ("v3:%02f,\t" % (volts3)),
-    print ("a3:%02f,\t" % (amps3)),
+    #print ("v3:%02f,\t" % (volts3)),
+    #print ("a3:%02f,\t" % (amps3)),
     display.voltage(volts1)
     display.current(amps1)
     
