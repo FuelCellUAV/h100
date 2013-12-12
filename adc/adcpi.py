@@ -14,6 +14,7 @@
 #
 # address = adc_address1 or adc_address2 - Hex address of I2C chips as configured by board header pins.
 
+import multiprocessing
 from smbus import SMBus
 import re
 
@@ -27,6 +28,9 @@ class AdcPi2:
     
     ## Constructor can receive the I2C bus or find it itself
     def __init__(self):
+        self.bus = self.getI2cBus()
+
+    def getI2cBus(self):
         # detect i2C port number and assign to i2c_bus
         for line in open('/proc/cpuinfo').readlines():
             m = re.match('(.*?)\s*:\s*(.*)', line)
@@ -38,12 +42,8 @@ class AdcPi2:
                     else:
                         i2c_bus = 1
                     break
-        self.bus = SMBus(i2c_bus)
+        return SMBus(i2c_bus)
 
-    @classmethod
-    def i2cBus(cls, i2c_bus):
-        self.bus = i2c_bus
- 
     def changechannel(self, address, adcConfig):
             tmp= self.bus.write_byte(address, adcConfig)
 
@@ -90,3 +90,27 @@ class AdcPi2:
         print ("7: %02f" % self.get(self.adc_address2, 0xDC)),
         print ("8: %02f" % self.get(self.adc_address2, 0xFC)),
         print ("\n")
+
+
+class AdcPi2Daemon( AdcPi2 , multiprocessing.Process):
+    val = multiprocessing.Array('d',range(8))
+
+    def __init__(self):
+        self.bus = self.getI2cBus()
+        multiprocessing.Process.__init__(self)
+        self.threadId = 1
+        self.Name = 'AdcPi2'
+
+    def run(self):
+        while True:
+            self.val[0] = self.get(self.adc_address1, 0x9C)
+            self.val[1] = self.get(self.adc_address1, 0xBC)
+            self.val[2] = self.get(self.adc_address1, 0xDC)
+            self.val[3] = self.get(self.adc_address1, 0xFC)
+            self.val[4] = self.get(self.adc_address2, 0x9C)
+            self.val[5] = self.get(self.adc_address2, 0xBC)
+            self.val[6] = self.get(self.adc_address2, 0xDC)
+            self.val[7] = self.get(self.adc_address2, 0xFC)
+
+    def stop(self):
+        self._Process__stop()

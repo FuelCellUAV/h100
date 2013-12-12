@@ -112,15 +112,15 @@ volts3    = 0
 amps3     = 0
 
 # Define class instances
-adcRes    = 12
-adcGain   = 2
+#adcRes    = 12
+#adcGain   = 2
 bus       = smbus.SMBus(1)
-adc1	  = AdcPi2()
-adc2	  = AdcPi2()
-adc3	  = AdcPi2()
-adc4	  = AdcPi2()
-adc5	  = AdcPi2()
-adc6	  = AdcPi2()
+#adc1	  = AdcPi2()
+#adc2	  = AdcPi2()
+#adc3	  = AdcPi2()
+#adc4	  = AdcPi2()
+#adc5	  = AdcPi2()
+#adc6	  = AdcPi2()
 purge     = Switch(purgePin)
 h2        = Switch(h2Pin)
 fan       = Switch(fanPin)
@@ -133,10 +133,14 @@ yellow    = I2cTemp(bus,YELLOW)
 #########
 # Setup #
 #########
-pfio    = pifacedigitalio.PiFaceDigital() # Start piface
-display = FuelCellDisplay(1, "PF Display")
+pfio           = pifacedigitalio.PiFaceDigital() # Start piface
+display        = FuelCellDisplay(1, "PF Display")
 display.daemon = True # To ensure the process is killed on exit
 display.start() # Turn the display on
+
+adc            = AdcPi2Daemon()
+adc.daemon     = True
+adc.start()
 
 print("\nFuel Cell Controller")
 print("Horizon H-100 Stack")
@@ -173,10 +177,12 @@ while (True):
     tmpEarth   = earth()
     tmpRed     = red()
     tmpYellow  = yellow()
-    volts1     = abs(adc1.get(0x68,0x9C))*1000/63.69
-    amps1      = abs(adc2.get(0x68,0xBC))*1000/7.4
-    volts2     = abs(adc3.get(0x68,0xDC))
-    amps2      = abs(adc4.get(0x68,0xFC))
+    volts1     = abs(adc.val[0] * 1000 / 63.69)
+    amps1      = abs(adc.val[1] * 1000 / 7.4)
+    #volts1     = abs(adc1.get(0x68,0x9C))*1000/63.69
+    #amps1      = abs(adc2.get(0x68,0xBC))*1000/7.4
+    #volts2     = abs(adc3.get(0x68,0xDC))
+    #amps2      = abs(adc4.get(0x68,0xFC))
     #volts3     = abs(adc5.get())
     #amps3      = abs(adc6.get())
 
