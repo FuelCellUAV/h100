@@ -27,9 +27,7 @@ import multiprocessing
 import time
 import pifacedigitalio
 import pifacecad
-import RPi.GPIO  as GPIO
 import smbus
-import argparse
 import math
 from   adcpi       import *
 from   tmp102      import *
@@ -58,6 +56,7 @@ class Controller():
     # Setup #
     #########
     def __init__(self, filename = None):
+	    # Open logfile if required
         if (filename == None):
             pass
         else:
@@ -72,23 +71,28 @@ class Controller():
         self.earth     = I2cTemp(bus,EARTH)
         self.red       = I2cTemp(bus,RED)
         self.yellow    = I2cTemp(bus,YELLOW)
-			
+		
+		# Define state machine
 	    self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
         self.state = self.STATE.off
-
+        
+		# Initiate multiprocessing thread
         multiprocessing.Process.__init__(self)
         self.threadId = 1
         self.Name = 'Controller'
         
+		# Initiate external modules
         self.pfio           = pifacedigitalio.PiFaceDigital()  # Start PiFace IO
         self.display        = FuelCellDisplay(1, "PF Display") # Start PiFace Display
         self.adc            = AdcPi2Daemon() # Start ADC
 
-        display.daemon = True # To ensure the process is killed on exit
-        display.start()       # Turn the display on
-        adc.daemon     = True
-        adc.start()           # Turn on the ADC
+		# Start external modules
+        self.display.daemon = True # To ensure the process is killed on exit
+        self.display.start()       # Turn the display on
+        self.adc.daemon     = True
+        self.adc.start()           # Turn on the ADC
 		
+		# Write some test to the logfile
         if 'log' in locals():
             self.log.write("\nFuel Cell Controller")
             self.log.write("Horizon H-100 Stack")
@@ -102,13 +106,11 @@ class Controller():
         else:
             pass
 
-########
-# Main #
-########
-
+    ########
+    # Main #
+    ########
     def run(self):
         self.log.write("\n")
-        #display.run()
 
         # STATE
         if self.state == self.STATE.off:
@@ -232,9 +234,9 @@ class Controller():
 
     ## end STATE MACHINE ##
 
-#######
-# End #
-#######
+    #######
+    # End #
+    #######
 
 
     def stop(self):
