@@ -17,8 +17,9 @@
 import multiprocessing
 from smbus import SMBus
 import re
+import I2c
 
-class AdcPi2:
+class AdcPi2(I2c):
     
     adc_address1 = 0x68
     adc_address2 = 0x69
@@ -28,21 +29,22 @@ class AdcPi2:
     
     ## Constructor can receive the I2C bus or find it itself
     def __init__(self):
-        self.bus = self.getI2cBus()
+        #self.bus = self.getI2cBus()
+		super().__init__()
 
-    def getI2cBus(self):
-        # detect i2C port number and assign to i2c_bus
-        for line in open('/proc/cpuinfo').readlines():
-            m = re.match('(.*?)\s*:\s*(.*)', line)
-            if m:
-                (name, value) = (m.group(1), m.group(2))
-                if name == "Revision":
-                    if value [-4:] in ('0002', '0003'):
-                        i2c_bus = 0
-                    else:
-                        i2c_bus = 1
-                    break
-        return SMBus(i2c_bus)
+    #def getI2cBus(self):
+    #    # detect i2C port number and assign to i2c_bus
+    #    for line in open('/proc/cpuinfo').readlines():
+    #        m = re.match('(.*?)\s*:\s*(.*)', line)
+    #        if m:
+    #            (name, value) = (m.group(1), m.group(2))
+    #            if name == "Revision":
+    #                if value [-4:] in ('0002', '0003'):
+    #                    i2c_bus = 0
+    #                else:
+    #                    i2c_bus = 1
+    #                break
+    #    return SMBus(i2c_bus)
 
     def changechannel(self, address, adcConfig):
             tmp= self.bus.write_byte(address, adcConfig)
@@ -94,11 +96,13 @@ class AdcPi2:
 
 class AdcPi2Daemon( AdcPi2 , multiprocessing.Process):
     val = multiprocessing.Array('d',range(8))
-
+    self.threadId = 1
+	
     def __init__(self):
-        self.bus = self.getI2cBus()
+        #self.bus = self.getI2cBus()
+		super().__init__()
         multiprocessing.Process.__init__(self)
-        self.threadId = 1
+        self.threadId = self.threadId + 1
         self.Name = 'AdcPi2'
 
     def run(self):
