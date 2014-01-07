@@ -43,8 +43,8 @@ parser.add_argument('--EARTH'      	,type=int, 	default=0x49, 	help='I2C address
 parser.add_argument('--RED'        	,type=int, 	default=0x48, 	help='I2C address')
 parser.add_argument('--YELLOW'     	,type=int, 	default=0x4b, 	help='I2C address')
 parser.add_argument('--h2Pin'      	,type=float,	default=1,	help='H2 supply relay') # Relay
-parser.add_argument('--fanPin'     	,type=float, 	default=2,    	help='Fan relay') 	# Relay
-parser.add_argument('--purgePin'   	,type=float, 	default=0,    	help='Purge switch')
+parser.add_argument('--fanPin'     	,type=float, 	default=0,    	help='Fan relay') 	# Relay
+parser.add_argument('--purgePin'   	,type=float, 	default=2,    	help='Purge switch')
 parser.add_argument('--buttonOn'   	,type=float, 	default=0,   	help='On button')
 parser.add_argument('--buttonOff'  	,type=float, 	default=1,    	help='Off button')
 parser.add_argument('--buttonReset'	,type=float, 	default=2,    	help='Reset button')
@@ -157,7 +157,9 @@ print("under certain conditions; type `show c' for details.")
 # Main #
 ########
 while (True):
-    print ("\n")
+    print '\n',
+    print time(),
+    print '\t',
     #display.run()
 
     # STATE
@@ -177,14 +179,10 @@ while (True):
     tmpEarth   = earth()
     tmpRed     = red()
     tmpYellow  = yellow()
-    volts1     = abs(adc.val[0] * 1000 / 63.69)
-    amps1      = abs(adc.val[1] * 1000 / 7.4)
-    #volts1     = abs(adc1.get(0x68,0x9C))*1000/63.69
-    #amps1      = abs(adc2.get(0x68,0xBC))*1000/7.4
-    #volts2     = abs(adc3.get(0x68,0xDC))
-    #amps2      = abs(adc4.get(0x68,0xFC))
-    #volts3     = abs(adc5.get())
-    #amps3      = abs(adc6.get())
+    amps1      = abs(adc.val[0] * 1000 / 63.69)
+    volts1     = abs(adc.val[1] * 1000 / 60.16)
+    #amps1      = abs(adc.val[0] * 1000 / 63.69)
+    #volts1     = abs(adc.val[1] * 1000 / 7.4)
 
     # STOP BUTTON
     if pfio.input_pins[buttonOn].value == False and pfio.input_pins[buttonOff].value == True:
@@ -196,8 +194,8 @@ while (True):
     print ("ADC\t"),
     print ("v1:%02f,\t" % (volts1)),
     print ("a1:%02f,\t" % (amps1)),
-    print ("v2:%02f,\t" % (volts2)),
-    print ("a2:%02f,\t" % (amps2)),
+    #print ("v2:%02f,\t" % (volts2)),
+    #print ("a2:%02f,\t" % (amps2)),
     #print ("v3:%02f,\t" % (volts3)),
     #print ("a3:%02f,\t" % (amps3)),
     display.voltage(volts1)

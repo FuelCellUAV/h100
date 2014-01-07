@@ -98,7 +98,7 @@ class FuelCellDisplay (multiprocessing.Process):
                 self.counter = 0            
 
             # Write the bottom line
-            self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W'
+            self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W '
                 .format(self.vFc.value, self.iFc.value, self.vFc.value*self.iFc.value))
 
     # Call this function to change the fuel cell name (max 4x char will be displayed)

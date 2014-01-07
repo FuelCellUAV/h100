@@ -24,7 +24,8 @@ class AdcPi2:
     adc_address2 = 0x69
 
     varDivisior = 64 # from pdf sheet on adc addresses and config
-    varMultiplier = (2.4705882/varDivisior)/1000
+    #varMultiplier = (2.4705882/varDivisior)/1000
+    varMultiplier = (2.495/varDivisior)/1000
     
     ## Constructor can receive the I2C bus or find it itself
     def __init__(self):
