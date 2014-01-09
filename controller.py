@@ -52,7 +52,7 @@ parser.add_argument('--purgeFreq'  	,type=float, 	default=30, 	help='How often t
 parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
 parser.add_argument('--startTime'  	,type=float, 	default=4,	help='Duration of the startup routine')
 parser.add_argument('--stopTime'   	,type=float, 	default=10,	help='Duration of the shutdown routine')
-parser.add_argument('--cutoff'     	,type=float, 	default=31.0,	help='Temperature cutoff in celcius')
+parser.add_argument('--cutoff'     	,type=float, 	default=26.0,	help='Temperature cutoff in celcius')
 args = parser.parse_args()
 
 # Class to save to file & print to screen
@@ -179,8 +179,8 @@ while (True):
     tmpEarth   = earth()
     tmpRed     = red()
     tmpYellow  = yellow()
-    amps1      = abs(adc.val[0] * 1000 / 63.69)
-    volts1     = abs(adc.val[1] * 1000 / 60.16)
+    amps1      = abs(adc.val[0] * 1000 / 4.2882799485)
+    volts1     = abs(adc.val[1] * 1000 / 60.9559671563)
     #amps1      = abs(adc.val[0] * 1000 / 63.69)
     #volts1     = abs(adc.val[1] * 1000 / 7.4)
 
@@ -213,7 +213,7 @@ while (True):
         state = STATE.error
     else:
         print ("OK!"),
-    display.temperature(tmpEarth)
+    display.temperature(tmpBlue)
 
 
     ## STATE MACHINE ##
