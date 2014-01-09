@@ -179,8 +179,8 @@ while (True):
     tmpEarth   = earth()
     tmpRed     = red()
     tmpYellow  = yellow()
-    amps1      = abs(adc.val[0] * 1000 / 4.2882799485)
-    volts1     = abs(adc.val[1] * 1000 / 60.9559671563)
+    amps1      = (abs(adc.val[0] * 1000 / 4.2882799485) + 0.6009) / 1.6046
+    volts1     =  abs(adc.val[1] * 1000 / 60.9559671563)
     #amps1      = abs(adc.val[0] * 1000 / 63.69)
     #volts1     = abs(adc.val[1] * 1000 / 7.4)
 
