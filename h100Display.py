@@ -30,6 +30,10 @@ import sys
 import pifacecad # Follow install instructions on their website
 import multiprocessing
 import ctypes
+# Includes to get ip address
+import socket
+import fcntl
+import struct
 
 # Fuel Cell Display Module
 class FuelCellDisplay (multiprocessing.Process):
@@ -78,12 +82,21 @@ class FuelCellDisplay (multiprocessing.Process):
         self.cad.lcd.cursor_off()
         self.cad.lcd.backlight_on()
 
+        # If the user presses button 5 display the ip address
+#        self.ip_display_flag = False
+ #       self.listener = pifacecad.SwitchEventListener(chip=self.cad)
+  #      self.listener.register(0, pifacecad.IODIR_OFF,self.cad.lcd.write('Hello world!'))
+   #     self.listener.register(0, pifacecad.IODIR_ON, self.cad.lcd.clear())
+    #    self.listener.activate()
+
     # This is the main process loop called by start()
     def run(self):
         self.counter = 0
         while(True):
             self.cad.lcd.home() # Set the cursor to the beginning
-
+#            if self.ip_display_flag is True:
+ #               return
+  #          return
             # Write the top line
             self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'
                 .format(self.fcName.value[:4], self.fcState.value[:3], self.temp.value))
@@ -132,3 +145,27 @@ class FuelCellDisplay (multiprocessing.Process):
     def __exit__(self):
         self.cad.lcd.clear()
         self.cad.lcd.backlight_off()        
+
+    # Get my current ip address, takes 'lo' or 'eth0' or 'wlan0' etc
+    def get_ip_address(self, ifname):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        return socket.inet_ntoa(fcntl.ioctl(
+            s.fileno(),
+            0x8915,  # SIOCGIFADDR
+            struct.pack('256s', ifname[:15])
+         )[20:24])
+
+    def print_ip_address(self):
+        self.cad.lcd.home()
+#        self.cad.lcd.clear()
+        self.cad.lcd.write('Hello world!')
+        return
+        self.cad.lcd.write('e{:}\n'.format(self.get_ip_address('eth0')))
+        self.cad.lcd.write('w{:}\n'.format(self.get_ip_address('wlan0')))
+
+    def ip_on(self):
+        self.ip_display_flag = True
+        self.print_ip_address()
+
+    def ip_off(self):
+        self.ip_display_flag = False

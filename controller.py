@@ -48,7 +48,7 @@ parser.add_argument('--purgePin'   	,type=float, 	default=2,    	help='Purge swi
 parser.add_argument('--buttonOn'   	,type=float, 	default=0,   	help='On button')
 parser.add_argument('--buttonOff'  	,type=float, 	default=1,    	help='Off button')
 parser.add_argument('--buttonReset'	,type=float, 	default=2,    	help='Reset button')
-parser.add_argument('--purgeFreq'  	,type=float, 	default=30, 	help='How often to purge in seconds')
+parser.add_argument('--purgeFreq'  	,type=float, 	default=12, 	help='How often to purge in seconds')
 parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
 parser.add_argument('--startTime'  	,type=float, 	default=4,	help='Duration of the startup routine')
 parser.add_argument('--stopTime'   	,type=float, 	default=10,	help='Duration of the shutdown routine')
@@ -110,6 +110,7 @@ volts2    = 0
 amps2     = 0
 volts3    = 0
 amps3     = 0
+timeStart = time()
 
 # Define class instances
 #adcRes    = 12
@@ -198,6 +199,8 @@ while (True):
     #print ("a2:%02f,\t" % (amps2)),
     #print ("v3:%02f,\t" % (volts3)),
     #print ("a3:%02f,\t" % (amps3)),
+    if (volts1 >= 27.0 or volts1 < 12.0 or amps1 >= 10) and (time()-timeStart)>10:
+            state = STATE.error
     display.voltage(volts1)
     display.current(amps1)
     
@@ -226,6 +229,7 @@ while (True):
         if pfio.input_pins[buttonOn].value == True and pfio.input_pins[buttonOff].value == False:
             state = STATE.startup
             timeChange = time()
+            timeStart  = time()
     if state == STATE.startup:
         # Startup
         try:
