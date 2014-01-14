@@ -23,7 +23,7 @@ sys.path.append('/home/pi/h100/adc')
 sys.path.append('/home/pi/h100/switch')
 
 # Import libraries
-from   time      import time, sleep
+from   time      import time, sleep, asctime
 import pifacedigitalio
 import pifacecad
 import RPi.GPIO  as GPIO
@@ -151,8 +151,9 @@ print("Loughborough University\n")
 print("controller  Copyright (C) 2013  Simon Howroyd")
 print("This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.")
 print("This is free software, and you are welcome to redistribute it,")
-print("under certain conditions; type `show c' for details.")
+print("under certain conditions; type `show c' for details.\n")
 
+print("%s\n" % asctime())
 
 ########
 # Main #
