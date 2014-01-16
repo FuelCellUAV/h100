@@ -184,6 +184,18 @@ while (True):
     volts1     =  abs(adc.val[1] * 1000 / 60.9559671563)
     #amps1      = abs(adc.val[0] * 1000 / 63.69)
     #volts1     = abs(adc.val[1] * 1000 / 7.4)
+    
+    # PURGE CALCULATOR
+    if amps1 < 1:
+    	purgeFreq = 30
+    elif amps1 < 3:
+    	purgeFreq = 20
+    elif amps1 < 6:
+    	purgeFreq = 17
+    elif amps1 < 9:
+    	purgeFreq = 12
+    else:
+    	purgeFreq = 12
 
     # STOP BUTTON
     if pfio.input_pins[buttonOn].value == False and pfio.input_pins[buttonOff].value == True:
