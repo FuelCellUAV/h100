@@ -196,6 +196,8 @@ while (True):
     	purgeFreq = 12
     else:
     	purgeFreq = 12
+    	
+    print ("PF:%d\t" % (purgeFreq)),
 
     # STOP BUTTON
     if pfio.input_pins[buttonOn].value == False and pfio.input_pins[buttonOff].value == True:
@@ -204,9 +206,9 @@ while (True):
             timeChange = time()
      
     # ELECTRIC
-    print ("ADC\t"),
-    print ("v1:%02f,\t" % (volts1)),
-    print ("a1:%02f,\t" % (amps1)),
+    #print ("ADC\t"),
+    print ("v1:%02f\t" % (volts1)),
+    print ("a1:%02f\t" % (amps1)),
     #print ("v2:%02f,\t" % (volts2)),
     #print ("a2:%02f,\t" % (amps2)),
     #print ("v3:%02f,\t" % (volts3)),
@@ -218,16 +220,16 @@ while (True):
     
 
     # TEMPERATURE
-    print ("TMP\t"), 
-    print ("tB:%02f,\t" % (tmpBlue)),
-    print ("tE:%02f,\t" % (tmpEarth)),
-    print ("tR:%02f,\t" % (tmpRed)),
-    print ("tY:%02f,\t" % (tmpYellow)),
+    #print ("TMP\t"), 
+    print ("tB:%02f\t" % (tmpBlue)),
+    print ("tE:%02f\t" % (tmpEarth)),
+    print ("tR:%02f\t" % (tmpRed)),
+    print ("tY:%02f\t" % (tmpYellow)),
     if tmpBlue >= cutoff or tmpEarth >= cutoff or tmpRed >= cutoff or tmpYellow >= cutoff:
         print ("HOT"),
         state = STATE.error
     else:
-        print ("OK!"),
+        print ("OK"),
     display.temperature(tmpBlue)
 
 
