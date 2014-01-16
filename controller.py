@@ -48,7 +48,7 @@ parser.add_argument('--purgePin'   	,type=float, 	default=2,    	help='Purge swi
 parser.add_argument('--buttonOn'   	,type=float, 	default=0,   	help='On button')
 parser.add_argument('--buttonOff'  	,type=float, 	default=1,    	help='Off button')
 parser.add_argument('--buttonReset'	,type=float, 	default=2,    	help='Reset button')
-parser.add_argument('--purgeFreq'  	,type=float, 	default=12, 	help='How often to purge in seconds')
+parser.add_argument('--purgeFreq'  	,type=float, 	default=18, 	help='How often to purge in seconds')
 parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
 parser.add_argument('--startTime'  	,type=float, 	default=4,	help='Duration of the startup routine')
 parser.add_argument('--stopTime'   	,type=float, 	default=10,	help='Duration of the shutdown routine')
