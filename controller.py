@@ -157,144 +157,147 @@ print("under certain conditions; type `show c' for details.")
 ########
 # Main #
 ########
-while (True):
-    print '\n',
-    print time(),
-    print '\t',
-    #display.run()
+try:
+	while (True):
+		print '\n',
+		print time(),
+		print '\t',
+		#display.run()
 
-    # STATE
-    if state == STATE.off:
-        print ("OFF  :\t"),
-    elif state == STATE.startup:
-        print ("START:\t"),
-    elif state == STATE.on:
-        print ("ON   :\t"),
-    elif state == STATE.shutdown:
-        print ("STOP :\t"),
-    elif state == STATE.error:
-        print ("ERROR:\t"),
-    display.state(STATE.reverse_mapping[state])
+		# STATE
+		if state == STATE.off:
+			print ("OFF  :\t"),
+		elif state == STATE.startup:
+			print ("START:\t"),
+		elif state == STATE.on:
+			print ("ON   :\t"),
+		elif state == STATE.shutdown:
+			print ("STOP :\t"),
+		elif state == STATE.error:
+			print ("ERROR:\t"),
+		display.state(STATE.reverse_mapping[state])
 
-    tmpBlue    = blue()
-    tmpEarth   = earth()
-    tmpRed     = red()
-    tmpYellow  = yellow()
-    amps1      = (abs(adc.val[0] * 1000 / 4.2882799485) + 0.6009) / 1.6046
-    volts1     =  abs(adc.val[1] * 1000 / 60.9559671563)
-    #amps1      = abs(adc.val[0] * 1000 / 63.69)
-    #volts1     = abs(adc.val[1] * 1000 / 7.4)
-    
-    # PURGE CALCULATOR
-    if amps1 < 1:
-    	purgeFreq = 30
-    elif amps1 < 3:
-    	purgeFreq = 20
-    elif amps1 < 6:
-    	purgeFreq = 17
-    elif amps1 < 9:
-    	purgeFreq = 12
-    else:
-    	purgeFreq = 12
-    	
-    print ("PF:%d\t" % (purgeFreq)),
-
-    # STOP BUTTON
-    if pfio.input_pins[buttonOn].value == False and pfio.input_pins[buttonOff].value == True:
-        if state == STATE.startup or state == STATE.on:
-            state = STATE.shutdown
-            timeChange = time()
-     
-    # ELECTRIC
-    #print ("ADC\t"),
-    print ("v1:%02f\t" % (volts1)),
-    print ("a1:%02f\t" % (amps1)),
-    #print ("v2:%02f,\t" % (volts2)),
-    #print ("a2:%02f,\t" % (amps2)),
-    #print ("v3:%02f,\t" % (volts3)),
-    #print ("a3:%02f,\t" % (amps3)),
-    display.voltage(volts1)
-    display.current(amps1)
-    
-
-    # TEMPERATURE
-    #print ("TMP\t"), 
-    print ("tB:%02f\t" % (tmpBlue)),
-    print ("tE:%02f\t" % (tmpEarth)),
-    print ("tR:%02f\t" % (tmpRed)),
-    print ("tY:%02f\t" % (tmpYellow)),
-    if tmpBlue >= cutoff or tmpEarth >= cutoff or tmpRed >= cutoff or tmpYellow >= cutoff:
-        print ("HOT"),
-        state = STATE.error
-    else:
-        print ("OK"),
-    display.temperature(tmpBlue)
-
-
-    ## STATE MACHINE ##
-    if state == STATE.off:
-        # Off
-        h2.switch(False)
-        fan.switch(False)
-        purge.switch(False)
-
-        if pfio.input_pins[buttonOn].value == True and pfio.input_pins[buttonOff].value == False:
-            state = STATE.startup
-            timeChange = time()
-            timeStart  = time()
-    if state == STATE.startup:
-        # Startup
-        try:
-            h2.timed(0,startTime)
-            fan.timed(0,startTime)
-            purge.timed(0,startTime)
-            if (time() - timeChange) > startTime:
-                state = STATE.on
-        except Exception as e:
-            #print ("Startup Error")
-            state = STATE.error
-    if state == STATE.on:
-        # Running
-        try:
-            h2.switch(True)
-            fan.switch(True)
-            purge.timed(purgeFreq,purgeTime)
+		tmpBlue    = blue()
+		tmpEarth   = earth()
+		tmpRed     = red()
+		tmpYellow  = yellow()
+		amps1      = (abs(adc.val[0] * 1000 / 4.2882799485) + 0.6009) / 1.6046
+		volts1     =  abs(adc.val[1] * 1000 / 60.9559671563)
+		#amps1      = abs(adc.val[0] * 1000 / 63.69)
+		#volts1     = abs(adc.val[1] * 1000 / 7.4)
+		
+		# PURGE CALCULATOR
+		if amps1 < 1:
+			purgeFreq = 30
+		elif amps1 < 3:
+			purgeFreq = 20
+		elif amps1 < 6:
+			purgeFreq = 17
+		elif amps1 < 9:
+			purgeFreq = 12
+		else:
+			purgeFreq = 12
 			
-			# Voltage error handling
-            if (volts1 < 10.5) and (time()-timeStart)>10:
-                state = STATE.error
-            if (volts1 >= 27.0) or (volts1 < 10.0):
-                state = STATE.error
+		print ("PF:%d\t" % (purgeFreq)),
+
+		# STOP BUTTON
+		if pfio.input_pins[buttonOn].value == False and pfio.input_pins[buttonOff].value == True:
+			if state == STATE.startup or state == STATE.on:
+				state = STATE.shutdown
+				timeChange = time()
+		 
+		# ELECTRIC
+		#print ("ADC\t"),
+		print ("v1:%02f\t" % (volts1)),
+		print ("a1:%02f\t" % (amps1)),
+		#print ("v2:%02f,\t" % (volts2)),
+		#print ("a2:%02f,\t" % (amps2)),
+		#print ("v3:%02f,\t" % (volts3)),
+		#print ("a3:%02f,\t" % (amps3)),
+		display.voltage(volts1)
+		display.current(amps1)
+		
+
+		# TEMPERATURE
+		#print ("TMP\t"), 
+		print ("tB:%02f\t" % (tmpBlue)),
+		print ("tE:%02f\t" % (tmpEarth)),
+		print ("tR:%02f\t" % (tmpRed)),
+		print ("tY:%02f\t" % (tmpYellow)),
+		if tmpBlue >= cutoff or tmpEarth >= cutoff or tmpRed >= cutoff or tmpYellow >= cutoff:
+			print ("HOT"),
+			state = STATE.error
+		else:
+			print ("OK"),
+		display.temperature(tmpBlue)
+
+
+		## STATE MACHINE ##
+		if state == STATE.off:
+			# Off
+			h2.switch(False)
+			fan.switch(False)
+			purge.switch(False)
+
+			if pfio.input_pins[buttonOn].value == True and pfio.input_pins[buttonOff].value == False:
+				state = STATE.startup
+				timeChange = time()
+				timeStart  = time()
+		if state == STATE.startup:
+			# Startup
+			try:
+				h2.timed(0,startTime)
+				fan.timed(0,startTime)
+				purge.timed(0,startTime)
+				if (time() - timeChange) > startTime:
+					state = STATE.on
+			except Exception as e:
+				#print ("Startup Error")
+				state = STATE.error
+		if state == STATE.on:
+			# Running
+			try:
+				h2.switch(True)
+				fan.switch(True)
+				purge.timed(purgeFreq,purgeTime)
 				
-        except Exception as e:
-            #print ("Running Error")
-            state = STATE.error
-    if state == STATE.shutdown:
-        # Shutdown
-        try:
-            h2.switch(False)
-            fan.timed(0,stopTime)
-            purge.timed(0,stopTime)
-            if (time() - timeChange) > stopTime:
-                state = STATE.off
-        except Exception as e:
-            #print ("Shutdown Error")
-            state = STATE.error
-    if state == STATE.error:
-        # Error lock           
-        h2.switch(False)
-        purge.switch(False)
-        if blue() >= cutoff or earth() >= cutoff or red() >= cutoff or yellow() >= cutoff:
-            fan.switch(True)
-        else:
-            fan.switch(False)
-            # Reset button
-            if pfio.input_pins[buttonReset].value == True:
-                state = STATE.off
-                #print("\nResetting")
+				# Voltage error handling
+				if (volts1 < 10.5) and (time()-timeStart)>10:
+					state = STATE.error
+				if (volts1 >= 27.0) or (volts1 < 10.0):
+					state = STATE.error
+					
+			except Exception as e:
+				#print ("Running Error")
+				state = STATE.error
+		if state == STATE.shutdown:
+			# Shutdown
+			try:
+				h2.switch(False)
+				fan.timed(0,stopTime)
+				purge.timed(0,stopTime)
+				if (time() - timeChange) > stopTime:
+					state = STATE.off
+			except Exception as e:
+				#print ("Shutdown Error")
+				state = STATE.error
+		if state == STATE.error:
+			# Error lock           
+			h2.switch(False)
+			purge.switch(False)
+			if blue() >= cutoff or earth() >= cutoff or red() >= cutoff or yellow() >= cutoff:
+				fan.switch(True)
+			else:
+				fan.switch(False)
+				# Reset button
+				if pfio.input_pins[buttonReset].value == True:
+					state = STATE.off
+					#print("\nResetting")
 
-    ## end STATE MACHINE ##
-
+		## end STATE MACHINE ##
+#except (KeyboardInterrupt, SystemExit):
+finally:
+	print 'GOODBYEEEEEEEEEEE'
 #######
 # End #
 #######
