@@ -141,7 +141,7 @@ class FuelCellDisplay (multiprocessing.Process):
 
     # Process stop code (TBC)
     def stop(self):
-         self._Process__stop()
+         self.__exit__()
     def __exit__(self):
         self.cad.lcd.clear()
         self.cad.lcd.backlight_off()        

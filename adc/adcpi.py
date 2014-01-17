@@ -79,7 +79,7 @@ class AdcPi2:
 
     def get(self, address, config):
         self.changechannel(address, config)
-        return self.getadcreading(address, config)        
+        return self.getadcreading(address, config)
 
     def printall(self):
         print ("Channel 1: %02f" % self.get(self.adc_address1, 0x9C)),
@@ -114,4 +114,4 @@ class AdcPi2Daemon( AdcPi2 , multiprocessing.Process):
             self.val[7] = self.get(self.adc_address2, 0xFC)
 
     def stop(self):
-        self._Process__stop()
+        return

@@ -21,6 +21,8 @@
 import sys
 sys.path.append('/home/pi/h100/adc')
 sys.path.append('/home/pi/h100/switch')
+sys.path.append('/home/pi/h100/display')
+sys.path.append('/home/pi/h100/temperature')
 
 # Import libraries
 from   time      import time, sleep
@@ -295,9 +297,16 @@ try:
 					#print("\nResetting")
 
 		## end STATE MACHINE ##
-#except (KeyboardInterrupt, SystemExit):
+except (KeyboardInterrupt, SystemExit):
+    sys.exit(1)
 finally:
-	print 'GOODBYEEEEEEEEEEE'
+    h2.switch(False)
+    purge.switch(False)
+    fan.switch(False)
+    adc.stop()
+    display.stop()
+    del purge, h2, fan, blue, earth, red, yellow, bus
+    print '\n\n\nProgramme successfully exited and closed down\n\n'
 #######
 # End #
 #######
