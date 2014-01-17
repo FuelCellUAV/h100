@@ -189,18 +189,10 @@ try:
 		#volts1     = abs(adc.val[1] * 1000 / 7.4)
 		
 		# PURGE CALCULATOR
-		if amps1 < 1:
-			purgeFreq = 30
-		elif amps1 < 3:
-			purgeFreq = 20
-		elif amps1 < 6:
-			purgeFreq = 17
-		elif amps1 < 9:
-			purgeFreq = 12
-		else:
-			purgeFreq = 12
-			
-		print ("PF:%d\t" % (purgeFreq)),
+		purgeFreq = -1.8*amps1 + 30		
+		clamp = lambda n, minn, maxn: max(min(maxn, n), minn)
+		purgeFreq = clamp(purgeFreq, 10, 30)
+		print ("PF:%.1f\t" % (purgeFreq)),
 
 		# STOP BUTTON
 		if pfio.input_pins[buttonOn].value == False and pfio.input_pins[buttonOff].value == True:
