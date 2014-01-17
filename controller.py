@@ -213,8 +213,6 @@ while (True):
     #print ("a2:%02f,\t" % (amps2)),
     #print ("v3:%02f,\t" % (volts3)),
     #print ("a3:%02f,\t" % (amps3)),
-    if (volts1 >= 27.0 or volts1 < 12.0 or amps1 >= 10) and (time()-timeStart)>10:
-            state = STATE.error
     display.voltage(volts1)
     display.current(amps1)
     
@@ -261,6 +259,13 @@ while (True):
             h2.switch(True)
             fan.switch(True)
             purge.timed(purgeFreq,purgeTime)
+			
+			# Voltage error handling
+            if (volts1 < 10.5) and (time()-timeStart)>10:
+                state = STATE.error
+            if (volts1 >= 27.0) or (volts1 < 10.0):
+                state = STATE.error
+				
         except Exception as e:
             #print ("Running Error")
             state = STATE.error
