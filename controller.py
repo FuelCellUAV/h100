@@ -136,6 +136,8 @@ print("This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'
 print("This is free software, and you are welcome to redistribute it,")
 print("under certain conditions; type `show c' for details.\n")
 
+timeBegin = time()
+
 print("%s\n" % asctime())
 
 ########
@@ -143,7 +145,8 @@ print("%s\n" % asctime())
 ########
 try:
 	while (True):
-		print('\n', time(), end='\t'),
+		print('\n', time(), end='\t')
+		print(time()-timeBegin, end='\t')
 
 		# PRINT STATE
 		if state == STATE.off:
@@ -191,9 +194,9 @@ try:
 		
 		# PURGE CALCULATOR
 		if purgeController is 1:
-			purgeFreq = -1.8*amps[0] + 30		
+			purgeFreq = -2.5*amps[0] + 40 #was 1.8		
 			clamp = lambda n, minn, maxn: max(min(maxn, n), minn)
-			purgeFreq = clamp(purgeFreq, 10, 30)
+			purgeFreq = clamp(purgeFreq, 10, 40)
 		else:
 			purgeFreq = 30
 		print('PF', '\t', '%.1f' % purgeFreq, end='\t')
