@@ -193,7 +193,7 @@ try:
 		print('PF', '\t', '%.1f' % purgeFreq, end='\t')
 		
 		# FUEL CELL CONTROLLER
-        if controller is 1:
+		if controller is 1:
 			#######
 			# OFF #
 			#######
@@ -265,7 +265,7 @@ finally:
     adc.stop()
     display.stop()
     del purge, h2, fan, blue, earth, red, yellow, bus
-    print '\n\n\nProgramme successfully exited and closed down\n\n'
+    print('\n\n\nProgramme successfully exited and closed down\n\n')
 #######
 # End #
 #######
