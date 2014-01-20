@@ -17,6 +17,8 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 # Define Paths
 import sys
 sys.path.append('/home/pi/h100/adc')
@@ -39,11 +41,11 @@ from h100Display import *
 
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
-parser.add_argument('--out'	   			,								help='Name of the output logfile')
-parser.add_argument('--controller'  	,type=int, 		default=1, 		help='Set to 0 for controller off')
-parser.add_argument('--purgeController' ,type=int, 		default=0, 		help='Set to 1 for purge controller on')
-parser.add_argument('--purgeTime'  		,type=float, 	default=0.5,	help='How long to purge for in seconds')
-parser.add_argument('--cutoff'     		,type=float, 	default=26.0,	help='Temperature cutoff in celcius')
+parser.add_argument('--out'	   			,		help='Name of the output logfile')
+parser.add_argument('--controller'  	,type=int, 	default=1, 	help='Set to 0 for controller off')
+parser.add_argument('--purgeController' ,type=int, 	default=0, 	help='Set to 1 for purge controller on')
+parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
+parser.add_argument('--cutoff'     	,type=float, 	default=26.0,	help='Temperature cutoff in celcius')
 args = parser.parse_args()
 
 # Class to save to file & print to screen
@@ -80,6 +82,8 @@ purgeTime      = args.purgeTime
 startTime      = 4
 stopTime       = 10
 cutoff 	       = args.cutoff
+purgeController = args.purgeController
+controller     = args.controller
 
 # State machine cases
 def enum(*sequential, **named):
@@ -137,7 +141,7 @@ print("under certain conditions; type `show c' for details.")
 ########
 try:
 	while (True):
-		print('\n', time(), end='\t')
+		print('\n', time(), end='\t'),
 
 		# PRINT STATE
 		if state == STATE.off:
