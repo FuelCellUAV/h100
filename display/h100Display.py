@@ -57,8 +57,8 @@ class FuelCellDisplay (multiprocessing.Process):
     cad = pifacecad.PiFaceCAD()
 
     # Define our variables to display
-    fcName  = multiprocessing.Value(ctypes.c_char_p,'H100')
-    fcState = multiprocessing.Value(ctypes.c_char_p,'')
+    fcName  = multiprocessing.Array(ctypes.c_char,b'H100')
+    fcState = multiprocessing.Array(ctypes.c_char,b'  ')
     temp    = multiprocessing.Value('d',10.0)
     power   = multiprocessing.Value('d',000)
     vFc     = multiprocessing.Value('d',9.0)
@@ -116,12 +116,12 @@ class FuelCellDisplay (multiprocessing.Process):
 
     # Call this function to change the fuel cell name (max 4x char will be displayed)
     def name(self, fcName):
-        self.fcName.value = fcName
+        self.fcName.array = fcName
         return
 
     # Call this function to change the fuel cell state (max 3x char will be displayed)
     def state(self, fcState):
-        self.fcState.value = fcState
+        self.fcState.array = fcState
         return
 
     # Call this function to change the fuel cell temperature

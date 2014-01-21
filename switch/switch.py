@@ -53,11 +53,10 @@ class Switch:
 
 	def write(self):
 		try:
-		    if self.state:
-		    	self.pfio.output_pins[self.pin].turn_on()
-		    else:
-			self.pfio.output_pins[self.pin].turn_off()
+			if self.state:
+				self.pfio.output_pins[self.pin].turn_on()
+			else:
+				self.pfio.output_pins[self.pin].turn_off()
 		except Exception as e:
-    		    print ("Write error to output %d" % self.pin)
-                
-		return self.state
+			print ("Write error to output %d" % self.pin)
+			return self.state

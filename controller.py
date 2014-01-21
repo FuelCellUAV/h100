@@ -88,7 +88,7 @@ controller     = args.controller
 # State machine cases
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
-    reverse = dict((value, key) for key, value in enums.iteritems())
+    reverse = dict((value, key) for key, value in list(enums.items()))
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
@@ -273,7 +273,7 @@ finally:
     fan.switch(False)
     adc.stop()
     display.stop()
-    del purge, h2, fan, blue, earth, red, yellow, bus
+    del purge, h2, fan, blue, earth, red, yellow
     print('\n\n\nProgramme successfully exited and closed down\n\n')
 #######
 # End #
