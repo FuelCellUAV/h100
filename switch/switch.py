@@ -1,8 +1,8 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 # Simple software timer for a switch on the piface digital io
 
-# Copyright (C) 2013  Simon Howroyd
+# Copyright (C) 2014  Simon Howroyd
 # 
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by

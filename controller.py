@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # Fuel Cell Controller for the Horizon H100
 
-# Copyright (C) 2013  Simon Howroyd
+# Copyright (C) 2014  Simon Howroyd
 # 
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
+#from __future__ import print_function
 
 # Define Paths
 import sys
@@ -31,7 +31,7 @@ from   time      import time, sleep, asctime
 import pifacedigitalio
 import pifacecad
 import RPi.GPIO  as GPIO
-import smbus
+#import smbus
 import argparse
 import math
 from adcpi       import *
@@ -104,14 +104,14 @@ amps      = [0,0,0]
 timeStart = time()
 
 # Define class instances
-bus       = smbus.SMBus(1)
+#bus       = smbus.SMBus(1)
 purge     = Switch(purgePin)
 h2        = Switch(h2Pin)
 fan       = Switch(fanPin)
-blue      = I2cTemp(bus,BLUE)
-earth     = I2cTemp(bus,EARTH)
-red       = I2cTemp(bus,RED)
-yellow    = I2cTemp(bus,YELLOW)
+blue      = I2cTemp(BLUE)
+earth     = I2cTemp(EARTH)
+red       = I2cTemp(RED)
+yellow    = I2cTemp(YELLOW)
 
 
 #########
