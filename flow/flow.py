@@ -80,9 +80,18 @@ class FlowBus232:
 		
 		
 		
+	def run(self):
+		while True:
+			msg = readLine()
+			if msg is False:
+				# Start the while loop again
+				continue
+				
+			data = parse232(msg)
+			
+			myValue = parse(data)
 		
-		
-		
+			print(myValue)
 		
 		
 		
