@@ -18,100 +18,87 @@ import multiprocessing
 from smbus import SMBus
 import re
 
-class AdcPi2:
-    
-    adc_address1 = 0x68
-    adc_address2 = 0x69
+with i2c.I2CMaster() as bus:
+	class AdcPi2:
+		
+		adc_address1 = 0x68
+		adc_address2 = 0x69
 
-    varDivisior = 64 # from pdf sheet on adc addresses and config
-    #varMultiplier = (2.4705882/varDivisior)/1000
-    varMultiplier = (2.495/varDivisior)/1000
-    
-    ## Constructor can receive the I2C bus or find it itself
-    def __init__(self):
-        self.bus = self.getI2cBus()
+		varDivisior   = 64 # from pdf sheet on adc addresses and config
+		varMultiplier = (2.495/varDivisior)/1000
+		
+		def changechannel(self, address, adcConfig):
+			bus.transaction(
+				i2c.writing_bytes(address, adcConfig))
 
-    def getI2cBus(self):
-        # detect i2C port number and assign to i2c_bus
-        for line in open('/proc/cpuinfo').readlines():
-            m = re.match('(.*?)\s*:\s*(.*)', line)
-            if m:
-                (name, value) = (m.group(1), m.group(2))
-                if name == "Revision":
-                    if value [-4:] in ('0002', '0003'):
-                        i2c_bus = 0
-                    else:
-                        i2c_bus = 1
-                    break
-        return SMBus(i2c_bus)
+		def getadcreading(self, address, adcConfig):
+			# create byte array and fill with initial values to define size
+			adcreading = bytearray()
+	 
+			adcreading.append(0x00)
+			adcreading.append(0x00)
+			adcreading.append(0x00)
+			adcreading.append(0x00)
+		
+			adcreading = bus.transaction(
+				i2c.writing_bytes(address, adcConfig),
+				i2c.reading(address, 1))
+		
+			h = adcreading[0]
+			m = adcreading[1]
+			l = adcreading[2]
+			s = adcreading[3]
+			# wait for new data
+			while (s & 128):
+					adcreading = bus.transaction(
+						i2c.writing_bytes(address, adcConfig),
+						i2c.reading(address, 1))
+					h = adcreading[0]
+					m = adcreading[1]
+					l = adcreading[2]
+					s = adcreading[3]
+			
+			# shift bits to product result
+			t = ((h & 0b00000001) << 16) | (m << 8) | l
+			# check if positive or negative number and invert if needed
+			if (h > 128):
+					t = ~(0x020000 - t)
+			return t * self.varMultiplier
 
-    def changechannel(self, address, adcConfig):
-            tmp= self.bus.write_byte(address, adcConfig)
+		def get(self, address, config):
+			self.changechannel(address, config)
+			return self.getadcreading(address, config)
 
-    def getadcreading(self, address, adcConfig):
-        # create byte array and fill with initial values to define size
-        adcreading = bytearray()
- 
-        adcreading.append(0x00)
-        adcreading.append(0x00)
-        adcreading.append(0x00)
-        adcreading.append(0x00)
-    
-        adcreading = self.bus.read_i2c_block_data(address,adcConfig)
-        h = adcreading[0]
-        m = adcreading[1]
-        l = adcreading[2]
-        s = adcreading[3]
-        # wait for new data
-        while (s & 128):
-                adcreading = self.bus.read_i2c_block_data(address,adcConfig)
-                h = adcreading[0]
-                m = adcreading[1]
-                l = adcreading[2]
-                s = adcreading[3]
-        
-        # shift bits to product result
-        t = ((h & 0b00000001) << 16) | (m << 8) | l
-        # check if positive or negative number and invert if needed
-        if (h > 128):
-                t = ~(0x020000 - t)
-        return t * self.varMultiplier
-
-    def get(self, address, config):
-        self.changechannel(address, config)
-        return self.getadcreading(address, config)
-
-    def printall(self):
-        print ("Channel 1: %02f" % self.get(self.adc_address1, 0x9C)),
-        print ("2: %02f" % self.get(self.adc_address1, 0xBC)),
-        print ("3: %02f" % self.get(self.adc_address1, 0xDC)),
-        print ("4: %02f" % self.get(self.adc_address1, 0xFC)),
-        print ("5: %02f" % self.get(self.adc_address2, 0x9C)),
-        print ("6: %02f" % self.get(self.adc_address2, 0xBC)),
-        print ("7: %02f" % self.get(self.adc_address2, 0xDC)),
-        print ("8: %02f" % self.get(self.adc_address2, 0xFC)),
-        print ("\n")
+		def printall(self):
+			print ("Channel 1: %02f" % self.get(self.adc_address1, 0x9C)),
+			print ("2: %02f" % self.get(self.adc_address1, 0xBC)),
+			print ("3: %02f" % self.get(self.adc_address1, 0xDC)),
+			print ("4: %02f" % self.get(self.adc_address1, 0xFC)),
+			print ("5: %02f" % self.get(self.adc_address2, 0x9C)),
+			print ("6: %02f" % self.get(self.adc_address2, 0xBC)),
+			print ("7: %02f" % self.get(self.adc_address2, 0xDC)),
+			print ("8: %02f" % self.get(self.adc_address2, 0xFC)),
+			print ("\n")
 
 
-class AdcPi2Daemon( AdcPi2 , multiprocessing.Process):
-    val = multiprocessing.Array('d',range(8))
+	class AdcPi2Daemon( AdcPi2 , multiprocessing.Process):
+		val = multiprocessing.Array('d',range(8))
 
-    def __init__(self):
-        self.bus = self.getI2cBus()
-        multiprocessing.Process.__init__(self)
-        self.threadId = 1
-        self.Name = 'AdcPi2'
+		def __init__(self):
+			multiprocessing.Process.__init__(self)
+			self.threadId = 1
+			self.Name = 'AdcPi2'
 
-    def run(self):
-        while True:
-            self.val[0] = self.get(self.adc_address1, 0x9C)
-            self.val[1] = self.get(self.adc_address1, 0xBC)
-            self.val[2] = self.get(self.adc_address1, 0xDC)
-            self.val[3] = self.get(self.adc_address1, 0xFC)
-            self.val[4] = self.get(self.adc_address2, 0x9C)
-            self.val[5] = self.get(self.adc_address2, 0xBC)
-            self.val[6] = self.get(self.adc_address2, 0xDC)
-            self.val[7] = self.get(self.adc_address2, 0xFC)
+		def run(self):
+			while True:
+				self.val[0] = self.get(self.adc_address1, 0x9C)
+				self.val[1] = self.get(self.adc_address1, 0xBC)
+				self.val[2] = self.get(self.adc_address1, 0xDC)
+				self.val[3] = self.get(self.adc_address1, 0xFC)
+				self.val[4] = self.get(self.adc_address2, 0x9C)
+				self.val[5] = self.get(self.adc_address2, 0xBC)
+				self.val[6] = self.get(self.adc_address2, 0xDC)
+				self.val[7] = self.get(self.adc_address2, 0xFC)
 
-    def stop(self):
-        return
+		def stop(self):
+			return
