@@ -37,4 +37,4 @@ print("Loughborough University\n")
 ########
 while True:
     sleep(1)
-    print '%02f' % adc.val[0]
+    print('%02f' % adc.val[0])
