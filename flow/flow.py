@@ -1,69 +1,71 @@
 #!/usr/bin/env python3
 
-import multiprocessing
-import serial
-import time
+import binascii, multiprocessing, serial, time
 
 class FlowBus232:
 	def __init__(self):
 		self.bus = serial.Serial("/dev/ttyAMA0",38400,timeout=5)
 
 	def readLine(self):
-		msg = ""
-		ch = bus.read()
-			if ch == ':':
-				while ch != '\r':
-					msg += ch
-					# Dump the ':' and restart message if a new ':'
-					# 	is received before last finishes
-					if ch == ':':
-						msg = ""
-					ch = bus.read()
-				return msg
-			else:
-				return False
+		parse_msg = ""
+		raw_bus_data = self.bus.read()
+		if raw_bus_data == ':':
+			while raw_bus_data != b'\r': # "\r" = end of command/exit code
+				parse_msg += raw_bus_data
+				if raw_bus_data == b':': # ":" = New command so save and restart buffer ## not sure this will be needed.
+					parse_msg = b""
+				raw_bus_data = self.bus.read()
 				
-	def decoder(self, msg, pointer):
-		# import binascii
-		return binascii.a2b_hex(msg[pointer:pointer+4])
-				
-	def parse232(self, msg):
-		data[0] = decoder(msg,0)
-		length = int(data[0],16)
+			return parse_msg
+			
+		else:
+			return False
+
+	@staticmethod
+	def decoder(msg, pointer, length):
+		return binascii.a2b_hex(msg[pointer:pointer+length])
+
+	@staticmethod
+	def parse232(msg):
+		data = decoder(msg, 0, 1)
+		length = int(data,16)
 		
 		if length is 1:
 			# Special error message
-			return -1*int(decoder(msg,2), 16)
-		
-		for thisByte in range(1, length):
-			data[thisByte] = decoder(msg,thisByte*4)
+			return -1 * int(decoder(msg,2, 1), 16) ########## UNSURE ABOUT THE LOGIC HERE
+		else:
+			data[0:] = decoder(msg,4,length-4)
 		
 		return data
 	
-	def getValue(self, data, pointer):
+	@staticmethod
+	def getValue(data, pointer):
 		dataType = data[pointer]
 		
 		if b'00' in dataType:
 			#char
-			return int(data[pointer+2:pointer+4], 16)
+			return int.from_bytes(data[pointer+2:pointer+4], byteorder='big') ########### not sure why you want ints returned?
+			
 		elif b'20' in dataType:
 			#int
-			return int(data[pointer+2:pointer+6], 16)
-		elif b'40' in dataType:
-			#float
+			return int.from_bytes(data[pointer+2:pointer+6], byteorder='big')
+			
 		elif b'40' in dataType:
 			#long
-			return int(data[pointer+2:pointer+10], 16)
+			return int.from_bytes(data[pointer+2:pointer+10], byteorder='big')
+			
 		elif b'60' in dataType:
 			#string
-			length = int(data[pointer+2:pointer+4], 16)
-			mystring = ""
+			length = int.from_bytes(data[pointer+2:pointer+4], byteorder='big')
+			mystring = b""
 			for x in range(5, 5+length-1, 2):
-				mystring += chr(int(data[x:x+2],16))
+				mystring += data[x:x+2]
+				
+			return mystring
 			
 	
 	def parse(self, data):
-		length = int(data[0],16)
+		length = data[0]
 		node   = data[1]
 		cmd    = data[2]
 		
@@ -76,9 +78,9 @@ class FlowBus232:
 		elif cmd is 2:
 			#incoming data
 			return getValue(data, 4)
-		
-		
-		
+			
+		else
+			return False
 		
 	def run(self):
 		while True:
@@ -91,11 +93,10 @@ class FlowBus232:
 			
 			myValue = parse(data)
 		
-			print(myValue)
-		
-		
-		
-		
+			if(myValue):
+				print(myValue)
+			else:
+				print("FAIILLLL, You Suck")
 
 class FlowBus232Daemon( FlowBus232 , multiprocessing.Process):
 	val = multiprocessing.Array('d',range(8))
