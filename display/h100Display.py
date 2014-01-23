@@ -57,8 +57,8 @@ class FuelCellDisplay (multiprocessing.Process):
     cad = pifacecad.PiFaceCAD()
 
     # Define our variables to display
-    fcName  = multiprocessing.Array(ctypes.c_char,b'H100')
-    fcState = multiprocessing.Array(ctypes.c_char,b'  ')
+    fcName  = multiprocessing.Array(ctypes.c_char,10)
+    fcState = multiprocessing.Array(ctypes.c_char,10)
     temp    = multiprocessing.Value('d',10.0)
     power   = multiprocessing.Value('d',000)
     vFc     = multiprocessing.Value('d',9.0)
@@ -99,7 +99,7 @@ class FuelCellDisplay (multiprocessing.Process):
   #          return
             # Write the top line
             self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'
-                .format(self.fcName.value[:4], self.fcState.value[:3], self.temp.value))
+                .format(self.fcName.value[:4].decode('utf-8'), self.fcState.value[:3].decode('utf-8'), self.temp.value))
             self.cad.lcd.write_custom_bitmap(self.temp_symbol_index)
             self.cad.lcd.write(' ')
 
@@ -115,13 +115,13 @@ class FuelCellDisplay (multiprocessing.Process):
                 .format(self.vFc.value, self.iFc.value, self.vFc.value*self.iFc.value))
 
     # Call this function to change the fuel cell name (max 4x char will be displayed)
-    def name(self, fcName):
-        self.fcName.array = fcName
+    def fuelCellName(self, fcName):
+        self.fcName.value = fcName.encode('utf-8')
         return
 
     # Call this function to change the fuel cell state (max 3x char will be displayed)
     def state(self, fcState):
-        self.fcState.array = fcState
+        self.fcState.value = fcState.encode('utf-8')
         return
 
     # Call this function to change the fuel cell temperature

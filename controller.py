@@ -140,6 +140,8 @@ timeBegin = time()
 
 print("%s\n" % asctime())
 
+display.fuelCellName('H100')
+
 ########
 # Main #
 ########
