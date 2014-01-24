@@ -136,7 +136,8 @@ print("This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'
 print("This is free software, and you are welcome to redistribute it,")
 print("under certain conditions; type `show c' for details.\n")
 
-timeBegin = time()
+timeDelta = 0
+timeBegin = 0
 
 print("%s\n" % asctime())
 
@@ -148,7 +149,7 @@ display.fuelCellName('H100')
 try:
 	while (True):
 		print('\n', time(), end='\t')
-		print(time()-timeBegin, end='\t')
+		print('%02f' % timeDelta, end='\t')
 
 		# PRINT STATE
 		if state == STATE.off:
@@ -227,6 +228,7 @@ try:
 				
 				if (time() - timeChange) > startTime:
 					state = STATE.on
+					timeBegin = time()
 			#######
 			# ON  #
 			#######
@@ -234,6 +236,8 @@ try:
 				h2.switch(True)
 				fan.switch(True)
 				purge.timed(purgeFreq, purgeTime)
+				
+				timeDelta = time() - timeBegin
 				
 				# Voltage error handling
 				if (volts[0] < 10.5) and (time()-timeStart)>10:
@@ -250,6 +254,8 @@ try:
 				
 				if (time() - timeChange) > stopTime:
 					state = STATE.off
+					timeDelta = 0
+					timeBegin = 0
 			#######
 			# ERR #
 			####### 
