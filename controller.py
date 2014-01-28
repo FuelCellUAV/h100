@@ -25,6 +25,7 @@ sys.path.append('/home/pi/h100/adc')
 sys.path.append('/home/pi/h100/switch')
 sys.path.append('/home/pi/h100/display')
 sys.path.append('/home/pi/h100/temperature')
+sys.path.append('/home/pi/h100/purge')
 
 # Import libraries
 from   time      import time, sleep, asctime
@@ -38,6 +39,7 @@ from adcpi       import *
 from tmp102      import *
 from switch      import *
 from h100Display import *
+from purge       import *
 
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
@@ -45,7 +47,13 @@ parser.add_argument('--out'	   			,		help='Name of the output logfile')
 parser.add_argument('--controller'  	,type=int, 	default=1, 	help='Set to 0 for controller off')
 parser.add_argument('--purgeController' ,type=int, 	default=0, 	help='Set to 1 for purge controller on')
 parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
+parser.add_argument('--purgeFactor'  	,type=float, 	default=1,	help='Rate of change of purge frequency with current')
+parser.add_argument('--purgeMax'  	,type=float, 	default=40,	help='Max time between purges in seconds')
+parser.add_argument('--purgeFreq'  	,type=float, 	default=30,	help='Time between purges in seconds')
 parser.add_argument('--cutoff'     	,type=float, 	default=26.0,	help='Temperature cutoff in celcius')
+parser.add_argument('--p'     		,type=float, 	default=10.0,	help='Purge Proportional Controller')
+parser.add_argument('--i'     		,type=float, 	default=1.0,	help='Purge Integral Controller')
+parser.add_argument('--d'     		,type=float, 	default=0.5,	help='Purge Differential Controller')
 args = parser.parse_args()
 
 # Class to save to file & print to screen
@@ -82,7 +90,10 @@ purgeTime      = args.purgeTime
 startTime      = 4
 stopTime       = 10
 cutoff 	       = args.cutoff
-purgeController = args.purgeController
+purgeController= args.purgeController
+purgeMax       = args.purgeMax
+purgeFactor    = args.purgeFactor
+purgeFreq      = args.purgeFreq
 controller     = args.controller
 
 # State machine cases
@@ -112,7 +123,7 @@ blue      = I2cTemp(BLUE)
 earth     = I2cTemp(EARTH)
 red       = I2cTemp(RED)
 yellow    = I2cTemp(YELLOW)
-
+purgeCtrl = Purge(args.p, args.i, args.d, zero=30)
 
 #########
 # Setup #
@@ -174,8 +185,10 @@ try:
 		# ELECTRIC
 		amps[0]    = (abs(adc.val[0] * 1000 / 4.2882799485) + 0.6009) / 1.6046
 		volts[0]   = (abs(adc.val[1] * 1000 / 60.9559671563))
+		power      = volts[0]*amps[0]
 		print('v1', '\t', '%02f' % volts[0], end='\t')
 		print('a1', '\t', '%02f' % amps[0], end='\t')
+		print('p1', '\t', '%02f' % power, end='\t')
 		display.voltage(volts[0])
 		display.current(amps[0])
 
@@ -183,25 +196,32 @@ try:
 		tmpBlue    = blue()
 		tmpEarth   = earth()
 		tmpRed     = red()
-		tmpYellow  = yellow() 
-		print('tB', '\t', '%02f' % tmpBlue,   end='\t')
-		print('tE', '\t', '%02f' % tmpEarth,  end='\t')
-		print('tR', '\t', '%02f' % tmpRed,    end='\t')
-		print('tY', '\t', '%02f' % tmpYellow, end='\t')
-		if (tmpBlue >= cutoff) or (tmpEarth >= cutoff) or (tmpRed >= cutoff) or (tmpYellow >= cutoff):
+		tmpYellow  = yellow()
+		tmpMax     = max(tmpBlue, tmpEarth, tmpRed, tmpYellow)
+		print('t', '\t', '%02f' % tmpMax,   end='\t')
+		if tmpMax >= cutoff:
 			print('HOT', end='\t')
 			state = STATE.error
 		else:
 			print('OK', end='\t')
-		display.temperature(max(tmpBlue, tmpEarth, tmpRed, tmpYellow))
+		display.temperature(tmpMax)
 		
 		# PURGE CALCULATOR
 		if purgeController is 1:
-			purgeFreq = -2.5*amps[0] + 40 #was 1.8		
+#			purgeFreq = -purgeFactor*amps[0] + purgeMax #was 1.8		
+
+#			vTarget = -0.0204*math.pow(amps[0],3) + 0.234*math.pow(amps[0],2) - 1.7969*amps[0] + 19.945
+			vTarget = -1.2*amps[0] + 21
+			vError = volts[0] - vTarget
+#
+#			purgeFreq = 30 - args.p*vError
+
+			purgeFreq = purgeCtrl(vError)
+
 			clamp = lambda n, minn, maxn: max(min(maxn, n), minn)
-			purgeFreq = clamp(purgeFreq, 10, 40)
-		else:
-			purgeFreq = 30
+			purgeFreq = clamp(purgeFreq, 10, purgeMax)
+			print('vE', '\t', '%.2f' % vError, end='\t')
+			 
 		print('PF', '\t', '%.1f' % purgeFreq, end='\t')
 		
 		# FUEL CELL CONTROLLER
