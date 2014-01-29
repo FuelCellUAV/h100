@@ -21,11 +21,11 @@
 
 # Define Paths
 import sys
-sys.path.append('/home/pi/h100/adc')
-sys.path.append('/home/pi/h100/switch')
-sys.path.append('/home/pi/h100/display')
-sys.path.append('/home/pi/h100/temperature')
-sys.path.append('/home/pi/h100/purge')
+sys.path.append('./adc')
+sys.path.append('./switch')
+sys.path.append('./display')
+sys.path.append('./temperature')
+sys.path.append('./purge')
 
 # Import libraries
 <<<<<<< HEAD
