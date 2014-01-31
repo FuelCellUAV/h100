@@ -20,7 +20,8 @@
 # Includes
 import sys
 import multiprocessing
-import time
+import ctypes
+from time import time
 import pifacedigitalio
 sys.path.append('./adc')
 import adcpi
@@ -41,17 +42,17 @@ def enum(*sequential, **named):
 ##############
 class H100(multiprocessing.Process):
 	# Define Sensors
-	Adc  = AdcPi2Daemon
-	Temp = [I2cTemp(0x48),
-			I2cTemp(0x49),
-			I2cTemp(0x4A),
-			I2cTemp(0x4B)]
+	Adc  = adcpi.AdcPi2Daemon()
+	Temp = [tmp102.Tmp102Daemon(0x48),
+			tmp102.Tmp102Daemon(0x49),
+			tmp102.Tmp102Daemon(0x4A),
+			tmp102.Tmp102Daemon(0x4B)]
 	
 	# Define Switches
 	pfio  = pifacedigitalio.PiFaceDigital() # Start piface
-	fan   = Switch(0)
-	h2    = Switch(1)
-	purge = Switch(2)
+	fan   = switch.Switch(0)
+	h2    = switch.Switch(1)
+	purge = switch.Switch(2)
 	on    = 0 # Switch numbers on the pfio
 	off   = 1
 	reset = 2
@@ -71,8 +72,9 @@ class H100(multiprocessing.Process):
 	
 	# Define States
 	STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
-	state = multiprocessing.Value(ctypes.c_char_p,'') # Shared memory
-	
+	state = multiprocessing.Array(ctypes.c_char,10) # Shared memory
+	state.value = STATE.off.encode('utf-8')	
+
 	##############
 	# INITIALISE #
 	##############
@@ -80,35 +82,36 @@ class H100(multiprocessing.Process):
 		multiprocessing.Process.__init__(self)
 		self.Adc.daemon = True
 		self.Adc.start()
-		self.Temp.daemon = True
-		self.Temp.start()
+		for x in range(len(self.temp)):
+			self.Temp[x].daemon = True
+			self.Temp[x].start()
 	
 	##############
 	#    MAIN    #
 	##############
 	def run(self):
 		timeChange = time()
-		state.value = STATE.off
-		
+		self.state.value = self.STATE.off.encode('utf-8')
+
 		while True:
 			try:
 				# BUTTONS
 				if self.__getButton(self.off): # Turn off
-					if state.value == self.STATE.startup or state.value == self.STATE.on:
-						state.value = self.STATE.shutdown
+					if self.state.value == self.STATE.startup or self.state.value == self.STATE.on:
+						self.state.value = self.STATE.shutdown.encode('utf-8')
 						timeChange = time()
 				elif self.__getButton(self.on): # Turn on
-					if state.value == self.STATE.off:
-						state.value = self.STATE.startup
+					if self.state.value == self.STATE.off:
+						self.state.value = self.STATE.startup.encode('utf-8')
 						timeChange = time()
 				elif self.__getButton(self.reset): # Reset error
-					if state.value == self.STATE.error:
-						state.value = self.STATE.off
+					if self.state.value == self.STATE.error:
+						self.state.value = self.STATE.off.encode('utf-8')
 						timeChange = time()
 						
 				# OVER TEMPERATURE
 				if max(self.temp) > self.cutoffTemp:
-					state.value = self.STATE.error
+					self.state.value = self.STATE.error.encode('utf-8')
 					
 				# OVER/UNDER VOLTAGE
 					# todo, not important
@@ -116,28 +119,28 @@ class H100(multiprocessing.Process):
 				# SENSORS
 				self.amps[0]  = self.__getCurrent(0)
 				self.volts[0] = self.__getVoltage(1)
-				self.power[0] = self.volts*self.amps
+				self.power[0] = self.volts[0] * self.amps[0]
 				for x in range(len(self.temp)):
 					self.temp[x] = self.__getTemperature(x)
 					
 				# STATE MACHINE
-				if state.value == self.STATE.off:
+				if self.state.value == self.STATE.off:
 					self.stateOff()
-				if state.value == self.STATE.startup:
+				if self.state.value == self.STATE.startup:
 					self.stateStartup()
-					if (time()-timeChange) > self.startTime):
+					if (time()-timeChange) > self.startTime:
 						state.value = self.STATE.on
-				if state.value == self.STATE.on:
+				if self.state.value == self.STATE.on:
 					self.stateOn()
-				if state.value == self.STATE.shutdown:
+				if self.state.value == self.STATE.shutdown:
 					self.stateShutdown()
-					if (time()-timeChange) > self.stopTime):
-						state.value = self.STATE.off
-				if state.value == self.STATE.error:
+					if (time()-timeChange) > self.stopTime:
+						self.state.value = self.STATE.off
+				if self.state.value == self.STATE.error:
 					self.stateError()
 			finally:
 				# When the programme exits, put through the shutdown routine
-				if state.value != self.STATE.off:
+				if self.state.value != self.STATE.off:
 					timeChange = time()
 					while (time()-timeChange) < self.stopTime:
 						self.stateShutdown()
@@ -168,8 +171,8 @@ class H100(multiprocessing.Process):
 	# State Shutdown Routine
 	def stateShutdown(self):
 		self.h2.switch(False)
-		self.fan.switch(0, stopTime)
-		self.purge.switch(0 stopTime)
+		self.fan.timed(0, self.stopTime)
+		self.purge.timed(0, self.stopTime)
 	# State Error Routine
 	def stateError(self):
 		self.h2.switch(False)
@@ -184,7 +187,7 @@ class H100(multiprocessing.Process):
 	##############
 	# Get State String (global)
 	def getState(self):
-		return self.state.value
+		return self.state
 	# Get Current (global)	
 	def getCurrent(self):
 		return self.amps
@@ -196,7 +199,7 @@ class H100(multiprocessing.Process):
 		return self.power
 	# Get Temperature (global)
 	def getTemperature(self):
-		return self.Temp
+		return self.temp
 	
 	##############
 	#INT. GETTERS#

@@ -81,25 +81,30 @@ class FuelCellDisplay (multiprocessing.Process):
     # This is the main process loop called by start()
     def run(self):
         self.counter = 0
-        while(True):
-            self.cad.lcd.home() # Set the cursor to the beginning
-
-            # Write the top line
-            self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'
-                .format(self.fcName.value[:4], self.fcState.value[:3], self.temp.value))
-            self.cad.lcd.write_custom_bitmap(self.temp_symbol_index)
-            self.cad.lcd.write(' ')
-
-            # A statement for my pretty bitmap animation
-            self.cad.lcd.write_custom_bitmap(self.progress_index[self.counter])
-            if self.counter < 6:
-                self.counter = self.counter + 1
-            else:
-                self.counter = 0            
-
-            # Write the bottom line
-            self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W'
-                .format(self.vFc.value, self.iFc.value, self.vFc.value*self.iFc.value))
+	try:
+	        while(True):
+	            self.cad.lcd.home() # Set the cursor to the beginning
+	
+	            # Write the top line
+	            self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'
+	                .format(self.fcName.value[:4], self.fcState.value[:3], self.temp.value))
+	            self.cad.lcd.write_custom_bitmap(self.temp_symbol_index)
+	            self.cad.lcd.write(' ')
+	
+	            # A statement for my pretty bitmap animation
+	            self.cad.lcd.write_custom_bitmap(self.progress_index[self.counter])
+	            if self.counter < 6:
+	                self.counter = self.counter + 1
+	            else:
+	                self.counter = 0            
+	
+	            # Write the bottom line
+	            self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W'
+	                .format(self.vFc.value, self.iFc.value, self.vFc.value*self.iFc.value))
+         finally:
+                self.cad.lcd.clear()
+                self.cad.lcd.backlight_off()
+                print('\nPiFace CAD Shut Down\n')
 
     # Call this function to change the fuel cell name (max 4x char will be displayed)
     def name(self, fcName):
@@ -125,10 +130,3 @@ class FuelCellDisplay (multiprocessing.Process):
     def current(self, current):
         self.iFc.value = current
         return
-
-    # Process stop code (TBC)
-    def stop(self):
-         self._Process__stop()
-    def __exit__(self):
-        self.cad.lcd.clear()
-        self.cad.lcd.backlight_off()        

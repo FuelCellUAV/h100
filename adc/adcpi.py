@@ -19,7 +19,6 @@
 import multiprocessing
 import quick2wire.i2c as i2c
 import re
-import I2c
 
 class AdcPi2:
 	
@@ -100,15 +99,15 @@ class AdcPi2Daemon( AdcPi2 , multiprocessing.Process):
 		self.Name = 'AdcPi2'
 
 	def run(self):
-		while True:
-			self.val[0] = self.get(self.adc_address1, 0x9C)
-			self.val[1] = self.get(self.adc_address1, 0xBC)
-			self.val[2] = self.get(self.adc_address1, 0xDC)
-			self.val[3] = self.get(self.adc_address1, 0xFC)
-			self.val[4] = self.get(self.adc_address2, 0x9C)
-			self.val[5] = self.get(self.adc_address2, 0xBC)
-			self.val[6] = self.get(self.adc_address2, 0xDC)
-			self.val[7] = self.get(self.adc_address2, 0xFC)
-
-	def stop(self):
-		return
+		try:
+			while True:
+				self.val[0] = self.get(self.adc_address1, 0x9C)
+				self.val[1] = self.get(self.adc_address1, 0xBC)
+				self.val[2] = self.get(self.adc_address1, 0xDC)
+				self.val[3] = self.get(self.adc_address1, 0xFC)
+				self.val[4] = self.get(self.adc_address2, 0x9C)
+				self.val[5] = self.get(self.adc_address2, 0xBC)
+				self.val[6] = self.get(self.adc_address2, 0xDC)
+				self.val[7] = self.get(self.adc_address2, 0xFC)
+		finally:
+			print('\nADC Shut Down\n')

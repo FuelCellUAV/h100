@@ -21,7 +21,11 @@
 import sys
 import time
 import pifacecad
+sys.path.append('/home/pi/h100/display')
+import h100Display
 import h100Controller
+import argparse
+import multiprocessing
 	
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
@@ -30,30 +34,30 @@ args = parser.parse_args()
 
 # Class to save to file & print to screen
 class MyWriter:
-def __init__(self, stdout, filename):
-	self.stdout = stdout
-	self.logfile = open(filename, 'a')
-def write(self, text):
-	self.stdout.write(text)
-	self.logfile.write(text)
-def close(self):
-	self.stdout.close()
-	self.logfile.close()
-def flush(self):
-	self.stdout.flush()
+	def __init__(self, stdout, filename):
+		self.stdout = stdout
+		self.logfile = open(filename, 'a')
+	def write(self, text):
+		self.stdout.write(text)
+		self.logfile.write(text)
+	def close(self):
+		self.stdout.close()
+		self.logfile.close()
+	def flush(self):
+		self.stdout.flush()
 
 # Look at user arguments
 if args.out: # save to output file
-writer     = MyWriter(sys.stdout, args.out)
-sys.stdout = writer
+	writer     = MyWriter(sys.stdout, args.out)
+	sys.stdout = writer
 
 #########
 # Setup #
 #########
-display        = FuelCellDisplay(1, "PF Display")
+display        = h100Display.FuelCellDisplay(1, "PF Display")
 display.daemon = True # To ensure the process is killed on exit
 
-h100 = H100()
+h100 = h100Controller.H100()
 h100.daemon = True
 
 print("\nFuel Cell Controller")
@@ -66,7 +70,7 @@ print("This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'
 print("This is free software, and you are welcome to redistribute it,")
 print("under certain conditions; type `show c' for details.\n")
 
-print("%s\n" % asctime())
+print("%s\n" % time.asctime())
 
 display.fuelCellName('H100')
 
@@ -76,12 +80,14 @@ display.fuelCellName('H100')
 try:
 	h100.start()
 	display.start()
-	while (True):
-		print('\n', time(), end='\t')
 
+	while (True):
+		print('\n', time.time(), end='\t')
+		
 		# PRINT STATE
-		print('%s', h100.getState()[:3], end='\t')
-		display.state(h100.getState())
+		print(h100.getState().value.decode('utf-8'), end='\t')
+
+		display.state(h100.getState().value.decode('utf-8'))
 
 		# ELECTRIC
 		print('v1', '\t', '%02f' % h100.getVoltage()[0], end='\t')
@@ -91,13 +97,11 @@ try:
 		display.current(h100.getCurrent()[0])
 
 		# TEMPERATURE
-		print('tMax', '\t', '%02f' % max(h100.getTemperature()), end='\t')
+		print('tMax', '\t', max(h100.getTemperature()), end='\t')
 		display.temperature(max(h100.getTemperature()))
 		
 # Programme Exit Code
 finally:
-	h100.stop()
-	display.stop()
 	print('\n\n\nProgramme successfully exited and closed down\n\n')
 #######
 # End #
