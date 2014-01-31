@@ -53,7 +53,7 @@ parser.add_argument('--purgeFreq'  	,type=float, 	default=30,	help='Time between
 parser.add_argument('--cutoff'     	,type=float, 	default=26.0,	help='Temperature cutoff in celcius')
 parser.add_argument('--p'     		,type=float, 	default=10.0,	help='Purge Proportional Controller')
 parser.add_argument('--i'     		,type=float, 	default=1.0,	help='Purge Integral Controller')
-parser.add_argument('--d'     		,type=float, 	default=0.5,	help='Purge Differential Controller')
+parser.add_argument('--d'     		,type=float, 	default=1.0,	help='Purge Differential Controller')
 args = parser.parse_args()
 
 # Class to save to file & print to screen
@@ -296,6 +296,20 @@ try:
 except (KeyboardInterrupt, SystemExit):
     sys.exit(1)
 finally:
+    # Fuel Cell Shutdown Routine
+    timeChange = time()
+    while (True):
+        h2.switch(False)
+        fan.timed(0, stopTime)
+        purge.timed(0, stopTime)
+				
+        if (time() - timeChange) > stopTime:
+            state = STATE.off
+            timeDelta = 0
+            timeBegin = 0
+            break
+
+    # Close for storage
     h2.switch(False)
     purge.switch(False)
     fan.switch(False)
