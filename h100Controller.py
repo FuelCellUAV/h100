@@ -41,8 +41,8 @@ def enum(*sequential, **named):
 ##############
 class H100(multiprocessing.Process):
 	# Define Sensors
-	adc  = AdcPi2Daemon
-	temp = [I2cTemp(0x48),
+	Adc  = AdcPi2Daemon
+	Temp = [I2cTemp(0x48),
 			I2cTemp(0x49),
 			I2cTemp(0x4A),
 			I2cTemp(0x4B)]
@@ -52,38 +52,165 @@ class H100(multiprocessing.Process):
 	fan   = Switch(0)
 	h2    = Switch(1)
 	purge = Switch(2)
-	on    = 0
+	on    = 0 # Switch numbers on the pfio
 	off   = 1
 	reset = 2
 	
+	# Define Variables
+	amps  = multiprocessing.Array('d',[0]*8) # Shared memory
+	volts = multiprocessing.Array('d',[0]*8)
+	power = multiprocessing.Array('d',[0]*4)
+	temp  = multiprocessing.Array('d',[0]*4)
+	
+	# Define Controllables
+	startTime = 3   # Seconds
+	stopTime  = 10  # Seconds
+	purgeTime = 0.5 # Seconds
+	purgeFreq = 30  # Seconds
+	cutoffTemp= 30  # Celsius
+	
 	# Define States
 	STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
-	state = multiprocessing.Value(ctypes.c_char_p,'')
-	state.value = STATE.off
+	state = multiprocessing.Value(ctypes.c_char_p,'') # Shared memory
 	
-	# Init Code
+	##############
+	# INITIALISE #
+	##############
 	def __init__(self):
 		multiprocessing.Process.__init__(self)
-		self.adc.daemon = True
-		self.adc.start()
+		self.Adc.daemon = True
+		self.Adc.start()
+		self.Temp.daemon = True
+		self.Temp.start()
 	
-	# Main run code
+	##############
+	#    MAIN    #
+	##############
 	def run(self):
 		timeChange = time()
+		state.value = STATE.off
+		
 		while True:
-			# STOP BUTTON
-			if (self.pfio.input_pins[on].value == False) and (self.pfio.input_pins[off].value == True):
-				if self.state.value == self.STATE.startup or self.state.value == self.STATE.on:
-					self.state.value = STATE.shutdown
+			try:
+				# BUTTONS
+				if self.__getButton(self.off): # Turn off
+					if state.value == self.STATE.startup or state.value == self.STATE.on:
+						state.value = self.STATE.shutdown
+						timeChange = time()
+				elif self.__getButton(self.on): # Turn on
+					if state.value == self.STATE.off:
+						state.value = self.STATE.startup
+						timeChange = time()
+				elif self.__getButton(self.reset): # Reset error
+					if state.value == self.STATE.error:
+						state.value = self.STATE.off
+						timeChange = time()
+						
+				# OVER TEMPERATURE
+				if max(self.temp) > self.cutoffTemp:
+					state.value = self.STATE.error
+					
+				# OVER/UNDER VOLTAGE
+					# todo, not important
+					
+				# SENSORS
+				self.amps[0]  = self.__getCurrent(0)
+				self.volts[0] = self.__getVoltage(1)
+				self.power[0] = self.volts*self.amps
+				for x in range(len(self.temp)):
+					self.temp[x] = self.__getTemperature(x)
+					
+				# STATE MACHINE
+				if state.value == self.STATE.off:
+					self.stateOff()
+				if state.value == self.STATE.startup:
+					self.stateStartup()
+					if (time()-timeChange) > self.startTime):
+						state.value = self.STATE.on
+				if state.value == self.STATE.on:
+					self.stateOn()
+				if state.value == self.STATE.shutdown:
+					self.stateShutdown()
+					if (time()-timeChange) > self.stopTime):
+						state.value = self.STATE.off
+				if state.value == self.STATE.error:
+					self.stateError()
+			finally:
+				# When the programme exits, put through the shutdown routine
+				if state.value != self.STATE.off:
 					timeChange = time()
-			amps					
-			
-			
-	# Get State String
+					while (time()-timeChange) < self.stopTime:
+						self.stateShutdown()
+				self.Adc.stop()
+				for x in range(len(self.temp)):
+					self.Temp[x].stop()
+				del Adc, Temp, purge, h2, fan, pfio
+				print('\n\n\nFuel Cell Shut Down\n\n')
+	
+	##############
+	#  ROUTINES  #
+	##############
+	# State Off Routine
+	def stateOff(self):
+		self.h2.switch(False)
+		self.fan.switch(False)
+		self.purge.switch(False)
+	# State Startup Routine	
+	def stateStartup(self):
+		self.h2.timed(0, self.startTime)
+		self.fan.timed(0, self.startTime)
+		self.purge.timed(0, self.startTime)
+	# State On Routine
+	def stateOn(self):
+		self.h2.switch(True)
+		self.fan.switch(True)
+		self.purge.switch(self.purgeFreq, self.purgeTime)
+	# State Shutdown Routine
+	def stateShutdown(self):
+		self.h2.switch(False)
+		self.fan.switch(0, stopTime)
+		self.purge.switch(0 stopTime)
+	# State Error Routine
+	def stateError(self):
+		self.h2.switch(False)
+		self.purge.switch(False)
+		if max(self.temp) > self.cutoffTemp:
+			self.fan.switch(True)
+		else:
+			self.fan.switch(False)
+	
+	##############
+	#EXT. GETTERS#
+	##############
+	# Get State String (global)
 	def getState(self):
 		return self.state.value
-		
-	# Get Current
+	# Get Current (global)	
 	def getCurrent(self):
-		amps[0] = (abs(adc.val[0] * 1000 / 4.2882799485) + 0.6009) / 1.6046
+		return self.amps
+	# Get Voltage (global)	
+	def getVoltage(self):
+		return self.volts
+	# Get Power (global)	
+	def getPower(self):
+		return self.power
+	# Get Temperature (global)
+	def getTemperature(self):
+		return self.Temp
+	
+	##############
+	#INT. GETTERS#
+	##############
+	# Get Current (internal)
+	def __getCurrent(self, channel):
+		return (abs(self.Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046
+	# Get Voltage (internal)
+	def __getVoltage(self, channel):
+		return (abs(self.Adc.val[channel] * 1000 / 60.9559671563))
+	# Get Temperature (internal)
+	def __getTemperature(self, channel):
+		return self.Temp[channel]
+	# Get Button (internal)
+	def __getButton(self, button):
+		return self.pfio.input_pins[button].value
 		

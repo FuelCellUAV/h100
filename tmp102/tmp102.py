@@ -6,6 +6,7 @@ from smbus import SMBus
 # Class to read I2c TMP102 Temperature Sensor
 class I2cTemp(I2c):
     address = 0x00
+	temperature = 0.0
 
     def __init__(self, address):
         self.address = address
@@ -17,13 +18,14 @@ class I2cTemp(I2c):
             msb  = (tmp & 0x00ff)
             lsb  = (tmp & 0xff00) >> 8
             temp = ((( msb * 256 ) + lsb) >> 4 ) * 0.0625
+			self.temperature = temp
             return temp
         except Exception as e:
             #print ("I2C Temp Error")
             return -1
 			
 	def __call__(self):
-	    return self.get()
+	    return self.temperature
 
 class I2cTempDaemon( I2cTemp , multiprocessing.Process):
     val      = multiprocessing.Value('d',0.0)
