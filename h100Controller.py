@@ -20,6 +20,7 @@
 # Includes
 import sys
 import multiprocessing
+from multiprocessing.managers import BaseManager
 import ctypes
 from time import time
 import pifacedigitalio
@@ -37,16 +38,22 @@ def enum(*sequential, **named):
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 
+class MyManager(BaseManager):
+	pass
+
+MyManager.register('ADC', adcpi.AdcPi2Daemon)
+MyManager.register('TMP102', tmp102.Tmp102Daemon)
+
 ##############
 # CONTROLLER #
 ##############
 class H100(multiprocessing.Process):
 	# Define Sensors
-	Adc  = adcpi.AdcPi2Daemon()
-	Temp = [tmp102.Tmp102Daemon(0x48),
-			tmp102.Tmp102Daemon(0x49),
-			tmp102.Tmp102Daemon(0x4A),
-			tmp102.Tmp102Daemon(0x4B)]
+#	Adc  = adcpi.AdcPi2Daemon()
+#	Temp = [tmp102.Tmp102Daemon(0x48),
+#			tmp102.Tmp102Daemon(0x49),
+#			tmp102.Tmp102Daemon(0x4A),
+#			tmp102.Tmp102Daemon(0x4B)]
 	
 	# Define Switches
 	pfio  = pifacedigitalio.PiFaceDigital() # Start piface
@@ -80,12 +87,18 @@ class H100(multiprocessing.Process):
 	##############
 	def __init__(self):
 		multiprocessing.Process.__init__(self)
-		self.Adc.daemon = True
-		self.Adc.start()
-		for x in range(len(self.temp)):
-			self.Temp[x].daemon = True
-			self.Temp[x].start()
-	
+#		self.Adc.daemon = True
+#		self.Adc.start()
+#		for x in range(len(self.temp)):
+#			self.Temp[x].daemon = True
+#			self.Temp[x].start()
+		self.manager = MyManager()
+		self.manager.start()
+		self.Adc = self.manager.ADC()
+		self.Temp = [self.manager.TMP102(0x48),
+				self.manager.TMP102(0x49),
+				self.manager.TMP102(0x4A),
+				self.manager.TMP102(0x4B)]
 	##############
 	#    MAIN    #
 	##############
@@ -94,6 +107,7 @@ class H100(multiprocessing.Process):
 		self.state.value = self.STATE.off.encode('utf-8')
 
 		while True:
+			print('Running')
 			try:
 				# BUTTONS
 				if self.__getButton(self.off): # Turn off
@@ -108,7 +122,7 @@ class H100(multiprocessing.Process):
 					if self.state.value == self.STATE.error:
 						self.state.value = self.STATE.off.encode('utf-8')
 						timeChange = time()
-						
+				print('Checked buttons')		
 				# OVER TEMPERATURE
 				if max(self.temp) > self.cutoffTemp:
 					self.state.value = self.STATE.error.encode('utf-8')
@@ -124,7 +138,9 @@ class H100(multiprocessing.Process):
 					self.temp[x] = self.__getTemperature(x)
 					
 				# STATE MACHINE
+				print('Checking State:', end=' ')
 				if self.state.value == self.STATE.off:
+					print('off')
 					self.stateOff()
 				if self.state.value == self.STATE.startup:
 					self.stateStartup()
@@ -144,6 +160,9 @@ class H100(multiprocessing.Process):
 					timeChange = time()
 					while (time()-timeChange) < self.stopTime:
 						self.stateShutdown()
+					self.stateOff()
+					self.state.value = self.STATE.off
+					print('Fuel Cell Off')
 				self.Adc.stop()
 				for x in range(len(self.temp)):
 					self.Temp[x].stop()
@@ -155,6 +174,7 @@ class H100(multiprocessing.Process):
 	##############
 	# State Off Routine
 	def stateOff(self):
+		print('OFF ROUTINE')
 		self.h2.switch(False)
 		self.fan.switch(False)
 		self.purge.switch(False)

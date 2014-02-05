@@ -54,11 +54,19 @@ if args.out: # save to output file
 #########
 # Setup #
 #########
-display        = h100Display.FuelCellDisplay(1, "PF Display")
-display.daemon = True # To ensure the process is killed on exit
+#display        = h100Display.FuelCellDisplay(1, "PF Display")
+#display.daemon = True # To ensure the process is killed on exit
 
-h100 = h100Controller.H100()
-h100.daemon = True
+from multiprocessing.managers import BaseManager
+
+class MyManager(BaseManager):
+	pass
+
+MyManager.register('H100',h100Controller.H100)
+MyManager.register('CAD',h100Display.FuelCellDisplay)
+
+#h100 = h100Controller.H100()
+#h100.daemon = True
 
 print("\nFuel Cell Controller")
 print("Horizon H-100 Stack")
@@ -72,22 +80,27 @@ print("under certain conditions; type `show c' for details.\n")
 
 print("%s\n" % time.asctime())
 
-display.fuelCellName('H100')
+#display.fuelCellName('H100')
 
 ########
 # Main #
 ########
 try:
-	h100.start()
-	display.start()
+	manager = MyManager()
+	manager.start()
+	h100 = manager.H100()
+#	h100.start()
+	display = manager.CAD(1, "PF Display")
+	display.fuelCellName('H100')
+#	display.start()
 
 	while (True):
 		print('\n', time.time(), end='\t')
 		
 		# PRINT STATE
-		print(h100.getState().value.decode('utf-8'), end='\t')
+#		print(h100.getState().value.decode('utf-8'), end='\t')
 
-		display.state(h100.getState().value.decode('utf-8'))
+#		display.state(h100.getState().value.decode('utf-8'))
 
 		# ELECTRIC
 		print('v1', '\t', '%02f' % h100.getVoltage()[0], end='\t')
