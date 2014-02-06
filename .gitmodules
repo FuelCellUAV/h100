@@ -4,3 +4,6 @@
 [submodule "piface"]
 	path = piface
 	url = git://github.com/piface/pifacedigitalio.git
+[submodule "pifacecad"]
+	path = pifacecad
+	url = https://github.com/piface/pifacecad.git
