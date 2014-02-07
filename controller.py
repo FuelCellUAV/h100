@@ -59,7 +59,7 @@ display = h100Display.FuelCellDisplay(1, "PF Display")
 display.daemon = True # To ensure the process is killed on exit
 
 h100 = h100Controller.H100()
-h100.daemon = True
+#h100.daemon = True
 
 print("\nFuel Cell Controller")
 print("Horizon H-100 Stack")
@@ -79,15 +79,15 @@ display.fuelCellName('H100')
 # Main #
 ########
 try:
-    h100.start()
+    h100.run()
     display.start()
 
     while (True):
         print('\n', time.time(), end='\t')
 
         # PRINT STATE
-        print(h100.getState().value.decode('utf-8'), end='\t')
-        display.state(h100.getState().value.decode('utf-8'))
+        print(h100.getState(), end='\t')
+        display.state(h100.getState())
 
         # ELECTRIC
         print('v1', '\t', '%02f' % h100.getVoltage()[0], end='\t')
@@ -102,6 +102,7 @@ try:
 
 # Programme Exit Code
 finally:
+    h100.shutdown()
     print('\n\n\nProgramme successfully exited and closed down\n\n')
 #######
 # End #

@@ -18,9 +18,8 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Includes
-import multiprocessing
 from time import time
-from pifacedigitalio import pifacedigitalio
+import pifacedigitalio
 from adc import adcpi
 from temperature import tmp102
 from switch import switch
@@ -35,7 +34,7 @@ def enum(*sequential, **named):
 ##############
 # CONTROLLER #
 ##############
-class H100(multiprocessing.Process):
+class H100():
     # Define Sensors
     Adc = adcpi.AdcPi2Daemon()
     Temp = [tmp102.Tmp102Daemon(0x48),
@@ -73,7 +72,6 @@ class H100(multiprocessing.Process):
     # INITIALISE #
     ##############
     def __init__(self):
-        multiprocessing.Process.__init__(self)
         self.Adc.daemon = True
         self.Adc.start()
         for x in range(len(self.temp)):
@@ -87,8 +85,7 @@ class H100(multiprocessing.Process):
         timeChange = time()
         self.state = self.STATE.off
 
-        while True:
-            print('Running')
+        if True:
             try:
                 # BUTTONS
                 if self.__getButton(self.off): # Turn off
@@ -103,7 +100,6 @@ class H100(multiprocessing.Process):
                     if self.state == self.STATE.error:
                         self.state = self.STATE.off
                         timeChange = time()
-                print('Checked buttons')
                 # OVER TEMPERATURE
                 if max(self.temp) > self.cutoffTemp:
                     self.state = self.STATE.error
@@ -119,9 +115,7 @@ class H100(multiprocessing.Process):
                     self.temp[x] = self.__getTemperature(x)
 
                 # STATE MACHINE
-                print('Checking State:', end=' ')
                 if self.state == self.STATE.off:
-                    print('off')
                     self.stateOff()
                 if self.state == self.STATE.startup:
                     self.stateStartup()
@@ -135,23 +129,23 @@ class H100(multiprocessing.Process):
                         self.state = self.STATE.off
                 if self.state == self.STATE.error:
                     self.stateError()
-            finally:
-                # When the programme exits, put through the shutdown routine
-                if self.state != self.STATE.off:
-                    timeChange = time()
-                    while (time() - timeChange) < self.stopTime:
-                        self.stateShutdown()
-                    self.stateOff()
-                    self.state = self.STATE.off
-                    print('Fuel Cell Off')
-                print('\n\n\nFuel Cell Shut Down\n\n')
+
+    def shutdown(self):
+        # When the programme exits, put through the shutdown routine
+        if self.state != self.STATE.off:
+            timeChange = time()
+            while (time() - timeChange) < self.stopTime:
+                self.stateShutdown()
+            self.stateOff()
+            self.state = self.STATE.off
+            print('Fuel Cell Off')
+        print('\n\n\nFuel Cell Shut Down\n\n')
 
     ##############
     #  ROUTINES  #
     ##############
     # State Off Routine
     def stateOff(self):
-        print('OFF ROUTINE')
         self.h2.switch(False)
         self.fan.switch(False)
         self.purge.switch(False)
