@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="38c56368-0fed-4d59-a918-033bf4beb2ac" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/adc/adcpi.py" afterPath="$PROJECT_DIR$/adc/adcpi.py" />
+    <list default="true" id="38c56368-0fed-4d59-a918-033bf4beb2ac" name="Default" comment="submodule upgrades">
+      <change type="DELETED" beforePath="C:\Users\Simon\Documents\GitHub\h100\h100Display\h100Display.py" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/controller.py" afterPath="$PROJECT_DIR$/controller.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/h100Controller.py" afterPath="$PROJECT_DIR$/h100Controller.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="h100.iws" />
@@ -29,7 +31,7 @@
       <file leaf-file-name="controller.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/controller.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="25" column="21" selection-start="921" selection-end="921" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2159">
+            <state line="81" column="10" selection-start="2344" selection-end="2344" vertical-scroll-proportion="0.0" vertical-offset="1249" max-vertical-offset="1938">
               <folding>
                 <element signature="e#800#810#0" expanded="true" />
               </folding>
@@ -40,9 +42,27 @@
       <file leaf-file-name="h100Controller.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/h100Controller.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="51" column="13" selection-start="1729" selection-end="1729" vertical-scroll-proportion="0.26198632" vertical-offset="714" max-vertical-offset="3995">
+            <state line="20" column="22" selection-start="814" selection-end="814" vertical-scroll-proportion="-0.37402597" vertical-offset="484" max-vertical-offset="3961">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="switch.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/switch/switch.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="19" column="13" selection-start="812" selection-end="812" vertical-scroll-proportion="0.0" vertical-offset="244" max-vertical-offset="1139">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="adcpi.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/adc/adcpi.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="97" column="46" selection-start="3253" selection-end="3291" vertical-scroll-proportion="0.0" vertical-offset="1502" max-vertical-offset="2040">
               <folding>
-                <element signature="e#792#813#0" expanded="true" />
+                <element signature="e#599#621#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -67,14 +87,14 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/controller.py" />
-        <option value="$PROJECT_DIR$/h100Controller.py" />
         <option value="$PROJECT_DIR$/switch/switch.py" />
         <option value="$PROJECT_DIR$/temperature/tmp102.py" />
         <option value="$PROJECT_DIR$/purge/purge.py" />
         <option value="$PROJECT_DIR$/h100Display/h100Display.py" />
         <option value="$PROJECT_DIR$/display/h100Display.py" />
         <option value="$PROJECT_DIR$/adc/adcpi.py" />
+        <option value="$PROJECT_DIR$/controller.py" />
+        <option value="$PROJECT_DIR$/h100Controller.py" />
       </list>
     </option>
   </component>
@@ -125,6 +145,34 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="h100" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="h100" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="h100" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="switch" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="h100" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="h100" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="display" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -317,14 +365,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32843137" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24304539" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24304539" sideWeight="0.67156863" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -343,11 +391,15 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
     <MESSAGE value="formtting upgrades" />
-    <option name="LAST_COMMIT_MESSAGE" value="formtting upgrades" />
+    <MESSAGE value="submodule upgrades" />
+    <option name="LAST_COMMIT_MESSAGE" value="submodule upgrades" />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -380,24 +432,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/controller.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="21" selection-start="921" selection-end="921" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2159">
-          <folding>
-            <element signature="e#800#810#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/switch/switch.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="11" selection-start="921" selection-end="921" vertical-scroll-proportion="0.69624573" vertical-offset="0" max-vertical-offset="1139">
-          <folding>
-            <element signature="e#799#820#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/temperature/tmp102.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="34" column="0" selection-start="930" selection-end="930" vertical-scroll-proportion="0.5068259" vertical-offset="264" max-vertical-offset="901">
@@ -412,39 +446,44 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/h100Display/h100Display.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="110" column="8" selection-start="4491" selection-end="4491" vertical-scroll-proportion="0.5068259" vertical-offset="1573" max-vertical-offset="2363">
-          <folding>
-            <element signature="e#1202#1212#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/display/h100Display.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="108" column="27" selection-start="4500" selection-end="4500" vertical-scroll-proportion="3.1331058" vertical-offset="0" max-vertical-offset="3060">
+        <state line="88" column="29" selection-start="3548" selection-end="3548" vertical-scroll-proportion="2.552901" vertical-offset="0" max-vertical-offset="3060">
           <folding>
             <element signature="e#1202#1224#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/switch/switch.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="19" column="13" selection-start="812" selection-end="812" vertical-scroll-proportion="0.0" vertical-offset="499" max-vertical-offset="1139">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/adc/adcpi.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="75" column="33" selection-start="2428" selection-end="2428" vertical-scroll-proportion="0.70989764" vertical-offset="859" max-vertical-offset="2040">
+        <state line="97" column="46" selection-start="3253" selection-end="3291" vertical-scroll-proportion="0.0" vertical-offset="1502" max-vertical-offset="2040">
           <folding>
             <element signature="e#599#621#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/controller.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="81" column="10" selection-start="2344" selection-end="2344" vertical-scroll-proportion="0.0" vertical-offset="1249" max-vertical-offset="1938">
+          <folding>
+            <element signature="e#800#810#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/h100Controller.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="51" column="13" selection-start="1729" selection-end="1729" vertical-scroll-proportion="0.26198632" vertical-offset="714" max-vertical-offset="3995">
-          <folding>
-            <element signature="e#792#813#0" expanded="true" />
-          </folding>
+        <state line="20" column="22" selection-start="814" selection-end="814" vertical-scroll-proportion="-0.37402597" vertical-offset="484" max-vertical-offset="3961">
+          <folding />
         </state>
       </provider>
     </entry>

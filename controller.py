@@ -20,53 +20,46 @@
 # Import libraries
 import sys
 import time
-import pifacecad
-sys.path.append('/home/pi/h100/display')
-import h100Display
-import h100Controller
 import argparse
-import multiprocessing
-	
+from display import h100Display
+import h100Controller
+
+
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
-parser.add_argument('--out'	   			,		help='Name of the output logfile')
+parser.add_argument('--out', help='Name of the output logfile')
 args = parser.parse_args()
 
 # Class to save to file & print to screen
 class MyWriter:
-	def __init__(self, stdout, filename):
-		self.stdout = stdout
-		self.logfile = open(filename, 'a')
-	def write(self, text):
-		self.stdout.write(text)
-		self.logfile.write(text)
-	def close(self):
-		self.stdout.close()
-		self.logfile.close()
-	def flush(self):
-		self.stdout.flush()
+    def __init__(self, stdout, filename):
+        self.stdout = stdout
+        self.logfile = open(filename, 'a')
+
+    def write(self, text):
+        self.stdout.write(text)
+        self.logfile.write(text)
+
+    def close(self):
+        self.stdout.close()
+        self.logfile.close()
+
+    def flush(self):
+        self.stdout.flush()
 
 # Look at user arguments
 if args.out: # save to output file
-	writer     = MyWriter(sys.stdout, args.out)
-	sys.stdout = writer
+    writer = MyWriter(sys.stdout, args.out)
+    sys.stdout = writer
 
 #########
 # Setup #
 #########
-#display        = h100Display.FuelCellDisplay(1, "PF Display")
-#display.daemon = True # To ensure the process is killed on exit
+display = h100Display.FuelCellDisplay(1, "PF Display")
+display.daemon = True # To ensure the process is killed on exit
 
-from multiprocessing.managers import BaseManager
-
-class MyManager(BaseManager):
-	pass
-
-MyManager.register('H100',h100Controller.H100)
-MyManager.register('CAD',h100Display.FuelCellDisplay)
-
-#h100 = h100Controller.H100()
-#h100.daemon = True
+h100 = h100Controller.H100()
+h100.daemon = True
 
 print("\nFuel Cell Controller")
 print("Horizon H-100 Stack")
@@ -80,42 +73,36 @@ print("under certain conditions; type `show c' for details.\n")
 
 print("%s\n" % time.asctime())
 
-#display.fuelCellName('H100')
+display.fuelCellName('H100')
 
 ########
 # Main #
 ########
 try:
-	manager = MyManager()
-	manager.start()
-	h100 = manager.H100()
-#	h100.start()
-	display = manager.CAD(1, "PF Display")
-	display.fuelCellName('H100')
-#	display.start()
+    h100.start()
+    display.start()
 
-	while (True):
-		print('\n', time.time(), end='\t')
-		
-		# PRINT STATE
-#		print(h100.getState().value.decode('utf-8'), end='\t')
+    while (True):
+        print('\n', time.time(), end='\t')
 
-#		display.state(h100.getState().value.decode('utf-8'))
+        # PRINT STATE
+        print(h100.getState().value.decode('utf-8'), end='\t')
+        display.state(h100.getState().value.decode('utf-8'))
 
-		# ELECTRIC
-		print('v1', '\t', '%02f' % h100.getVoltage()[0], end='\t')
-		print('a1', '\t', '%02f' % h100.getCurrent()[0], end='\t')
-		print('p1', '\t', '%02f' % h100.getPower()[0], end='\t')
-		display.voltage(h100.getVoltage()[0])
-		display.current(h100.getCurrent()[0])
+        # ELECTRIC
+        print('v1', '\t', '%02f' % h100.getVoltage()[0], end='\t')
+        print('a1', '\t', '%02f' % h100.getCurrent()[0], end='\t')
+        print('p1', '\t', '%02f' % h100.getPower()[0], end='\t')
+        display.voltage(h100.getVoltage()[0])
+        display.current(h100.getCurrent()[0])
 
-		# TEMPERATURE
-		print('tMax', '\t', max(h100.getTemperature()), end='\t')
-		display.temperature(max(h100.getTemperature()))
-		
+        # TEMPERATURE
+        print('tMax', '\t', max(h100.getTemperature()), end='\t')
+        display.temperature(max(h100.getTemperature()))
+
 # Programme Exit Code
 finally:
-	print('\n\n\nProgramme successfully exited and closed down\n\n')
+    print('\n\n\nProgramme successfully exited and closed down\n\n')
 #######
 # End #
 #######

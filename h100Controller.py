@@ -18,8 +18,9 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Includes
+import multiprocessing
 from time import time
-from piface import pifacedigitalio
+from pifacedigitalio import pifacedigitalio
 from adc import adcpi
 from temperature import tmp102
 from switch import switch
@@ -34,7 +35,7 @@ def enum(*sequential, **named):
 ##############
 # CONTROLLER #
 ##############
-class H100():
+class H100(multiprocessing.Process):
     # Define Sensors
     Adc = adcpi.AdcPi2Daemon()
     Temp = [tmp102.Tmp102Daemon(0x48),
@@ -72,6 +73,7 @@ class H100():
     # INITIALISE #
     ##############
     def __init__(self):
+        multiprocessing.Process.__init__(self)
         self.Adc.daemon = True
         self.Adc.start()
         for x in range(len(self.temp)):
@@ -142,10 +144,6 @@ class H100():
                     self.stateOff()
                     self.state = self.STATE.off
                     print('Fuel Cell Off')
-                self.Adc.stop()
-                for x in range(len(self.temp)):
-                    self.Temp[x].stop()
-                del Adc, Temp, purge, h2, fan, pfio
                 print('\n\n\nFuel Cell Shut Down\n\n')
 
     ##############
@@ -168,7 +166,7 @@ class H100():
     def stateOn(self):
         self.h2.switch(True)
         self.fan.switch(True)
-        self.purge.switch(self.purgeFreq, self.purgeTime)
+        self.purge.timed(self.purgeFreq, self.purgeTime)
 
     # State Shutdown Routine
     def stateShutdown(self):
