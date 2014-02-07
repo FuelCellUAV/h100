@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # Re-written by Simon Howroyd 2014 for python3
 #
@@ -72,7 +71,7 @@ class AdcPi2:
             # shift bits to product result
             t = ((h & 0b00000001) << 16) | (m << 8) | l
             # check if positive or negative number and invert if needed
-            if (h > 128):
+            if h > 128:
                 t = ~(0x020000 - t)
             return t * self.varMultiplier
 

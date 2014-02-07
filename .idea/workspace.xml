@@ -2,15 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="38c56368-0fed-4d59-a918-033bf4beb2ac" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/adc/adcpi.py" afterPath="$PROJECT_DIR$/adc/adcpi.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/h100Controller.py" afterPath="$PROJECT_DIR$/h100Controller.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/display/h100Display.py" afterPath="$PROJECT_DIR$/display/h100Display.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/h100Display/h100Display.py" afterPath="$PROJECT_DIR$/h100Display/h100Display.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/purge/purge.py" afterPath="$PROJECT_DIR$/purge/purge.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/switch/switch.py" afterPath="$PROJECT_DIR$/switch/switch.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/temperature/tmp102.py" afterPath="$PROJECT_DIR$/temperature/tmp102.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="h100.iws" />
@@ -45,22 +37,13 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="h100Controller.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="h100Controller.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/h100Controller.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="51" column="13" selection-start="1729" selection-end="1729" vertical-scroll-proportion="-76.5" vertical-offset="714" max-vertical-offset="3995">
+            <state line="51" column="13" selection-start="1729" selection-end="1729" vertical-scroll-proportion="0.26198632" vertical-offset="714" max-vertical-offset="3995">
               <folding>
                 <element signature="e#792#813#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="adcpi.py" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/adc/adcpi.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="0" selection-start="623" selection-end="623" vertical-scroll-proportion="0.31911263" vertical-offset="153" max-vertical-offset="2057">
-              <folding />
             </state>
           </provider>
         </entry>
@@ -142,20 +125,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="h100" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="h100" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="h100" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="purge" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -339,17 +308,23 @@
       <created>1391115125315</created>
       <updated>1391115125315</updated>
     </task>
+    <task id="LOCAL-00001" summary="formtting upgrades">
+      <created>1391768722569</created>
+      <updated>1391768722569</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24304539" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24304539" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -371,6 +346,8 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
+    <MESSAGE value="formtting upgrades" />
+    <option name="LAST_COMMIT_MESSAGE" value="formtting upgrades" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -453,19 +430,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/h100Controller.py">
+    <entry file="file://$PROJECT_DIR$/adc/adcpi.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="51" column="13" selection-start="1729" selection-end="1729" vertical-scroll-proportion="-76.5" vertical-offset="714" max-vertical-offset="3995">
+        <state line="75" column="33" selection-start="2428" selection-end="2428" vertical-scroll-proportion="0.70989764" vertical-offset="859" max-vertical-offset="2040">
           <folding>
-            <element signature="e#792#813#0" expanded="true" />
+            <element signature="e#599#621#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/adc/adcpi.py">
+    <entry file="file://$PROJECT_DIR$/h100Controller.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="0" selection-start="623" selection-end="623" vertical-scroll-proportion="0.31911263" vertical-offset="153" max-vertical-offset="2057">
-          <folding />
+        <state line="51" column="13" selection-start="1729" selection-end="1729" vertical-scroll-proportion="0.26198632" vertical-offset="714" max-vertical-offset="3995">
+          <folding>
+            <element signature="e#792#813#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
