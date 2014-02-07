@@ -211,7 +211,7 @@ class H100():
 
     # Get Temperature (internal)
     def __getTemperature(self, channel):
-        return self.Temp[channel]
+        return self.Temp[channel]()
 
     # Get Button (internal)
     def __getButton(self, button):

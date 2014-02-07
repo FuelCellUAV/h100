@@ -1,41 +1,41 @@
 #!/usr/bin/python3
 
 import multiprocessing
-import quick2wire.i2c as i2c
+from quick2wire.i2c import I2CMaster, writing_bytes, reading
 
 # Class to read I2c TMP102 Temperature Sensor
 class Tmp102:
     temperature = 0.0
     address = 0x00
+    iodir_register = 0x00
+    register = 0x00
 
     def __init__(self, address):
         self.address = address
-
+    
     def get(self):
-        with i2c.I2CMaster() as bus:
+        with I2CMaster() as master:
             try:
-                tmp = bus.transaction(
-                    i2c.writing_bytes(self.address, 0),
-                    i2c.reading(self.address, 2))[0]
-                msb = (tmp & 0x00ff)
-                lsb = (tmp & 0xff00) >> 8
+                master.transaction(
+                    writing_bytes(self.address, self.iodir_register, 0xFF))
+                tmp = master.transaction(
+                    writing_bytes(self.address, self.register),
+                    reading(self.address, 2))
+                msb = tmp[0][0]
+                lsb = tmp[0][1]
                 self.temperature = ((( msb * 256 ) + lsb) >> 4 ) * 0.0625
                 return self.temperature
             except Exception as e:
                 #print ("I2C Temp Error")
                 return -1
 
-    def __call__(self):
-        self.get()
-        return self.temperature
-
 
 class Tmp102Daemon(Tmp102, multiprocessing.Process):
     val = multiprocessing.Value('d', 0.0)
-
+ 
     def __init__(self, address):
-        multiprocessing.Process.__init__(self)
         self.address = address
+        multiprocessing.Process.__init__(self)
 
     def run(self):
         try:
@@ -45,4 +45,6 @@ class Tmp102Daemon(Tmp102, multiprocessing.Process):
             print('\nTMP102 Shut Down\n')
 
     def __call__(self):
+        print('getting ', hex(self.address),end='\t')
+
         return self.val.value
