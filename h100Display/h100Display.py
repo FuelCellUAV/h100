@@ -27,45 +27,46 @@
 # display.start()
 
 import sys
-import pifacecad # Follow install instructions on their website
 import multiprocessing
 import ctypes
 
-# Fuel Cell Display Module
-class FuelCellDisplay (multiprocessing.Process):
+import pifacecad # Follow install instructions on their website
 
+
+# Fuel Cell Display Module
+class FuelCellDisplay(multiprocessing.Process):
     # First define some pretty cutstom bitmaps!
     temp_symbol_index = 0
-    progress_index = [1,2,3,4,5,6,7]
+    progress_index = [1, 2, 3, 4, 5, 6, 7]
     temperature_symbol = pifacecad.LCDBitmap(
-        [0x18,0x18,0x3,0x4,0x4,0x4,0x3,0x0])
+        [0x18, 0x18, 0x3, 0x4, 0x4, 0x4, 0x3, 0x0])
     progress_symbol = [
         pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f,0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x1f,0x1f,0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x1f,0x1f,0x1f,0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x1f,0x1f,0x1f,0x1f,0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x1f,0x1f,0x1f,0x1f,0x1f,0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f]),
-        ]
+        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f]),
+        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f]),
+        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f]),
+        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
+        pifacecad.LCDBitmap([0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
+        pifacecad.LCDBitmap([0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
+    ]
 
     # Define the CAD board
     cad = pifacecad.PiFaceCAD()
 
     # Define our variables to display
-    fcName  = multiprocessing.Value(ctypes.c_char_p,'H100')
-    fcState = multiprocessing.Value(ctypes.c_char_p,'')
-    temp    = multiprocessing.Value('d',10.0)
-    power   = multiprocessing.Value('d',000)
-    vFc     = multiprocessing.Value('d',9.0)
-    iFc     = multiprocessing.Value('d',10.0)
+    fcName = multiprocessing.Value(ctypes.c_char_p, 'H100')
+    fcState = multiprocessing.Value(ctypes.c_char_p, '')
+    temp = multiprocessing.Value('d', 10.0)
+    power = multiprocessing.Value('d', 000)
+    vFc = multiprocessing.Value('d', 9.0)
+    iFc = multiprocessing.Value('d', 10.0)
 
     # This runs once when the class is created
     def __init__(self, threadID, name):
         # Initialise the multiprocess utility
         multiprocessing.Process.__init__(self)
         self.threadID = threadID
-        self.name     = name
+        self.name = name
 
         # Save my pretty custom bitmaps to the memory (max 8 allowed)
         self.cad.lcd.store_custom_bitmap(self.temp_symbol_index, self.temperature_symbol)
@@ -80,31 +81,31 @@ class FuelCellDisplay (multiprocessing.Process):
 
     # This is the main process loop called by start()
     def run(self):
-        self.counter = 0
-	try:
-	        while(True):
-	            self.cad.lcd.home() # Set the cursor to the beginning
-	
-	            # Write the top line
-	            self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'
-	                .format(self.fcName.value[:4], self.fcState.value[:3], self.temp.value))
-	            self.cad.lcd.write_custom_bitmap(self.temp_symbol_index)
-	            self.cad.lcd.write(' ')
-	
-	            # A statement for my pretty bitmap animation
-	            self.cad.lcd.write_custom_bitmap(self.progress_index[self.counter])
-	            if self.counter < 6:
-	                self.counter = self.counter + 1
-	            else:
-	                self.counter = 0            
-	
-	            # Write the bottom line
-	            self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W'
-	                .format(self.vFc.value, self.iFc.value, self.vFc.value*self.iFc.value))
-         finally:
-                self.cad.lcd.clear()
-                self.cad.lcd.backlight_off()
-                print('\nPiFace CAD Shut Down\n')
+        counter = 0
+        try:
+            while True:
+                self.cad.lcd.home() # Set the cursor to the beginning
+
+                # Write the top line
+                self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'
+                    .format(self.fcName.value[:4], self.fcState.value[:3], self.temp.value))
+                self.cad.lcd.write_custom_bitmap(self.temp_symbol_index)
+                self.cad.lcd.write(' ')
+
+                # A statement for my pretty bitmap animation
+                self.cad.lcd.write_custom_bitmap(self.progress_index[counter])
+                if counter < 6:
+                    counter += 1
+                else:
+                    counter = 0
+
+                    # Write the bottom line
+                self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W'
+                    .format(self.vFc.value, self.iFc.value, self.vFc.value * self.iFc.value))
+        finally:
+            self.cad.lcd.clear()
+            self.cad.lcd.backlight_off()
+            print('\nPiFace CAD Shut Down\n')
 
     # Call this function to change the fuel cell name (max 4x char will be displayed)
     def name(self, fcName):

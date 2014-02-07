@@ -26,50 +26,50 @@
 # display.daemon = True  # To ensure process is killed on Ctrl+c
 # display.start()
 
-import sys
-import pifacecad # Follow install instructions on their website
 import multiprocessing
 import ctypes
+
+import pifacecad # Follow install instructions on their website
+
 # Includes to get ip address
 import socket
 import fcntl
 import struct
 
 # Fuel Cell Display Module
-class FuelCellDisplay (multiprocessing.Process):
-
+class FuelCellDisplay(multiprocessing.Process):
     # First define some pretty cutstom bitmaps!
     temp_symbol_index = 0
-    progress_index = [1,2,3,4,5,6,7]
+    progress_index = [1, 2, 3, 4, 5, 6, 7]
     temperature_symbol = pifacecad.LCDBitmap(
-        [0x18,0x18,0x3,0x4,0x4,0x4,0x3,0x0])
+        [0x18, 0x18, 0x3, 0x4, 0x4, 0x4, 0x3, 0x0])
     progress_symbol = [
         pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f,0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x1f,0x1f,0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x1f,0x1f,0x1f,0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x1f,0x1f,0x1f,0x1f,0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x1f,0x1f,0x1f,0x1f,0x1f,0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x1f,0x1f,0x1f,0x1f,0x1f,0x1f,0x1f]),
-        ]
+        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f]),
+        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f]),
+        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f]),
+        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
+        pifacecad.LCDBitmap([0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
+        pifacecad.LCDBitmap([0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
+    ]
 
     # Define the CAD board
     cad = pifacecad.PiFaceCAD()
 
     # Define our variables to display
-    fcName  = multiprocessing.Array(ctypes.c_char,10)
-    fcState = multiprocessing.Array(ctypes.c_char,10)
-    temp    = multiprocessing.Value('d',10.0)
-    power   = multiprocessing.Value('d',000)
-    vFc     = multiprocessing.Value('d',9.0)
-    iFc     = multiprocessing.Value('d',10.0)
+    fcName = multiprocessing.Array(ctypes.c_char, 10)
+    fcState = multiprocessing.Array(ctypes.c_char, 10)
+    temp = multiprocessing.Value('d', 10.0)
+    power = multiprocessing.Value('d', 000)
+    vFc = multiprocessing.Value('d', 9.0)
+    iFc = multiprocessing.Value('d', 10.0)
 
     # This runs once when the class is created
     def __init__(self, threadID, name):
         # Initialise the multiprocess utility
         multiprocessing.Process.__init__(self)
         self.threadID = threadID
-        self.name     = name
+        self.name = name
 
         # Save my pretty custom bitmaps to the memory (max 8 allowed)
         self.cad.lcd.store_custom_bitmap(self.temp_symbol_index, self.temperature_symbol)
@@ -83,20 +83,21 @@ class FuelCellDisplay (multiprocessing.Process):
         self.cad.lcd.backlight_on()
 
         # If the user presses button 5 display the ip address
-#        self.ip_display_flag = False
- #       self.listener = pifacecad.SwitchEventListener(chip=self.cad)
-  #      self.listener.register(0, pifacecad.IODIR_OFF,self.cad.lcd.write('Hello world!'))
-   #     self.listener.register(0, pifacecad.IODIR_ON, self.cad.lcd.clear())
+
+    #        self.ip_display_flag = False
+    #       self.listener = pifacecad.SwitchEventListener(chip=self.cad)
+    #      self.listener.register(0, pifacecad.IODIR_OFF,self.cad.lcd.write('Hello world!'))
+    #     self.listener.register(0, pifacecad.IODIR_ON, self.cad.lcd.clear())
     #    self.listener.activate()
 
     # This is the main process loop called by start()
     def run(self):
-        self.counter = 0
-        while(True):
+        counter = 0
+        while True:
             self.cad.lcd.home() # Set the cursor to the beginning
-#            if self.ip_display_flag is True:
- #               return
-  #          return
+            #            if self.ip_display_flag is True:
+            #               return
+            #          return
             # Write the top line
             self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'
                 .format(self.fcName.value[:4].decode('utf-8'), self.fcState.value[:3].decode('utf-8'), self.temp.value))
@@ -104,15 +105,15 @@ class FuelCellDisplay (multiprocessing.Process):
             self.cad.lcd.write(' ')
 
             # A statement for my pretty bitmap animation
-            self.cad.lcd.write_custom_bitmap(self.progress_index[self.counter])
-            if self.counter < 6:
-                self.counter = self.counter + 1
+            self.cad.lcd.write_custom_bitmap(self.progress_index[counter])
+            if counter < 6:
+                counter += 1
             else:
-                self.counter = 0            
+                counter = 0
 
-            # Write the bottom line
+                # Write the bottom line
             self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W '
-                .format(self.vFc.value, self.iFc.value, self.vFc.value*self.iFc.value))
+                .format(self.vFc.value, self.iFc.value, self.vFc.value * self.iFc.value))
 
     # Call this function to change the fuel cell name (max 4x char will be displayed)
     def fuelCellName(self, fcName):
@@ -141,23 +142,25 @@ class FuelCellDisplay (multiprocessing.Process):
 
     # Process stop code (TBC)
     def stop(self):
-         self.__exit__()
+        self.__exit__()
+
     def __exit__(self):
         self.cad.lcd.clear()
-        self.cad.lcd.backlight_off()        
+        self.cad.lcd.backlight_off()
 
-    # Get my current ip address, takes 'lo' or 'eth0' or 'wlan0' etc
+        # Get my current ip address, takes 'lo' or 'eth0' or 'wlan0' etc
+
     def get_ip_address(self, ifname):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return socket.inet_ntoa(fcntl.ioctl(
             s.fileno(),
-            0x8915,  # SIOCGIFADDR
+            0x8915, # SIOCGIFADDR
             struct.pack('256s', ifname[:15])
-         )[20:24])
+        )[20:24])
 
     def print_ip_address(self):
         self.cad.lcd.home()
-#        self.cad.lcd.clear()
+        #        self.cad.lcd.clear()
         self.cad.lcd.write('Hello world!')
         return
         self.cad.lcd.write('e{:}\n'.format(self.get_ip_address('eth0')))
