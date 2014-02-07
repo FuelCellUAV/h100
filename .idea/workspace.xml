@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="38c56368-0fed-4d59-a918-033bf4beb2ac" name="Default" comment="submodule upgrades">
-      <change type="DELETED" beforePath="C:\Users\Simon\Documents\GitHub\h100\h100Display\h100Display.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/controller.py" afterPath="$PROJECT_DIR$/controller.py" />
+    <list default="true" id="38c56368-0fed-4d59-a918-033bf4beb2ac" name="Default" comment="fixed formatting">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/h100Controller.py" afterPath="$PROJECT_DIR$/h100Controller.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -31,10 +29,8 @@
       <file leaf-file-name="controller.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/controller.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="81" column="10" selection-start="2344" selection-end="2344" vertical-scroll-proportion="0.0" vertical-offset="1249" max-vertical-offset="1938">
-              <folding>
-                <element signature="e#800#810#0" expanded="true" />
-              </folding>
+            <state line="22" column="15" selection-start="838" selection-end="838" vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="1955">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -42,8 +38,10 @@
       <file leaf-file-name="h100Controller.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/h100Controller.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="22" selection-start="814" selection-end="814" vertical-scroll-proportion="-0.37402597" vertical-offset="484" max-vertical-offset="3961">
-              <folding />
+            <state line="208" column="18" selection-start="6249" selection-end="6249" vertical-scroll-proportion="9.051948" vertical-offset="51" max-vertical-offset="3825">
+              <folding>
+                <element signature="e#792#813#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -51,8 +49,10 @@
       <file leaf-file-name="switch.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/switch/switch.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="19" column="13" selection-start="812" selection-end="812" vertical-scroll-proportion="0.0" vertical-offset="244" max-vertical-offset="1139">
-              <folding />
+            <state line="18" column="0" selection-start="798" selection-end="798" vertical-scroll-proportion="0.0" vertical-offset="227" max-vertical-offset="1139">
+              <folding>
+                <element signature="e#799#820#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -148,48 +148,6 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="h100" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="h100" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="switch" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="h100" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="h100" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="display" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="h100" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="h100" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="adc" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
       <pane id="Scope" />
@@ -207,6 +165,202 @@
     <option name="myPythonConsoleState">
       <console-settings />
     </option>
+  </component>
+  <component name="RestoreUpdateTree">
+    <UpdateInfo date="Moments ago" ActionInfo="_Update">
+      <UpdatedFiles>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Updated from server" />
+          <option name="myStatusName" value="Changed on server" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="CHANGED_ON_SERVER" />
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Updated" />
+            <option name="myStatusName" value="Changed" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="UPDATED" />
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/__pycache__/h100Controller.cpython-32.pyc</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/adc/__pycache__/adcpi.cpython-32.pyc</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/controller.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/h100Controller.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/switch/switch.py</PATH>
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Created" />
+            <option name="myStatusName" value="Created" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="CREATED" />
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/adc/__init__.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/adc/__pycache__/__init__.cpython-32.pyc</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/data/polar250.txt</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/data/polar500.txt</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/data/polar500v15.txt</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/data/polar52</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/data/testnewpurge1</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/data/testnewpurge2</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/display/__init__.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/purge/__init__.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/purge/__pycache__/purge.cpython-32.pyc</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/switch/__init__.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/temperature/__init__.py</PATH>
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Deleted" />
+            <option name="myStatusName" value="Deleted" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="true" />
+            <option name="myId" value="REMOVED_FROM_REPOSITORY" />
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/.gitignore</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/CHANGELOG</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/COPYING</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/README.md</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/bin/lirc_hardware.conf</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/bin/pifacecadsysinfo.sh</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/bin/setup-lirc.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/bin/setup_pifacecad_lirc.sh</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/Makefile</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/conf.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/creating_custom_bitmaps.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/example.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/images/lirc.png</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/included_examples.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/index.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/installation.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/libpeerconnection.log</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/lirc.dia</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/lirc.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/reference.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/reference_tools.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/docs/tools.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/examples/hangman.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/examples/radio.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/examples/radiolircrc</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/examples/sysinfo.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/examples/traintimes.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/examples/tweets.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/examples/weather.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/pifacecad/__init__.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/pifacecad/core.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/pifacecad/ir.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/pifacecad/lcd.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/pifacecad/tools/__init__.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/pifacecad/tools/question.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/pifacecad/tools/scanf.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/pifacecad/version.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/setup.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/tests/test_custombitmap.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/tests/test_irandswitches.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/tests/test_irint.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/tests/test_pifacecadtools.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/tests/test_switches.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/tests/testlircrc</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacecad/tests/tests.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/.gitignore</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/CHANGELOG</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/COPYING</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/README.md</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/docs/Makefile</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/docs/conf.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/docs/example.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/docs/index.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/docs/installation.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/docs/pifacedigital.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/docs/reference.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/docs/simplewebcontrol.rst</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/examples/blink.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/examples/presslights.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/examples/simplewebcontrol.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/examples/whackamole.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/pifacedigitalio/__init__.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/pifacedigitalio/core.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/pifacedigitalio/version.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/setup.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/tests.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/pifacedigitalio/tests.testrig.py</PATH>
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Restored" />
+            <option name="myStatusName" value="Will be restored" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="RESTORED" />
+          </FILE-GROUP>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Modified" />
+          <option name="myStatusName" value="Modified" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MODIFIED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Skipped" />
+          <option name="myStatusName" value="Skipped" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="SKIPPED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with conflicts" />
+          <option name="myStatusName" value="Will be merged with conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_CONFLICTS" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with tree conflicts" />
+          <option name="myStatusName" value="Merged with tree conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_TREE_CONFLICT" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with property conflicts" />
+          <option name="myStatusName" value="Will be merged with property conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_PROPERTY_CONFLICT" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged" />
+          <option name="myStatusName" value="Will be merged" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Not in repository" />
+          <option name="myStatusName" value="Not in repository" />
+          <option name="mySupportsDeletion" value="true" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="UNKNOWN" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally added" />
+          <option name="myStatusName" value="Locally added" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_ADDED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally removed" />
+          <option name="myStatusName" value="Locally removed" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_REMOVED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Switched" />
+          <option name="myStatusName" value="Switched" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="SWITCHED" />
+        </FILE-GROUP>
+      </UpdatedFiles>
+    </UpdateInfo>
   </component>
   <component name="RunManager">
     <configuration default="true" type="tests" factoryName="py.test">
@@ -360,7 +514,11 @@
       <created>1391768722569</created>
       <updated>1391768722569</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="submodule upgrades">
+      <created>1391770275671</created>
+      <updated>1391770275671</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -377,7 +535,7 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32843137" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -397,7 +555,8 @@
     </option>
     <MESSAGE value="formtting upgrades" />
     <MESSAGE value="submodule upgrades" />
-    <option name="LAST_COMMIT_MESSAGE" value="submodule upgrades" />
+    <MESSAGE value="fixed formatting" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed formatting" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
@@ -408,27 +567,21 @@
     <entry file="file://$PROJECT_DIR$/controller.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="34" column="15" selection-start="1203" selection-end="1203" vertical-scroll-proportion="0.0" vertical-offset="544" max-vertical-offset="2125">
-          <folding>
-            <element signature="e#800#810#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/controller.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="94" column="15" selection-start="3202" selection-end="3202" vertical-scroll-proportion="0.0" vertical-offset="2244" max-vertical-offset="4998">
-          <folding>
-            <element signature="e#800#810#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/controller.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="8" column="14" selection-start="268" selection-end="268" vertical-scroll-proportion="0.0" vertical-offset="51" max-vertical-offset="4998">
-          <folding>
-            <element signature="e#800#810#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -457,8 +610,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/switch/switch.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="13" selection-start="812" selection-end="812" vertical-scroll-proportion="0.0" vertical-offset="499" max-vertical-offset="1139">
-          <folding />
+        <state line="18" column="0" selection-start="798" selection-end="798" vertical-scroll-proportion="0.0" vertical-offset="227" max-vertical-offset="1139">
+          <folding>
+            <element signature="e#799#820#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -473,17 +628,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/controller.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="81" column="10" selection-start="2344" selection-end="2344" vertical-scroll-proportion="0.0" vertical-offset="1249" max-vertical-offset="1938">
-          <folding>
-            <element signature="e#800#810#0" expanded="true" />
-          </folding>
+        <state line="22" column="15" selection-start="838" selection-end="838" vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="1955">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/h100Controller.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="22" selection-start="814" selection-end="814" vertical-scroll-proportion="-0.37402597" vertical-offset="484" max-vertical-offset="3961">
-          <folding />
+        <state line="208" column="18" selection-start="6249" selection-end="6249" vertical-scroll-proportion="9.051948" vertical-offset="51" max-vertical-offset="3825">
+          <folding>
+            <element signature="e#792#813#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

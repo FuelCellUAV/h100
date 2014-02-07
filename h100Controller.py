@@ -85,50 +85,48 @@ class H100():
         timeChange = time()
         self.state = self.STATE.off
 
-        if True:
-            try:
-                # BUTTONS
-                if self.__getButton(self.off): # Turn off
-                    if self.state == self.STATE.startup or self.state.value == self.STATE.on:
-                        self.state = self.STATE.shutdown
-                        timeChange = time()
-                elif self.__getButton(self.on): # Turn on
-                    if self.state == self.STATE.off:
-                        self.state = self.STATE.startup
-                        timeChange = time()
-                elif self.__getButton(self.reset): # Reset error
-                    if self.state == self.STATE.error:
-                        self.state = self.STATE.off
-                        timeChange = time()
+        # BUTTONS
+        if self.__getButton(self.off): # Turn off
+            if self.state == self.STATE.startup or self.state.value == self.STATE.on:
+                self.state = self.STATE.shutdown
+                timeChange = time()
+        elif self.__getButton(self.on): # Turn on
+            if self.state == self.STATE.off:
+                self.state = self.STATE.startup
+                timeChange = time()
+        elif self.__getButton(self.reset): # Reset error
+            if self.state == self.STATE.error:
+                self.state = self.STATE.off
+                timeChange = time()
                 # OVER TEMPERATURE
-                if max(self.temp) > self.cutoffTemp:
-                    self.state = self.STATE.error
+        if max(self.temp) > self.cutoffTemp:
+            self.state = self.STATE.error
 
-                # OVER/UNDER VOLTAGE
-                # todo, not important
+        # OVER/UNDER VOLTAGE
+        # todo, not important
 
-                # SENSORS
-                self.amps[0] = self.__getCurrent(0)
-                self.volts[0] = self.__getVoltage(1)
-                self.power[0] = self.volts[0] * self.amps[0]
-                for x in range(len(self.temp)):
-                    self.temp[x] = self.__getTemperature(x)
+        # SENSORS
+        self.amps[0] = self.__getCurrent(0)
+        self.volts[0] = self.__getVoltage(1)
+        self.power[0] = self.volts[0] * self.amps[0]
+        for x in range(len(self.temp)):
+            self.temp[x] = self.__getTemperature(x)
 
-                # STATE MACHINE
-                if self.state == self.STATE.off:
-                    self.stateOff()
-                if self.state == self.STATE.startup:
-                    self.stateStartup()
-                    if (time() - timeChange) > self.startTime:
-                        self.state = self.STATE.on
-                if self.state == self.STATE.on:
-                    self.stateOn()
-                if self.state == self.STATE.shutdown:
-                    self.stateShutdown()
-                    if (time() - timeChange) > self.stopTime:
-                        self.state = self.STATE.off
-                if self.state == self.STATE.error:
-                    self.stateError()
+        # STATE MACHINE
+        if self.state == self.STATE.off:
+            self.stateOff()
+        if self.state == self.STATE.startup:
+            self.stateStartup()
+            if (time() - timeChange) > self.startTime:
+                self.state = self.STATE.on
+        if self.state == self.STATE.on:
+            self.stateOn()
+        if self.state == self.STATE.shutdown:
+            self.stateShutdown()
+            if (time() - timeChange) > self.stopTime:
+                self.state = self.STATE.off
+        if self.state == self.STATE.error:
+            self.stateError()
 
     def shutdown(self):
         # When the programme exits, put through the shutdown routine
@@ -218,4 +216,4 @@ class H100():
     # Get Button (internal)
     def __getButton(self, button):
         return self.pfio.input_pins[button].value
-		
+
