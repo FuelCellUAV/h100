@@ -29,7 +29,10 @@
 import multiprocessing
 import ctypes
 
-import pifacecad # Follow install instructions on their website
+import pifacecad  # Follow install instructions on their website
+
+
+
 
 # Includes to get ip address
 import socket
@@ -94,13 +97,14 @@ class FuelCellDisplay(multiprocessing.Process):
     def run(self):
         counter = 0
         while True:
-            self.cad.lcd.home() # Set the cursor to the beginning
+            self.cad.lcd.home()  # Set the cursor to the beginning
             #            if self.ip_display_flag is True:
             #               return
             #          return
             # Write the top line
             self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'
-                .format(self.fcName.value[:4].decode('utf-8'), self.fcState.value[:3].decode('utf-8'), self.temp.value))
+                               .format(self.fcName.value[:4].decode('utf-8'), self.fcState.value[:3].decode('utf-8'),
+                                       self.temp.value))
             self.cad.lcd.write_custom_bitmap(self.temp_symbol_index)
             self.cad.lcd.write(' ')
 
@@ -113,7 +117,7 @@ class FuelCellDisplay(multiprocessing.Process):
 
                 # Write the bottom line
             self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W '
-                .format(self.vFc.value, self.iFc.value, self.vFc.value * self.iFc.value))
+                               .format(self.vFc.value, self.iFc.value, self.vFc.value * self.iFc.value))
 
     # Call this function to change the fuel cell name (max 4x char will be displayed)
     def fuelCellName(self, fcName):
@@ -154,7 +158,7 @@ class FuelCellDisplay(multiprocessing.Process):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return socket.inet_ntoa(fcntl.ioctl(
             s.fileno(),
-            0x8915, # SIOCGIFADDR
+            0x8915,  # SIOCGIFADDR
             struct.pack('256s', ifname[:15])
         )[20:24])
 

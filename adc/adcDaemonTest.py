@@ -19,9 +19,11 @@
 
 # Import libraries
 from   time import sleep
+
 from   adcpi import *
 
-adc  = AdcPi2Daemon()
+
+adc = AdcPi2Daemon()
 adc.daemon = True
 adc.start()
 

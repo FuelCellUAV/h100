@@ -18,7 +18,9 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from time import time
+
 import pifacedigitalio
+
 
 # Class to enable controlled switching
 class Switch:

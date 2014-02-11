@@ -1,16 +1,16 @@
-
 import sys
-from contextlib import closing
+from ctypes import create_string_buffer, sizeof, string_at
+
 import posix
 from fcntl import ioctl
 from quick2wire.i2c_ctypes import *
-from ctypes import create_string_buffer, sizeof, c_int, byref, pointer, addressof, string_at
 from quick2wire.board_revision import revision
+
 
 assert sys.version_info.major >= 3, __name__ + " is only supported on Python 3"
 
-
 default_bus = 1 if revision() > 1 else 0
+
 
 class I2CMaster(object):
     """Performs I2C I/O transactions on an I2C bus.
@@ -33,7 +33,7 @@ class I2CMaster(object):
             i2c.transaction(
                 writing(0x20, bytes([0x01, 0xFF])))
     """
-    
+
     def __init__(self, n=default_bus, extra_open_flags=0):
         """Opens the bus device.
         
@@ -45,20 +45,20 @@ class I2CMaster(object):
                             opening the I2C bus device file (default 0; 
                             e.g. no extra flags).
         """
-        self.fd = posix.open("/dev/i2c-%i"%n, posix.O_RDWR|extra_open_flags)
-    
+        self.fd = posix.open("/dev/i2c-%i" % n, posix.O_RDWR | extra_open_flags)
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
-    
+
     def close(self):
         """
         Closes the I2C bus device.
         """
         posix.close(self.fd)
-    
+
     def transaction(self, *msgs):
         """
         Perform an I2C I/O transaction.
@@ -70,24 +70,25 @@ class I2CMaster(object):
         Returns: a list of byte sequences, one for each read operation 
                  performed.
         """
-        
-        msg_count = len(msgs)
-        msg_array = (i2c_msg*msg_count)(*msgs)
-        ioctl_arg = i2c_rdwr_ioctl_data(msgs=msg_array, nmsgs=msg_count)
-        
-        ioctl(self.fd, I2C_RDWR, ioctl_arg)
-        
-        return [i2c_msg_to_bytes(m) for m in msgs if (m.flags & I2C_M_RD)]
 
+        msg_count = len(msgs)
+        msg_array = (i2c_msg * msg_count)(*msgs)
+        ioctl_arg = i2c_rdwr_ioctl_data(msgs=msg_array, nmsgs=msg_count)
+
+        ioctl(self.fd, I2C_RDWR, ioctl_arg)
+
+        return [i2c_msg_to_bytes(m) for m in msgs if (m.flags & I2C_M_RD)]
 
 
 def reading(addr, n_bytes):
     """An I2C I/O message that reads n_bytes bytes of data"""
     return reading_into(addr, create_string_buffer(n_bytes))
 
+
 def reading_into(addr, buf):
     """An I2C I/O message that reads into an existing ctypes string buffer."""
     return _new_i2c_msg(addr, I2C_M_RD, buf)
+
 
 def writing_bytes(addr, *bytes):
     """An I2C I/O message that writes one or more bytes of data. 
@@ -95,6 +96,7 @@ def writing_bytes(addr, *bytes):
     Each byte is passed as an argument to this function.
     """
     return writing(addr, bytes)
+
 
 def writing(addr, byte_seq):
     """An I2C I/O message that writes one or more bytes of data.

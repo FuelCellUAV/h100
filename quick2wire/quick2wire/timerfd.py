@@ -1,11 +1,11 @@
-
-
 import math
 import os
 from ctypes import *
 import struct
-from contextlib import closing
+
 import quick2wire.syscall as syscall
+
+
 
 
 # From <time.h>
@@ -14,25 +14,26 @@ time_t = c_long
 
 clockid_t = c_ulong
 
+
 class timespec(Structure):
     _fields_ = [("sec", time_t),
                 ("nsec", c_long)]
-    
-    __slots__ = [name for name,type in _fields_]
-    
+
+    __slots__ = [name for name, type in _fields_]
+
     @classmethod
     def from_seconds(cls, secs):
         t = cls()
         t.seconds = secs
         return t
-    
+
     @property
     def seconds(self):
         if self.nsec == 0:
             return self.sec
         else:
             return self.sec + self.nsec / 1000000000.0
-        
+
     @seconds.setter
     def seconds(self, secs):
         fractional, whole = math.modf(secs)
@@ -41,11 +42,11 @@ class timespec(Structure):
 
 
 class itimerspec(Structure):
-    _fields_ = [("interval", timespec), 
+    _fields_ = [("interval", timespec),
                 ("value", timespec)]
-    
-    __slots__ = [name for name,type in _fields_]
-    
+
+    __slots__ = [name for name, type in _fields_]
+
     @classmethod
     def from_seconds(cls, offset, interval):
         spec = cls()
@@ -56,16 +57,16 @@ class itimerspec(Structure):
 
 # from <bits/time.h>
 
-CLOCK_REALTIME           = 0 # Identifier for system-wide realtime clock.
-CLOCK_MONOTONIC	         = 1 # Monotonic system-wide clock.
-CLOCK_PROCESS_CPUTIME_ID = 2 # High-resolution timer from the CPU
-CLOCK_THREAD_CPUTIME_ID	 = 3 # Thread-specific CPU-time clock. 
-CLOCK_MONOTONIC_RAW      = 4 # Monotonic system-wide clock, not adjusted for frequency scaling. 
-CLOCK_REALTIME_COARSE    = 5 # Identifier for system-wide realtime clock, updated only on ticks. 
-CLOCK_MONOTONIC_COARSE   = 6 # Monotonic system-wide clock, updated only on ticks. 
-CLOCK_BOOTTIME	         = 7 # Monotonic system-wide clock that includes time spent in suspension. 
-CLOCK_REALTIME_ALARM     = 8 # Like CLOCK_REALTIME but also wakes suspended system.
-CLOCK_BOOTTIME_ALARM     = 9 # Like CLOCK_BOOTTIME but also wakes suspended system.
+CLOCK_REALTIME = 0  # Identifier for system-wide realtime clock.
+CLOCK_MONOTONIC = 1  # Monotonic system-wide clock.
+CLOCK_PROCESS_CPUTIME_ID = 2  # High-resolution timer from the CPU
+CLOCK_THREAD_CPUTIME_ID = 3  # Thread-specific CPU-time clock.
+CLOCK_MONOTONIC_RAW = 4  # Monotonic system-wide clock, not adjusted for frequency scaling.
+CLOCK_REALTIME_COARSE = 5  # Identifier for system-wide realtime clock, updated only on ticks.
+CLOCK_MONOTONIC_COARSE = 6  # Monotonic system-wide clock, updated only on ticks.
+CLOCK_BOOTTIME = 7  # Monotonic system-wide clock that includes time spent in suspension.
+CLOCK_REALTIME_ALARM = 8  # Like CLOCK_REALTIME but also wakes suspended system.
+CLOCK_BOOTTIME_ALARM = 9  # Like CLOCK_BOOTTIME but also wakes suspended system.
 
 
 # From <sys/timerfd.h>
@@ -103,7 +104,7 @@ timerfd_gettime = syscall.lookup(c_int, "timerfd_gettime", (c_int, POINTER(itime
 
 class Timer(syscall.SelfClosing):
     """A one-shot or repeating timer that can be added to a Selector."""
-    
+
     def __init__(self, offset=0, interval=0, blocking=True, clock=CLOCK_REALTIME):
         """Creates a new Timer.
         
@@ -120,18 +121,18 @@ class Timer(syscall.SelfClosing):
                     CLOCK_MONOTONIC -- monotonic system-wide clock.
         """
         self._clock = clock
-        self._flags = (not blocking)*TFD_NONBLOCK
+        self._flags = (not blocking) * TFD_NONBLOCK
         self._fd = None
         self._offset = offset
         self._interval = interval
         self._started = False
-    
+
     def close(self):
         """Closes the Timer and releases its file descriptor."""
         if self._fd is not None:
             os.close(self._fd)
             self._fd = None
-        
+
     def fileno(self):
         """Returns the Timer's file descriptor."""
         if self._fd is None:
@@ -142,13 +143,13 @@ class Timer(syscall.SelfClosing):
     def offset(self):
         """the initial expiration time, measured in seconds from the call to start()."""
         return self._offset
-    
+
     @offset.setter
     def offset(self, new_offset):
         self._offset = new_offset
         if self._started:
             self._apply_schedule()
-    
+
     @property
     def interval(self):
         """The interval, specified in seconds, with which the timer will repeat.
@@ -156,13 +157,13 @@ class Timer(syscall.SelfClosing):
         If zero, the timer only fires once, when the offset expires.
         """
         return self._interval
-    
+
     @interval.setter
     def interval(self, new_interval):
         self._interval = new_interval
         if self._started:
             self._apply_schedule()
-    
+
     def start(self):
         """Starts the timer running.
         
@@ -171,15 +172,15 @@ class Timer(syscall.SelfClosing):
         """
         if self._offset == 0 and self._interval == 0:
             raise ValueError("timer will not fire because offset and interval are both zero")
-        
+
         self._apply_schedule()
         self._started = True
-        
+
     def stop(self):
         """Stops the timer running. Any scheduled timer events will not fire."""
         self._schedule(0, 0)
         self._started = False
-    
+
     def wait(self):
         """Receives timer events.
         
@@ -203,10 +204,10 @@ class Timer(syscall.SelfClosing):
                 return 0
             else:
                 raise e
-    
+
     def _apply_schedule(self):
         self._schedule(self._offset or self._interval, self._interval)
-    
+
     def _schedule(self, offset, interval):
         spec = itimerspec.from_seconds(offset, interval)
         timerfd_settime(self.fileno(), 0, byref(spec), None)

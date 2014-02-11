@@ -19,10 +19,11 @@
 
 # Import libraries
 from   time import sleep
+
 from   adcpi import *
 
 
-adc  =AdcPi2()
+adc = AdcPi2()
 
 #########
 # Setup #

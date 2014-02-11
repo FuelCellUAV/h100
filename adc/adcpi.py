@@ -24,7 +24,7 @@ import quick2wire.i2c as i2c
 class AdcPi2:
     adc_address1 = 0x68
     adc_address2 = 0x69
-    varDivisior = 64 # from pdf sheet on adc addresses and config
+    varDivisior = 64  # from pdf sheet on adc addresses and config
     varMultiplier = (2.495 / varDivisior) / 1000
 
     def changechannel(self, address, adcConfig):

@@ -88,13 +88,12 @@ TWO_DIFFERENTIAL = 3
 _ANALOGUE_OUTPUT_ENABLE_FLAG = 1 << 6
 
 
-
 class PCF8591(object):
     """API to query and control an PCF8591 A/D and D/A converter via I2C.
     
     See module documentation for details on how to use this class.
     """
-    
+
     def __init__(self, master, mode, address=BASE_ADDRESS):
         """Initialises a PCF8591.
         
@@ -111,7 +110,7 @@ class PCF8591(object):
         self._control_flags = (mode << 4)
         self._last_channel_read = None
         self._output = _OutputChannel(self)
-        
+
         if mode == FOUR_SINGLE_ENDED:
             self._single_ended_inputs = tuple(self._create_single_ended_channel(i) for i in range(4))
             self._differential_inputs = ()
@@ -119,83 +118,83 @@ class PCF8591(object):
             self._single_ended_inputs = ()
             self._differential_inputs = tuple(self._create_differential_channel(i) for i in range(2))
         elif mode == SINGLE_ENDED_AND_DIFFERENTIAL:
-            self._single_ended_inputs = tuple(self._create_single_ended_channel(i) for i in (0,1))
+            self._single_ended_inputs = tuple(self._create_single_ended_channel(i) for i in (0, 1))
             self._differential_inputs = (self._create_differential_channel(2),)
         elif mode == THREE_DIFFERENTIAL:
             self._single_ended_inputs = ()
             self._differential_inputs = tuple(self._create_differential_channel(i) for i in range(3))
         else:
             raise ValueError("invalid mode " + str(mode))
-    
+
     def _create_single_ended_channel(self, i):
         return _InputChannel(self, i, self.read_single_ended, 255.0)
-    
+
     def _create_differential_channel(self, i):
         return _InputChannel(self, i, self.read_differential, 256.0)
-    
+
     @property
     def output(self):
         """The single analogue output channel"""
         return self._output
-    
+
     @property
     def single_ended_input_count(self):
         """The number of single-ended analogue input channels"""
         return len(self._single_ended_inputs)
-    
+
     def single_ended_input(self, n):
-        """Returns the n'th single-ended analogue input channel"""        
+        """Returns the n'th single-ended analogue input channel"""
         return self._single_ended_inputs[n]
-    
+
     @property
     def differential_input_count(self):
         """The number of differential analogue input channels"""
         return len(self._differential_inputs)
-    
+
     def differential_input(self, n):
-        """Returns the n'th differential analogue input channel"""        
+        """Returns the n'th differential analogue input channel"""
         return self._differential_inputs[n]
-    
+
     def enable_output(self):
         self._control_flags |= _ANALOGUE_OUTPUT_ENABLE_FLAG
         self._write_control_flags()
-    
+
     def disable_output(self):
         self._control_flags &= ~_ANALOGUE_OUTPUT_ENABLE_FLAG
         self._write_control_flags()
-    
+
     def _write_control_flags(self):
         if self._last_channel_read is None:
             self._last_channel_read = 0
-        
+
         self.master.transaction(
-            writing_bytes(self.address, self._control_flags|self._last_channel_read))
-    
+            writing_bytes(self.address, self._control_flags | self._last_channel_read))
+
     def write(self, value):
-        self.write_raw(min(max(0, int(value*255)), 0xFF))
-        
+        self.write_raw(min(max(0, int(value * 255)), 0xFF))
+
     def write_raw(self, int_value):
         if self._last_channel_read is None:
             self._last_channel_read = 0
-        
+
         self.master.transaction(
-            writing_bytes(self.address, self._control_flags|self._last_channel_read, int_value))
-    
+            writing_bytes(self.address, self._control_flags | self._last_channel_read, int_value))
+
     def read_single_ended(self, channel):
         """Read the 8-bit value of a single-ended input channel."""
         return self.read_raw(channel)
-    
+
     def read_differential(self, channel):
         """Read the 8-bit value of a differential input channel."""
         unsigned = self.read_raw(channel)
         return (unsigned & 127) - (unsigned & 128)
-    
+
     def read_raw(self, channel):
         if channel != self._last_channel_read:
-            self.master.transaction(writing_bytes(self.address, self._control_flags|channel),
+            self.master.transaction(writing_bytes(self.address, self._control_flags | channel),
                                     reading(self.address, 2))
             self._last_channel_read = channel
-        
+
         results = self.master.transaction(
             reading(self.address, 2))
         return results[0][-1]
@@ -205,32 +204,32 @@ class _OutputChannel(object):
     def __init__(self, bank):
         self.bank = bank
         self._value = 0x80
-    
+
     def open(self):
         self.bank.enable_output()
-    
+
     def close(self):
         self.bank.disable_output()
-    
+
     def __enter__(self):
         self.open()
         return self
-    
+
     def __exit__(self, *exc):
         self.close()
         return False
-    
+
     @property
     def direction(self):
         return Out
-    
+
     def get(self):
         return self._value
-    
+
     def set(self, value):
         self._value = value
         self.bank.write(self._value)
-    
+
     value = property(get, set)
 
 
@@ -240,32 +239,32 @@ class _InputChannel(object):
         self.index = index
         self._read = read_fn
         self._scale = scale
-    
+
     @property
     def direction(self):
         return In
-    
+
     def get(self):
         return self.get_raw() / self._scale
-    
+
     value = property(get)
-    
+
     def get_raw(self):
         return self._read(self.index)
-    
+
     raw_value = property(get_raw)
-    
+
     # No-op implementations of Pin resource management API
-    
+
     def open(self):
         pass
-    
+
     def close(self):
         pass
-    
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, *exc):
         return False
 

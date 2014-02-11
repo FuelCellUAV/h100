@@ -48,13 +48,13 @@ timer = Timer(interval=0.5)
 #| operating-system resources, so we add them to the with statement to
 #| ensure that they are closed.
 with selector, button, led, timer:
-#|.
+    #|.
     #| [4] We have to add the button and timer to the selector before the
     #| selector will report their events.
     selector.add(button)
     selector.add(timer)
     #|.
-    
+
     while True:
         #| [5] Now the program's main loop must wait for selector
         #| events.  When the button or timer signals an event, the
@@ -63,7 +63,7 @@ with selector, button, led, timer:
         #| `wait()` method.
         selector.wait()
         #|.
-        
+
         #| [6] If the timer is ready, we invert the value of the
         #| led pin, so that it blinks on and off.
         if selector.ready == timer:
@@ -73,22 +73,22 @@ with selector, button, led, timer:
             #| busy-loop.
             timer.wait()
             #|.
-            
+
             led.value = not led.value
         #|.
-        
+
         #| [8] If the button is ready, the program reads the
         #| button state. If the value at the GPIO pin is one
         #| (voltage high), the button has been pressed; if zero
         #| (voltage low), it has been released.
         elif selector.ready == button:
             is_pressed = button.value
-            
+
             #| [9] We can use the value read from the button in an if
             #| statement (in Python, 0 is treated as false and 1 as
             #| true)
             if is_pressed:
-            #|.
+                #|.
                 #| [10] If the button has been pressed, the program
                 #| turns on the LED and starts the timer, so that it
                 #| generates the events that makes the program blinks
@@ -103,6 +103,6 @@ with selector, button, led, timer:
                 led.value = 0
                 timer.stop()
                 #|.
-        #|.
+                #|.
 #|| When you run this program you will see that it reacts promptly to
 #|| button presses.

@@ -22,8 +22,8 @@ led = pins.pin(1, direction=Out)
 
 #| [3] The program must open both pins before using them.
 with button, led:
-#|.
-    for v in cycle([1,0]):
+    #|.
+    for v in cycle([1, 0]):
         #| [4] Within the loop the value property of the _led_ pin is
         #| set to _v_ multiplied by the value property of the _button_
         #| pin. When the button is pressed, button.value = 1, and
@@ -36,9 +36,9 @@ with button, led:
         #|.
         sleep(0.5)
 
-#|| However, there's a flaw in this program. If you repeatedly press
-#|| and release the button you can see that the program can take up to
-#|| half a second to react. Ideally the program would react to the
-#|| button immediately. To do so it must handle GPIO interrupts in an
-#|| _event loop_, which we'll look at in the [next
-#|| example](selector-button-blink).
+        #|| However, there's a flaw in this program. If you repeatedly press
+        #|| and release the button you can see that the program can take up to
+        #|| half a second to react. Ideally the program would react to the
+        #|| button immediately. To do so it must handle GPIO interrupts in an
+        #|| _event loop_, which we'll look at in the [next
+        #|| example](selector-button-blink).

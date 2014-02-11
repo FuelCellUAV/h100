@@ -1,5 +1,5 @@
-
 from time import time, sleep
+
 from quick2wire.timerfd import Timer, timespec, itimerspec
 import pytest
 
@@ -27,12 +27,12 @@ def test_itimerspec_can_be_created_from_seconds():
 def test_timer_waits_for_time_to_pass():
     with Timer(offset=0.125) as timer:
         start = time()
-        
+
         timer.start()
         timer.wait()
-        
+
         duration = time() - start
-        
+
         assert duration >= 0.125
 
 
@@ -41,13 +41,13 @@ def test_timer_waits_for_time_to_pass():
 def test_timer_can_repeat_with_interval():
     with Timer(interval=0.125) as timer:
         start = time()
-        
+
         timer.start()
         timer.wait()
         timer.wait()
-        
+
         duration = time() - start
-        
+
         assert duration >= 0.25
 
 
@@ -56,14 +56,14 @@ def test_timer_can_repeat_with_interval():
 def test_timer_can_repeat_with_interval_after_offset():
     with Timer(offset=0.25, interval=0.125) as timer:
         start = time()
-        
+
         timer.start()
         timer.wait()
         timer.wait()
         timer.wait()
-        
+
         duration = time() - start
-        
+
         assert duration >= 0.5
 
 
@@ -75,9 +75,9 @@ def test_can_change_offset_while_timer_is_running():
         timer.start()
         timer.offset = 0.125
         timer.wait()
-        
+
         duration = time() - start
-        
+
         assert duration < 1
 
 
@@ -90,9 +90,9 @@ def test_can_change_interval_while_timer_is_running():
         timer.wait()
         timer.interval = 0.125
         timer.wait()
-        
+
         duration = time() - start
-        
+
         assert duration < 1
 
 
@@ -115,5 +115,5 @@ def test_timer_reports_how_many_times_it_triggered_since_last_wait():
         timer.start()
         sleep(0.5)
         n = timer.wait()
-        
+
         assert n >= 4

@@ -29,9 +29,13 @@
 #| [6] To make Python happy we need to import `pins` and `Out` from
 #| the Quick2Wire GPIO module and the other functions we've used from
 #| Python's standard library modules.
-from quick2wire.gpio import pins, Out
 from itertools import cycle
 from time import sleep
+
+from quick2wire.gpio import pins, Out
+
+
+
 #|.
 
 #| [1] To get a Pin object to control the on-board LED we ask the
@@ -49,11 +53,11 @@ led = pins.pin(1, direction=Out)
 #| statement has finished running, even if the user kills the program
 #| or a failure makes the code throw an exception.
 with led:
-#|.
+    #|.
     #| [2] The program loops forever.  Each time round the loop the
     #| variable _v_ cycles between 1 and 0.
-    for v in cycle([1,0]):
-    #|.
+    for v in cycle([1, 0]):
+        #|.
         #| [3] Each time round the loop sets the value of the led Pin
         #| to _v_, which either turns the LED on (when _v_ is 1) or
         #| off (when _v_ is 0).
@@ -65,5 +69,5 @@ with led:
         sleep(0.5)
         #|.
 
-#|| The next example, [button-blink](button-blink), shows how to also
-#|| read the state of a GPIO input pin connected to a push-button.
+        #|| The next example, [button-blink](button-blink), shows how to also
+        #|| read the state of a GPIO input pin connected to a push-button.

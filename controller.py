@@ -21,8 +21,12 @@
 import sys
 import time
 import argparse
+
 from display import h100Display
 import h100Controller
+
+
+
 
 
 # Define default global constants
@@ -48,7 +52,7 @@ class MyWriter:
         self.stdout.flush()
 
 # Look at user arguments
-if args.out: # save to output file
+if args.out:  # save to output file
     writer = MyWriter(sys.stdout, args.out)
     sys.stdout = writer
 
@@ -56,7 +60,7 @@ if args.out: # save to output file
 # Setup #
 #########
 display = h100Display.FuelCellDisplay(1, "PF Display")
-display.daemon = True # To ensure the process is killed on exit
+display.daemon = True  # To ensure the process is killed on exit
 
 h100 = h100Controller.H100()
 #h100.daemon = True

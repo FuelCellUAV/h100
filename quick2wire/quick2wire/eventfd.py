@@ -1,8 +1,11 @@
-
 from ctypes import *
-import quick2wire.syscall as syscall
 import os
 import errno
+
+import quick2wire.syscall as syscall
+
+
+
 
 # From sys/eventfd.h
 
@@ -19,7 +22,7 @@ eventfd = syscall.lookup(c_int, "eventfd", (c_uint, c_int))
 
 class Semaphore(syscall.SelfClosing):
     """A Semaphore implemented with eventfd that can be added to a Selector."""
-    
+
     def __init__(self, count=0, blocking=True):
         """Creates a Semaphore with an initial count.
         
@@ -29,21 +32,21 @@ class Semaphore(syscall.SelfClosing):
                     has a count of zero. (default = True)
         """
         self._initial_count = count
-        self._flags = EFD_SEMAPHORE|((not blocking)*EFD_NONBLOCK)
+        self._flags = EFD_SEMAPHORE | ((not blocking) * EFD_NONBLOCK)
         self._fd = None
-    
+
     def close(self):
         """Closes the Semaphore and releases its file descriptor."""
         if self._fd is not None:
             os.close(self._fd)
             self._fd = None
-    
+
     def fileno(self):
         """Returns the Semaphore's file descriptor."""
         if self._fd is None:
             self._fd = eventfd(self._initial_count, self._flags)
         return self._fd
-    
+
     def signal(self):
         """Signal the semaphore.
         
@@ -51,7 +54,7 @@ class Semaphore(syscall.SelfClosing):
         blocked task that is waiting on the semaphore.
         """
         return os.write(self.fileno(), eventfd_t(1))
-    
+
     def wait(self):
         """Receive a signal from the Semaphore, decrementing its count by one.
         

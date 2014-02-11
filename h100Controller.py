@@ -19,10 +19,12 @@
 
 # Includes
 from time import time
+
 import pifacedigitalio
 from adc import adcpi
 from temperature import tmp102
 from switch import switch
+
 
 # Function to mimic an 'enum'. Won't be needed in Python3.4
 def enum(*sequential, **named):
@@ -31,21 +33,21 @@ def enum(*sequential, **named):
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 
+
 ##############
 # CONTROLLER #
 ##############
 class H100():
     # Define Sensors
     Adc = adcpi.AdcPi2Daemon()
-    Temp = tmp102.Tmp102Daemon()
     Temp = tmp102.Tmp102()
 
     # Define Switches
-    pfio = pifacedigitalio.PiFaceDigital() # Start piface
+    pfio = pifacedigitalio.PiFaceDigital()  # Start piface
     fan = switch.Switch(0)
     h2 = switch.Switch(1)
     purge = switch.Switch(2)
-    on = 0 # Switch numbers on the pfio
+    on = 0  # Switch numbers on the pfio
     off = 1
     reset = 2
 
@@ -56,9 +58,9 @@ class H100():
     temp = [0.0] * 4
 
     # Define Controllables
-    startTime = 3   # Seconds
+    startTime = 3  # Seconds
     stopTime = 10  # Seconds
-    purgeTime = 0.5 # Seconds
+    purgeTime = 0.5  # Seconds
     purgeFreq = 30  # Seconds
     cutoffTemp = 30  # Celsius
 
@@ -81,15 +83,15 @@ class H100():
         self.state = self.STATE.off
 
         # BUTTONS
-        if self.__getButton(self.off): # Turn off
+        if self.__getButton(self.off):  # Turn off
             if self.state == self.STATE.startup or self.state.value == self.STATE.on:
                 self.state = self.STATE.shutdown
                 timeChange = time()
-        elif self.__getButton(self.on): # Turn on
+        elif self.__getButton(self.on):  # Turn on
             if self.state == self.STATE.off:
                 self.state = self.STATE.startup
                 timeChange = time()
-        elif self.__getButton(self.reset): # Reset error
+        elif self.__getButton(self.reset):  # Reset error
             if self.state == self.STATE.error:
                 self.state = self.STATE.off
                 timeChange = time()
@@ -97,11 +99,11 @@ class H100():
         if max(self.temp) > self.cutoffTemp:
             self.state = self.STATE.error
 
-        # OVER/UNDER VOLTAGE
+            # OVER/UNDER VOLTAGE
             # todo, not important
 
         # SENSORS
-        self.amps[0]  = self.__getCurrent(0)
+        self.amps[0] = self.__getCurrent(0)
         self.volts[0] = self.__getVoltage(1)
         self.power[0] = self.volts[0] * self.amps[0]
         self.temp = self.__getTemperature()
@@ -205,7 +207,7 @@ class H100():
 
     # Get Temperature (internal)
     def __getTemperature(self):
-        t = [0.0]*4
+        t = [0.0] * 4
         t[0] = self.Temp.get(0x48)
         t[1] = self.Temp.get(0x49)
         t[2] = self.Temp.get(0x4a)

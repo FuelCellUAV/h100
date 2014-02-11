@@ -6,7 +6,9 @@
 # Ported to Python ctypes from <linux/spi/spidev.h>
 
 from ctypes import *
+
 from quick2wire.asm_generic_ioctl import _IOR, _IOW, _IOC_SIZEBITS
+
 
 SPI_CPHA = 0x01
 SPI_CPOL = 0x02
@@ -14,7 +16,7 @@ SPI_CPOL = 0x02
 SPI_MODE_0 = 0
 SPI_MODE_1 = SPI_CPHA
 SPI_MODE_2 = SPI_CPOL
-SPI_MODE_3 = SPI_CPOL|SPI_CPHA
+SPI_MODE_3 = SPI_CPOL | SPI_CPHA
 
 SPI_CS_HIGH = 0x04
 SPI_LSB_FIRST = 0x08
@@ -26,7 +28,7 @@ SPI_READY = 0x80
 
 # IOCTL commands */
 
-SPI_IOC_MAGIC = 107 # ord('k')
+SPI_IOC_MAGIC = 107  # ord('k')
 
 
 # struct spi_ioc_transfer - describes a single SPI transfer
@@ -64,7 +66,7 @@ SPI_IOC_MAGIC = 107 # ord('k')
 
 class spi_ioc_transfer(Structure):
     """<linux/spi/spidev.h> struct spi_ioc_transfer"""
-    
+
     _fields_ = [
         ("tx_buf", c_uint64),
         ("rx_buf", c_uint64),
@@ -74,33 +76,34 @@ class spi_ioc_transfer(Structure):
         ("bits_per_word", c_uint8),
         ("cs_change", c_uint8),
         ("pad", c_uint32)]
-    
-    __slots__ = [name for name,type in _fields_]
+
+    __slots__ = [name for name, type in _fields_]
 
 
 # not all platforms use <asm-generic/ioctl.h> or _IOC_TYPECHECK() ...
 def SPI_MSGSIZE(N):
-    if ((N)*(sizeof(spi_ioc_transfer))) < (1 << _IOC_SIZEBITS):
-        return (N)*(sizeof(spi_ioc_transfer))
+    if ((N) * (sizeof(spi_ioc_transfer))) < (1 << _IOC_SIZEBITS):
+        return (N) * (sizeof(spi_ioc_transfer))
     else:
         return 0
 
+
 def SPI_IOC_MESSAGE(N):
-    return _IOW(SPI_IOC_MAGIC, 0, c_char*SPI_MSGSIZE(N))
+    return _IOW(SPI_IOC_MAGIC, 0, c_char * SPI_MSGSIZE(N))
 
 # Read / Write of SPI mode (SPI_MODE_0..SPI_MODE_3)
-SPI_IOC_RD_MODE =			_IOR(SPI_IOC_MAGIC, 1, c_uint8)
-SPI_IOC_WR_MODE =			_IOW(SPI_IOC_MAGIC, 1, c_uint8)
+SPI_IOC_RD_MODE = _IOR(SPI_IOC_MAGIC, 1, c_uint8)
+SPI_IOC_WR_MODE = _IOW(SPI_IOC_MAGIC, 1, c_uint8)
 
 # Read / Write SPI bit justification
-SPI_IOC_RD_LSB_FIRST =		_IOR(SPI_IOC_MAGIC, 2, c_uint8)
-SPI_IOC_WR_LSB_FIRST =		_IOW(SPI_IOC_MAGIC, 2, c_uint8)
+SPI_IOC_RD_LSB_FIRST = _IOR(SPI_IOC_MAGIC, 2, c_uint8)
+SPI_IOC_WR_LSB_FIRST = _IOW(SPI_IOC_MAGIC, 2, c_uint8)
 
 # Read / Write SPI device word length (1..N)
-SPI_IOC_RD_BITS_PER_WORD =	_IOR(SPI_IOC_MAGIC, 3, c_uint8)
-SPI_IOC_WR_BITS_PER_WORD =	_IOW(SPI_IOC_MAGIC, 3, c_uint8)
+SPI_IOC_RD_BITS_PER_WORD = _IOR(SPI_IOC_MAGIC, 3, c_uint8)
+SPI_IOC_WR_BITS_PER_WORD = _IOW(SPI_IOC_MAGIC, 3, c_uint8)
 
 # Read / Write SPI device default max speed hz
-SPI_IOC_RD_MAX_SPEED_HZ =		_IOR(SPI_IOC_MAGIC, 4, c_uint32)
-SPI_IOC_WR_MAX_SPEED_HZ =		_IOW(SPI_IOC_MAGIC, 4, c_uint32)
+SPI_IOC_RD_MAX_SPEED_HZ = _IOR(SPI_IOC_MAGIC, 4, c_uint32)
+SPI_IOC_WR_MAX_SPEED_HZ = _IOW(SPI_IOC_MAGIC, 4, c_uint32)
 
