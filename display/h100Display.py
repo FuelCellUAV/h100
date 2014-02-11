@@ -26,16 +26,7 @@
 # display.daemon = True  # To ensure process is killed on Ctrl+c
 # display.start()
 
-import multiprocessing
-import ctypes
-
-import pifacecad  # Follow install instructions on their website
-
-
-# Includes to get ip address
-import socket
-import fcntl
-import struct
+import ctypes, fcntl, multiprocessing, pifacecad, socket, struct
 
 # Fuel Cell Display Module
 class FuelCellDisplay(multiprocessing.Process):

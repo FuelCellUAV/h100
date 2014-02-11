@@ -24,38 +24,44 @@ import pifacedigitalio
 
 # Class to enable controlled switching
 class Switch:
-    pin = 0
-    state = False
-    lastTime = 0
-    lastOff = 0
 
-    def __init__(self, pin) -> object:
-        self.pin = pin
+    def __init__(self):
+
+        self.pin = o
+        self.state = False
+        self.lastTime = 0
+        self.lastOff = 0
         self.pfio = pifacedigitalio.PiFaceDigital()
 
     def timed(self, freq, duration):
+
         # Deactivate if time is up
         if (time() - self.lastTime) >= duration and self.state == True:
             self.lastTime = time()
             self.state = False
-            return self.write()
 
         # Activate
-        if (time() - self.lastTime) >= freq and self.state == False:
+        elif (time() - self.lastTime) >= freq and self.state == False:
             self.lastTime = time()
             self.state = True
-            return self.write()
+
+        return self.write()
 
     def switch(self, state):
+
         self.state = state
         return self.write()
 
     def write(self):
+
         try:
             if self.state:
                 self.pfio.output_pins[self.pin].turn_on()
             else:
                 self.pfio.output_pins[self.pin].turn_off()
+
         except Exception as e:
             print("Write error to output %d" % self.pin)
+
+        finally:
             return self.state

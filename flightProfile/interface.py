@@ -36,8 +36,8 @@ class FlightInterface(multiprocessing.Process):
         self.delta = 0  # Time since last computation
 
     def run(self):
-        while (True):
-
+        while true:
+            pass
 
         # Time delta
         def delta(self):

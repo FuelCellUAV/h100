@@ -25,7 +25,6 @@ from adc import adcpi
 from temperature import tmp102
 from switch import switch
 
-
 # Function to mimic an 'enum'. Won't be needed in Python3.4
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
@@ -37,45 +36,53 @@ def enum(*sequential, **named):
 ##############
 # CONTROLLER #
 ##############
-class H100():
-    # Define Sensors
-    Adc = adcpi.AdcPi2Daemon()
-    Temp = tmp102.Tmp102()
-
-    # Define Switches
-    pfio = pifacedigitalio.PiFaceDigital()  # Start piface
-    fan = switch.Switch(0)
-    h2 = switch.Switch(1)
-    purge = switch.Switch(2)
-    on = 0  # Switch numbers on the pfio
-    off = 1
-    reset = 2
-
-    # Define Variables
-    amps = [0.0] * 8
-    volts = [0.0] * 8
-    power = [0.0] * 4
-    temp = [0.0] * 4
-
-    # Define Controllables
-    startTime = 3  # Seconds
-    stopTime = 10  # Seconds
-    cutoffTemp = 30  # Celsius
-    purgeCtrl = 0
-
-    # Define States
-    STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
-    state = STATE.off
+class H100:
 
     ##############
     # INITIALISE #
     ##############
     def __init__(self, purgeControl=0, purgeFreq=30, purgeTime=0.5):
+
+        # Actions
+        self.on = 0
+        self.off = 1
+        self.reset = 2
+
+        # Adc
+        self.Adc = adcpi.AdcPi2Daemon()
         self.Adc.daemon = True
         self.Adc.start()
+
+        # Delays
+        self.startTime = 3  # Seconds
+        self.stopTime = 10  # Seconds
+        self.cutoffTemp = 30  # Celsius
+
+        # PiFace Interface
+        self.pfio = pifacedigitalio.PiFaceDigital()  # Start piface
+
+        # Purge settings
         self.purgeCtrl = purgeControl
         self.purgeFreq = purgeFreq
         self.purgeTime = purgeTime
+
+        # State
+        self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
+        self.state = self.STATE.off
+
+        # Switches
+        self.fan = switch.Switch(0)
+        self.h2 = switch.Switch(1)
+        self.purge = switch.Switch(2)
+
+        # Temperature
+        self.Temp = tmp102.Tmp102()
+
+        # Variables
+        self.amps = [0.0] * 8
+        self.volts = [0.0] * 8
+        self.power = [0.0] * 4
+        self.temp = [0.0] * 4
 
     ##############
     #    MAIN    #
@@ -86,18 +93,21 @@ class H100():
 
         # BUTTONS
         if self.__getButton(self.off):  # Turn off
-            if self.state == self.STATE.startup or self.state.value == self.STATE.on:
+            if self.state == self.STATE.startup or self.state == self.STATE.on:
                 self.state = self.STATE.shutdown
                 timeChange = time()
+
         elif self.__getButton(self.on):  # Turn on
             if self.state == self.STATE.off:
                 self.state = self.STATE.startup
                 timeChange = time()
+
         elif self.__getButton(self.reset):  # Reset error
             if self.state == self.STATE.error:
                 self.state = self.STATE.off
                 timeChange = time()
-                # OVER TEMPERATURE
+
+        # OVER TEMPERATURE
         if max(self.temp) > self.cutoffTemp:
             self.state = self.STATE.error
 
