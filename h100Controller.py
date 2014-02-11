@@ -60,8 +60,6 @@ class H100():
     # Define Controllables
     startTime = 3  # Seconds
     stopTime = 10  # Seconds
-    purgeTime = 0.5  # Seconds
-    purgeFreq = 30  # Seconds
     cutoffTemp = 30  # Celsius
     purgeCtrl = 0
 
@@ -72,10 +70,12 @@ class H100():
     ##############
     # INITIALISE #
     ##############
-    def __init__(self, purgeControl=0):
+    def __init__(self, purgeControl=0, purgeFreq=30, purgeTime=0.5):
         self.Adc.daemon = True
         self.Adc.start()
         self.purgeCtrl = purgeControl
+        self.purgeFreq = purgeFreq
+        self.purgeTime = purgeTime
 
     ##############
     #    MAIN    #

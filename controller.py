@@ -34,6 +34,8 @@ from purge import pid
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
 parser.add_argument('--out', help='Name of the output logfile')
 parser.add_argument('--purgeController', type=int, default=0, help='Set to 1 for purge controller on')
+parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
+parser.add_argument('--purgeFreq'  	,type=float, 	default=30,	help='Time between purges in seconds')
 args = parser.parse_args()
 
 # Class to save to file & print to screen
@@ -69,7 +71,7 @@ if args.purgeController:
 else:
     purge = 0
 
-h100 = h100Controller.H100(purgeControl=purge)
+h100 = h100Controller.H100(purgeControl=purge, purgeFreq=args.purgeFreq, purgeTime=args.purgeTime)
 #h100.daemon = True
 
 
