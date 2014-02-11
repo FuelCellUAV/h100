@@ -18,7 +18,12 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import libraries
-¬def _parse_comandline():
+from display import h100Display
+from purge import pid
+from h100Controller import h100
+from switch import switch
+
+def _parse_comandline():
 
     # Define default global constants
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
