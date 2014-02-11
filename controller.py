@@ -22,7 +22,7 @@ import argparse, sys, time
 
 from display import h100Display
 from purge import pid
-from h100Controller import h100
+from h100Controller import H100
 from switch import switch
 
 def _parse_comandline():
@@ -100,7 +100,7 @@ if __name__ == "__main__":
         purge = 0
 
     # Initialise controller class
-    h100 = h100Controller.H100(purgeControl=purge, purgeFreq=args.purgeFreq, purgeTime=args.purgeTime)
+    h100 = H100(purgeControl=purge, purgeFreq=args.purgeFreq, purgeTime=args.purgeTime)
     #h100.daemon = True
 
     #Initialise display class
