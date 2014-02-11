@@ -37,10 +37,8 @@ def enum(*sequential, **named):
 class H100():
     # Define Sensors
     Adc = adcpi.AdcPi2Daemon()
-    Temp = [tmp102.Tmp102Daemon(0x48),
-            tmp102.Tmp102Daemon(0x49),
-            tmp102.Tmp102Daemon(0x4A),
-            tmp102.Tmp102Daemon(0x4B)]
+    Temp = tmp102.Tmp102Daemon()
+    Temp = tmp102.Tmp102()
 
     # Define Switches
     pfio = pifacedigitalio.PiFaceDigital() # Start piface
@@ -74,9 +72,6 @@ class H100():
     def __init__(self):
         self.Adc.daemon = True
         self.Adc.start()
-        for x in range(len(self.temp)):
-            self.Temp[x].daemon = True
-            self.Temp[x].start()
 
     ##############
     #    MAIN    #
@@ -103,14 +98,13 @@ class H100():
             self.state = self.STATE.error
 
         # OVER/UNDER VOLTAGE
-        # todo, not important
+            # todo, not important
 
         # SENSORS
-        self.amps[0] = self.__getCurrent(0)
+        self.amps[0]  = self.__getCurrent(0)
         self.volts[0] = self.__getVoltage(1)
         self.power[0] = self.volts[0] * self.amps[0]
-        for x in range(len(self.temp)):
-            self.temp[x] = self.__getTemperature(x)
+        self.temp = self.__getTemperature()
 
         # STATE MACHINE
         if self.state == self.STATE.off:
@@ -210,8 +204,13 @@ class H100():
         return (abs(self.Adc.val[channel] * 1000 / 60.9559671563))
 
     # Get Temperature (internal)
-    def __getTemperature(self, channel):
-        return self.Temp[channel]()
+    def __getTemperature(self):
+        t = [0.0]*4
+        t[0] = self.Temp.get(0x48)
+        t[1] = self.Temp.get(0x49)
+        t[2] = self.Temp.get(0x4a)
+        t[3] = self.Temp.get(0x4b)
+        return t
 
     # Get Button (internal)
     def __getButton(self, button):
