@@ -24,7 +24,7 @@ import argparse
 
 from display import h100Display
 import h100Controller
-
+from purge import pid
 
 
 
@@ -32,6 +32,7 @@ import h100Controller
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
 parser.add_argument('--out', help='Name of the output logfile')
+parser.add_argument('--purgeController' ,type=int, 	default=0, 	help='Set to 1 for purge controller on')
 args = parser.parse_args()
 
 # Class to save to file & print to screen
@@ -62,8 +63,14 @@ if args.out:  # save to output file
 display = h100Display.FuelCellDisplay(1, "PF Display")
 display.daemon = True  # To ensure the process is killed on exit
 
-h100 = h100Controller.H100()
+if args.purgeController:
+    purge = pid.Pid(10, 1, 1)
+else:
+    purge = 0
+
+h100 = h100Controller.H100(purgeControl = purge)
 #h100.daemon = True
+
 
 print("\nFuel Cell Controller")
 print("Horizon H-100 Stack")
@@ -94,15 +101,24 @@ try:
         display.state(h100.getState())
 
         # ELECTRIC
-        print('v1', '\t', '%02f' % h100.getVoltage()[0], end='\t')
-        print('a1', '\t', '%02f' % h100.getCurrent()[0], end='\t')
-        print('p1', '\t', '%02f' % h100.getPower()[0], end='\t')
+        print('v1', '\t', '%.3f' % h100.getVoltage()[0], end='\t')
+        print('a1', '\t', '%.3f' % h100.getCurrent()[0], end='\t')
+        print('p1', '\t', '%.3f' % h100.getPower()[0], end='\t')
         display.voltage(h100.getVoltage()[0])
         display.current(h100.getCurrent()[0])
 
         # TEMPERATURE
-        print('tMax', '\t', max(h100.getTemperature()), end='\t')
+        print('t', end='\t')
+#        print(h100.getTemperature()[0], end='\t')
+#        print(h100.getTemperature()[1], end='\t')
+        print('%.3f' % h100.getTemperature()[2], end='\t')
+#        print(h100.getTemperature()[3], end='\t')
         display.temperature(max(h100.getTemperature()))
+
+        # PURGE
+        print('c', end='\t')
+        print('%.3f' % h100.getPurgeFrequency(), end='\t')
+        print('%.3f' % h100.getPurgeTime(), end='\t')
 
 # Programme Exit Code
 finally:

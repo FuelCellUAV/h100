@@ -63,6 +63,7 @@ class H100():
     purgeTime = 0.5  # Seconds
     purgeFreq = 30  # Seconds
     cutoffTemp = 30  # Celsius
+    purgeCtrl = 0
 
     # Define States
     STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
@@ -71,9 +72,10 @@ class H100():
     ##############
     # INITIALISE #
     ##############
-    def __init__(self):
+    def __init__(self, purgeControl=0):
         self.Adc.daemon = True
         self.Adc.start()
+        self.purgeCtrl = purgeControl
 
     ##############
     #    MAIN    #
@@ -107,6 +109,12 @@ class H100():
         self.volts[0] = self.__getVoltage(1)
         self.power[0] = self.volts[0] * self.amps[0]
         self.temp = self.__getTemperature()
+
+        # PURGE CONTROL
+        if self.purgeCtrl != 0:
+            vTarget = -1.2*self.amps[0] + 21 # From polarisation curve
+            vError = self.volts[0] - vTarget
+            self.purgeFreq = self.purgeCtrl(vError)
 
         # STATE MACHINE
         if self.state == self.STATE.off:
@@ -193,6 +201,14 @@ class H100():
     # Get Temperature (global)
     def getTemperature(self):
         return self.temp
+
+    # Get Purge Frequency (global)
+    def getPurgeFrequency(self):
+        return self.purgeFreq
+
+    # Get Purge Time (global)
+    def getPurgeTime(self):
+        return self.purgeTime
 
     ##############
     #INT. GETTERS#

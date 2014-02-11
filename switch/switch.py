@@ -28,8 +28,6 @@ class Switch:
     state = False
     lastTime = 0
     lastOff = 0
-    #pfio = 0
-    #pfio = pifacedigitalio.PiFaceDigital()
 
     def __init__(self, pin) -> object:
         self.pin = pin

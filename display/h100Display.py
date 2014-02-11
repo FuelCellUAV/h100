@@ -29,10 +29,7 @@
 import multiprocessing
 import ctypes
 
-import pifacecad  # Follow install instructions on their website
-
-
-
+import pifacecad # Follow install instructions on their website
 
 # Includes to get ip address
 import socket
@@ -96,28 +93,31 @@ class FuelCellDisplay(multiprocessing.Process):
     # This is the main process loop called by start()
     def run(self):
         counter = 0
-        while True:
-            self.cad.lcd.home()  # Set the cursor to the beginning
+        try:
+            while True:
+                self.cad.lcd.home() # Set the cursor to the beginning
             #            if self.ip_display_flag is True:
             #               return
             #          return
             # Write the top line
-            self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'
-                               .format(self.fcName.value[:4].decode('utf-8'), self.fcState.value[:3].decode('utf-8'),
-                                       self.temp.value))
-            self.cad.lcd.write_custom_bitmap(self.temp_symbol_index)
-            self.cad.lcd.write(' ')
+                self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'
+                    .format(self.fcName.value[:4].decode('utf-8'), self.fcState.value[:3].decode('utf-8'), self.temp.value))
+                self.cad.lcd.write_custom_bitmap(self.temp_symbol_index)
+                self.cad.lcd.write(' ')
 
-            # A statement for my pretty bitmap animation
-            self.cad.lcd.write_custom_bitmap(self.progress_index[counter])
-            if counter < 6:
-                counter += 1
-            else:
-                counter = 0
+                # A statement for my pretty bitmap animation
+                self.cad.lcd.write_custom_bitmap(self.progress_index[counter])
+                if counter < 6:
+                    counter += 1
+                else:
+                    counter = 0
 
                 # Write the bottom line
-            self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W '
-                               .format(self.vFc.value, self.iFc.value, self.vFc.value * self.iFc.value))
+                self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W '
+                    .format(self.vFc.value, self.iFc.value, self.vFc.value * self.iFc.value))
+        finally:
+             self.end()
+             print('\n\nDisplay off\n\n')
 
     # Call this function to change the fuel cell name (max 4x char will be displayed)
     def fuelCellName(self, fcName):
@@ -144,21 +144,16 @@ class FuelCellDisplay(multiprocessing.Process):
         self.iFc.value = current
         return
 
-    # Process stop code (TBC)
-    def stop(self):
-        self.__exit__()
-
-    def __exit__(self):
+    def end(self):
         self.cad.lcd.clear()
         self.cad.lcd.backlight_off()
 
-        # Get my current ip address, takes 'lo' or 'eth0' or 'wlan0' etc
-
+    # Get my current ip address, takes 'lo' or 'eth0' or 'wlan0' etc
     def get_ip_address(self, ifname):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return socket.inet_ntoa(fcntl.ioctl(
             s.fileno(),
-            0x8915,  # SIOCGIFADDR
+            0x8915, # SIOCGIFADDR
             struct.pack('256s', ifname[:15])
         )[20:24])
 
