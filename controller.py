@@ -18,14 +18,12 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import libraries
-import sys
-import time
-import argparse
+import argparse, sys, time
 
 from display import h100Display
-import h100Controller
 from purge import pid
-
+from h100Controller import h100
+from switch import switch
 
 def _parse_comandline():
 
