@@ -25,9 +25,9 @@ import pifacedigitalio
 # Class to enable controlled switching
 class Switch:
 
-    def __init__(self):
+    def __init__(self, pin):
 
-        self.pin = o
+        self.pin = pin
         self.state = False
         self.lastTime = 0
         self.lastOff = 0

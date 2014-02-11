@@ -18,7 +18,16 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import libraries
-¬def _parse_comandline():
+import sys
+import time
+import argparse
+
+from display import h100Display
+import h100Controller
+from purge import pid
+
+
+def _parse_comandline():
 
     # Define default global constants
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
@@ -29,7 +38,7 @@
 
     return parser.parse_args()
 
-def _display_header():
+def _display_header(display):
 
     print("\nFuel Cell Controller")
     print("Horizon H-100 Stack")
@@ -48,7 +57,7 @@ def _display_header():
 def _print_state(h100, display):
 
     print(h100.getState(), end='\t')
-    display.state(H100Controller.getState())
+    display.state(h100.getState())
 
 def _print_electric(h100, display):
 
@@ -93,7 +102,7 @@ if __name__ == "__main__":
         purge = 0
 
     # Initialise controller class
-    h100 = H100(purgeControl=purge, purgeFreq=args.purgeFreq, purgeTime=args.purgeTime)
+    h100 = h100Controller.H100(purgeControl=purge, purgeFreq=args.purgeFreq, purgeTime=args.purgeTime)
     #h100.daemon = True
 
     #Initialise display class
@@ -104,14 +113,14 @@ if __name__ == "__main__":
     # Main #
     ########
 
-    _display_header()
+    _display_header(display)
 
     try:
 
         h100.run()
         display.start()
 
-        while true:
+        while True:
 
             print('\n', time.time(), end='\t')
 
