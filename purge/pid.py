@@ -28,7 +28,7 @@ class Pid:
         print('%02f' % (error * self.Kp), end='\t')
         print('%02f' % (self.integral * self.Ki), end='\t')
         print('%02f' % (derivative * self.Kd), end='\t')
-        return self.zero + (self.Kp*error + self.Ki*self.integral + self.Kd*derivative)
+        return self.zero + (self.Kp * error + self.Ki * self.integral + self.Kd * derivative)
 
     def doReset(self):
         self.error = 0

@@ -29,10 +29,11 @@ from purge import pid
 
 
 
+
 # Define default global constants
 parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
 parser.add_argument('--out', help='Name of the output logfile')
-parser.add_argument('--purgeController' ,type=int, 	default=0, 	help='Set to 1 for purge controller on')
+parser.add_argument('--purgeController', type=int, default=0, help='Set to 1 for purge controller on')
 args = parser.parse_args()
 
 # Class to save to file & print to screen
@@ -68,7 +69,7 @@ if args.purgeController:
 else:
     purge = 0
 
-h100 = h100Controller.H100(purgeControl = purge)
+h100 = h100Controller.H100(purgeControl=purge)
 #h100.daemon = True
 
 
@@ -109,10 +110,10 @@ try:
 
         # TEMPERATURE
         print('t', end='\t')
-#        print(h100.getTemperature()[0], end='\t')
-#        print(h100.getTemperature()[1], end='\t')
+        #        print(h100.getTemperature()[0], end='\t')
+        #        print(h100.getTemperature()[1], end='\t')
         print('%.3f' % h100.getTemperature()[2], end='\t')
-#        print(h100.getTemperature()[3], end='\t')
+        #        print(h100.getTemperature()[3], end='\t')
         display.temperature(max(h100.getTemperature()))
 
         # PURGE

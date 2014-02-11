@@ -112,7 +112,7 @@ class H100():
 
         # PURGE CONTROL
         if self.purgeCtrl != 0:
-            vTarget = -1.2*self.amps[0] + 21 # From polarisation curve
+            vTarget = -1.2 * self.amps[0] + 21  # From polarisation curve
             vError = self.volts[0] - vTarget
             self.purgeFreq = self.purgeCtrl(vError)
 

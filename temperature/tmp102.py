@@ -21,7 +21,7 @@ class Tmp102:
 class Tmp102Daemon(Tmp102, multiprocessing.Process):
     val = multiprocessing.Array('d', range(4))
     address = [0x48, 0x49, 0x4a, 0x4b]
- 
+
     def __init__(self):
         multiprocessing.Process.__init__(self)
 
