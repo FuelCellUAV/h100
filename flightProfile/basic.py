@@ -22,74 +22,74 @@
 #altitude will come from gps reading in air tests
 
 import time
-import interface
 
-class BasicProfile(Interface): # Inherits the functionality of "Interface"
-	#Initialise
-	def __init__(self):
-		#Runs automatically at start of programme
-		print ('Initialising flight profile')
-		self.ground_alt = 2
-		self.alt = 0
-		self.cruise_alt = 15
-		self.cruise_time = 10
-		self.timeStart = time.time()
-		self.timeRun = 0
-		self.safetyChecks = False
-		self.SafetyCheck()
-		return
 
-	#**FLIGHT PROFILE**
-	def run(self):
-		if self.safetyChecks == False:
-			print ("Can't run, safety check failed at init")
-			break # Don't allow this to run if not safe
-			
-		if self.runtime() < 5:
-			# Do nothing yet, ready to go!
-		elif self.runtime() < 15:
-			# Takeoff
-			self.alt = Interface.climb(self.alt, 2)# 2m/s climb
-		elif self.runtime() < 360:
-			# Cruise
-			Interface.setClimbRate(1) # 1m/s climb
-			Interface.setDecRate(1)   # 1m/s descent
-			self.alt = Interface.cruise(self.alt, self.cruise_alt)
-		elif self.runtime() < 420:
-			# Land
-			self.Landing
-		else:
-			self.Shutdown()
+class BasicProfile(Interface):  # Inherits the functionality of "Interface"
+    #Initialise
+    def __init__(self):
+        #Runs automatically at start of programme
+        print('Initialising flight profile')
+        self.ground_alt = 2
+        self.alt = 0
+        self.cruise_alt = 15
+        self.cruise_time = 10
+        self.timeStart = time.time()
+        self.timeRun = 0
+        self.safetyChecks = False
+        self.SafetyCheck()
+        return
 
-	#Safety Check
-	def SafetyCheck(self):
-		print ('Starting Safety Checks')
-		try:
-			# Do checks here #
-			self.safetyChecks = True # All ok
-		except Exception as e:
-			self.safetyChecks = False # Went wrong
-		return
-		
-	#Landing - special method needed to account for ground
-	def Landing(self):
-		Interface.setDecRate(1) # 1m/s
-		if self.alt > self.ground_alt:
-			print('Landing')
-			self.alt = Interface.descend(self.alt)
-		else:
-			print ("On ground")
-		return self.alt
-		
-	#Shut Down
-	def Shutdown(self):
-		print ('Shutting Down')
-		#shut down
-		print ('Shut Down Good Bye')
-		return
-		
-	# Time since start of profile
-	def runtime(self):
-		# Calc real time since start
-		self.timeRun = time.time() - self.timeStart
-		return self.timeRun
+    #**FLIGHT PROFILE**
+    def run(self):
+        if self.safetyChecks == False:
+            print("Can't run, safety check failed at init")
+            break  # Don't allow this to run if not safe
+
+        if self.runtime() < 5:
+        # Do nothing yet, ready to go!
+        elif self.runtime() < 15:
+            # Takeoff
+            self.alt = Interface.climb(self.alt, 2)  # 2m/s climb
+        elif self.runtime() < 360:
+            # Cruise
+            Interface.setClimbRate(1)  # 1m/s climb
+            Interface.setDecRate(1)  # 1m/s descent
+            self.alt = Interface.cruise(self.alt, self.cruise_alt)
+        elif self.runtime() < 420:
+            # Land
+            self.Landing
+        else:
+            self.Shutdown()
+
+    #Safety Check
+    def SafetyCheck(self):
+        print('Starting Safety Checks')
+        try:
+            # Do checks here #
+            self.safetyChecks = True  # All ok
+        except Exception as e:
+            self.safetyChecks = False  # Went wrong
+        return
+
+    #Landing - special method needed to account for ground
+    def Landing(self):
+        Interface.setDecRate(1)  # 1m/s
+        if self.alt > self.ground_alt:
+            print('Landing')
+            self.alt = Interface.descend(self.alt)
+        else:
+            print("On ground")
+        return self.alt
+
+    #Shut Down
+    def Shutdown(self):
+        print('Shutting Down')
+        #shut down
+        print('Shut Down Good Bye')
+        return
+
+    # Time since start of profile
+    def runtime(self):
+        # Calc real time since start
+        self.timeRun = time.time() - self.timeStart
+        return self.timeRun

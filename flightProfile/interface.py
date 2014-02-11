@@ -21,65 +21,67 @@
 import time
 import multiprocessing
 
+
 class FlightInterface(multiprocessing.Process):
     def __init__(self, threadID, name)
         # Initialise the multiprocess utility
         multiprocessing.Process.__init__(self)
         self.threadID = threadID
-        self.name     = name
-		
+        self.name = name
+
         # This function runs automatically when programme started
-        self.climbRate = 1 # m/s
-        self.decRate   = 1 # m/s
-        self.timeLast = time.time() # Time at last computation
-        self.delta = 0 # Time since last computation
-		
+        self.climbRate = 1  # m/s
+        self.decRate = 1  # m/s
+        self.timeLast = time.time()  # Time at last computation
+        self.delta = 0  # Time since last computation
+
     def run(self):
         while (True):
-            
-	
-    # Time delta
-    def delta(self):
-        # Calc real time since last computational cycle
-        self.delta = time.time() - self.timeLast
-        self.timeLast = time.time()
-        return self.delta
-	
-    #Climb
-    def climb(self, alt, rate):
-        print ('Climbing')
-        self.delta()
-        alt += (self.climbRate=rate) * self.delta # Calc real alt change
-        #time.sleep(1)
-        print ('alt: ',alt)
-        return alt
 
-    #Descend
-    def descend(self, alt, rate):
-        print ('Descending')
-        self.delta()
-        alt -= (self.decRate=rate) * self.delta # Calc real alt change
-        #time.sleep(1)
-        print ('alt: ',alt)
-        return alt
 
-	#Cruise
-    def cruise(self, alt, cruise_alt):
-        print ('Cruising')
-        if alt > cruise_alt:
-            print("Above cruise alt")
-            self.descend()
-        elif alt < cruise_alt:
-            print("Below cruise alt")
-            self.climb()
-        else
+        # Time delta
+        def delta(self):
+            # Calc real time since last computational cycle
+            self.delta = time.time() - self.timeLast
+            self.timeLast = time.time()
+            return self.delta
+
+        #Climb
+        def climb(self, alt, rate):
+            print('Climbing')
             self.delta()
+            alt += (self.climbRate=rate) *self.delta  # Calc real alt change
+            #time.sleep(1)
+            print('alt: ', alt)
+            return alt
+
+        #Descend
+        def descend(self, alt, rate):
+            print('Descending')
+            self.delta()
+            alt -= (self.decRate=rate) *self.delta  # Calc real alt change
+            #time.sleep(1)
+            print('alt: ', alt)
+            return alt
+
+        #Cruise
+        def cruise(self, alt, cruise_alt):
+            print('Cruising')
+            if alt > cruise_alt:
+                print("Above cruise alt")
+                self.descend()
+            elif alt < cruise_alt:
+                print("Below cruise alt")
+                self.climb()
+            else
+            self.delta()
+
         return alt
-		
+
     # Change Climb Rate "on the fly"
     def setClimbRate(self, climbRate)
         self.climbRate = climbRate
-		
-	# Change Descent Rate "on the fly"
+
+    # Change Descent Rate "on the fly"
     def setDecRate(self, decRate)
         self.decRate = decRate
