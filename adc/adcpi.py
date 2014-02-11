@@ -27,12 +27,14 @@ class AdcPi2:
     varDivisior = 64 # from pdf sheet on adc addresses and config
     varMultiplier = (2.495 / varDivisior) / 1000
 
-    def changechannel(self, address, adcConfig):
+    @staticmethod
+    def changechannel(address, adcConfig):
         with i2c.I2CMaster() as bus:
             bus.transaction(
                 i2c.writing_bytes(address, adcConfig))
-
-    def getadcreading(self, address, adcConfig):
+    
+    @staticmethod
+    def getadcreading(address, adcConfig):
         with i2c.I2CMaster() as bus:
 
             # create byte array and fill with initial values to define size
@@ -46,12 +48,6 @@ class AdcPi2:
             adcreading = bus.transaction(
                 i2c.writing_bytes(address, adcConfig),
                 i2c.reading(address, 4))[0]
-
-            #print('full= ',adcreading)
-            #print('0= ',adcreading[0])
-            #print('1= ',adcreading[1])
-            #print('2= ',adcreading[2])
-            #print('3= ',adcreading[3])
 
             h = adcreading[0]
             m = adcreading[1]
@@ -73,7 +69,7 @@ class AdcPi2:
             # check if positive or negative number and invert if needed
             if h > 128:
                 t = ~(0x020000 - t)
-            return t * self.varMultiplier
+            return t * (2.495 / 64) / 1000
 
     def get(self, address, config):
         self.changechannel(address, config)

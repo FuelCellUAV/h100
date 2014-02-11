@@ -97,7 +97,10 @@ try:
         display.current(h100.getCurrent()[0])
 
         # TEMPERATURE
-        print('tMax', '\t', max(h100.getTemperature()), end='\t')
+        print('t', '\t', h100.getTemperature()[0], end='\t')
+        print(h100.getTemperature()[1], end='\t')
+        print(h100.getTemperature()[2], end='\t')
+        print(h100.getTemperature()[3], end='\t')
         display.temperature(max(h100.getTemperature()))
 
 # Programme Exit Code

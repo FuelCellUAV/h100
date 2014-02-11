@@ -61,6 +61,7 @@ class H100():
     purgeTime = 0.5 # Seconds
     purgeFreq = 30  # Seconds
     cutoffTemp = 30  # Celsius
+    purgeCtrl = 0
 
     # Define States
     STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
@@ -69,9 +70,10 @@ class H100():
     ##############
     # INITIALISE #
     ##############
-    def __init__(self):
+    def __init__(self, purgeControl=0):
         self.Adc.daemon = True
         self.Adc.start()
+        self.purgeCtrl = purgeControl
 
     ##############
     #    MAIN    #
