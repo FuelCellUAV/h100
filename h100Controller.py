@@ -108,6 +108,12 @@ class H100():
         self.power[0] = self.volts[0] * self.amps[0]
         self.temp = self.__getTemperature()
 
+        # PURGE CONTROL
+        if self.purgeCtrl != 0:
+            vTarget = -1.2*self.amps[0] + 21 # From polarisation curve
+            vError = self.volts[0] - vTarget
+            self.purgeFreq = self.purgeCtrl(vError)
+
         # STATE MACHINE
         if self.state == self.STATE.off:
             self.stateOff()
@@ -193,6 +199,14 @@ class H100():
     # Get Temperature (global)
     def getTemperature(self):
         return self.temp
+
+    # Get Purge Frequency (global)
+    def getPurgeFrequency(self):
+        return self.purgeFreq
+
+    # Get Purge Time (global)
+    def getPurgeTime(self):
+        return self.purgeTime
 
     ##############
     #INT. GETTERS#

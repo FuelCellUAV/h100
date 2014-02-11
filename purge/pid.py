@@ -3,7 +3,7 @@
 from time import time
 
 # Class to control purge frequency
-class Purge:
+class Pid:
     errorLast = 0
     integral = 0
     timeLast = 0
@@ -13,7 +13,7 @@ class Purge:
         self.Ki = i
         self.Kd = d
         self.zero = zero
-        timeLast = time()
+        self.timeLast = time()
 
     def __call__(self, error):
         dt = time() - self.timeLast
@@ -28,7 +28,7 @@ class Purge:
         print('%02f' % (error * self.Kp), end='\t')
         print('%02f' % (self.integral * self.Ki), end='\t')
         print('%02f' % (derivative * self.Kd), end='\t')
-        return self.zero + self.Kp * error + self.Ki * self.integral + self.Kd * derivative
+        return self.zero + (self.Kp*error + self.Ki*self.integral + self.Kd*derivative)
 
     def doReset(self):
         self.error = 0
