@@ -34,3 +34,12 @@ The use this command to stop you needing sudo for talking to i2c devices
 ```
 sudo usermod -aG i2c pi
 ```
+
+
+More project information at:
+
+http://www.element14.com/community/community/raspberry-pi/raspberrypi_projects/blog/2013/12/02/hydrogen-fuel-cells
+
+and
+
+http://diydrones.com/profile/SimonHowroyd

@@ -17,97 +17,94 @@
 # address = adc_address1 or adc_address2 - Hex address of I2C chips as configured by board header pins.
 
 import multiprocessing
+
 import quick2wire.i2c as i2c
-import re
+
 
 class AdcPi2:
-	
-	adc_address1  = 0x68
-	adc_address2  = 0x69
-	varDivisior   = 64 # from pdf sheet on adc addresses and config
-	varMultiplier = (2.495/varDivisior)/1000
-	
-	def changechannel(self, address, adcConfig):
-		with i2c.I2CMaster() as bus:
-			bus.transaction(
-				i2c.writing_bytes(address, adcConfig))
+    adc_address1 = 0x68
+    adc_address2 = 0x69
+    varDivisior = 64  # from pdf sheet on adc addresses and config
+    varMultiplier = (2.495 / varDivisior) / 1000
 
-	def getadcreading(self, address, adcConfig):
-		with i2c.I2CMaster() as bus:
+    @staticmethod
+    def changechannel(address, adcConfig):
+        with i2c.I2CMaster() as bus:
+            bus.transaction(
+                i2c.writing_bytes(address, adcConfig))
 
-			# create byte array and fill with initial values to define size
-			adcreading = bytearray()
+    @staticmethod
+    def getadcreading(address, adcConfig):
+        with i2c.I2CMaster() as bus:
 
-			adcreading.append(0x00)
-			adcreading.append(0x00)
-			adcreading.append(0x00)
-			adcreading.append(0x00)
-	
-			adcreading = bus.transaction(
-				i2c.writing_bytes(address, adcConfig),
-				i2c.reading(address, 4))[0]
+            # create byte array and fill with initial values to define size
+            adcreading = bytearray()
 
-			#print('full= ',adcreading) 
-			#print('0= ',adcreading[0]) 
-			#print('1= ',adcreading[1]) 
-			#print('2= ',adcreading[2]) 
-			#print('3= ',adcreading[3]) 
+            adcreading.append(0x00)
+            adcreading.append(0x00)
+            adcreading.append(0x00)
+            adcreading.append(0x00)
 
-			h = adcreading[0]
-			m = adcreading[1]
-			l = adcreading[2]
-			s = adcreading[3]
+            adcreading = bus.transaction(
+                i2c.writing_bytes(address, adcConfig),
+                i2c.reading(address, 4))[0]
 
-			# wait for new data
-			while (s & 128):
-				adcreading = bus.transaction(
-				i2c.writing_bytes(address, adcConfig),
-				i2c.reading(address, 4))[0]
-				h = adcreading[0]
-				m = adcreading[1]
-				l = adcreading[2]
-				s = adcreading[3]
-		
-			# shift bits to product result
-			t = ((h & 0b00000001) << 16) | (m << 8) | l
-			# check if positive or negative number and invert if needed
-			if (h > 128):
-				t = ~(0x020000 - t)
-			return t * self.varMultiplier
+            h = adcreading[0]
+            m = adcreading[1]
+            l = adcreading[2]
+            s = adcreading[3]
 
-	def get(self, address, config):
-		self.changechannel(address, config)
-		return self.getadcreading(address, config)
+            # wait for new data
+            while (s & 128):
+                adcreading = bus.transaction(
+                    i2c.writing_bytes(address, adcConfig),
+                    i2c.reading(address, 4))[0]
+                h = adcreading[0]
+                m = adcreading[1]
+                l = adcreading[2]
+                s = adcreading[3]
 
-	def printall(self):
-		print ("Channel 1: %02f" % self.get(self.adc_address1, 0x9C)),
-		print ("2: %02f" % self.get(self.adc_address1, 0xBC)),
-		print ("3: %02f" % self.get(self.adc_address1, 0xDC)),
-		print ("4: %02f" % self.get(self.adc_address1, 0xFC)),
-		print ("5: %02f" % self.get(self.adc_address2, 0x9C)),
-		print ("6: %02f" % self.get(self.adc_address2, 0xBC)),
-		print ("7: %02f" % self.get(self.adc_address2, 0xDC)),
-		print ("8: %02f" % self.get(self.adc_address2, 0xFC)),
-		print ("\n")
+            # shift bits to product result
+            t = ((h & 0b00000001) << 16) | (m << 8) | l
+            # check if positive or negative number and invert if needed
+            if h > 128:
+                t = ~(0x020000 - t)
+            return t * (2.495 / 64) / 1000
 
-class AdcPi2Daemon( AdcPi2 , multiprocessing.Process):
-	val = multiprocessing.Array('d',range(8))
+    def get(self, address, config):
+        self.changechannel(address, config)
+        return self.getadcreading(address, config)
 
-	def __init__(self):
-		multiprocessing.Process.__init__(self)
-		self.threadId = 1
-		self.Name = 'AdcPi2'
+    def printall(self):
+        print("Channel 1: %02f" % self.get(self.adc_address1, 0x9C)),
+        print("2: %02f" % self.get(self.adc_address1, 0xBC)),
+        print("3: %02f" % self.get(self.adc_address1, 0xDC)),
+        print("4: %02f" % self.get(self.adc_address1, 0xFC)),
+        print("5: %02f" % self.get(self.adc_address2, 0x9C)),
+        print("6: %02f" % self.get(self.adc_address2, 0xBC)),
+        print("7: %02f" % self.get(self.adc_address2, 0xDC)),
+        print("8: %02f" % self.get(self.adc_address2, 0xFC)),
+        print("\n")
 
-	def run(self):
-		while True:
-			self.val[0] = self.get(self.adc_address1, 0x9C)
-			self.val[1] = self.get(self.adc_address1, 0xBC)
-			self.val[2] = self.get(self.adc_address1, 0xDC)
-			self.val[3] = self.get(self.adc_address1, 0xFC)
-			self.val[4] = self.get(self.adc_address2, 0x9C)
-			self.val[5] = self.get(self.adc_address2, 0xBC)
-			self.val[6] = self.get(self.adc_address2, 0xDC)
-			self.val[7] = self.get(self.adc_address2, 0xFC)
 
-	def stop(self):
-		return
+class AdcPi2Daemon(AdcPi2, multiprocessing.Process):
+    val = multiprocessing.Array('d', range(8))
+
+    def __init__(self):
+        multiprocessing.Process.__init__(self)
+        self.threadId = 1
+        self.Name = 'AdcPi2'
+
+    def run(self):
+        try:
+            while True:
+                self.val[0] = self.get(self.adc_address1, 0x9C)
+                self.val[1] = self.get(self.adc_address1, 0xBC)
+                self.val[2] = self.get(self.adc_address1, 0xDC)
+                self.val[3] = self.get(self.adc_address1, 0xFC)
+                self.val[4] = self.get(self.adc_address2, 0x9C)
+                self.val[5] = self.get(self.adc_address2, 0xBC)
+                self.val[6] = self.get(self.adc_address2, 0xDC)
+                self.val[7] = self.get(self.adc_address2, 0xFC)
+        finally:
+            print('\nADC Shut Down\n')

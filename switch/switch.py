@@ -18,45 +18,41 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from time import time
+
 import pifacedigitalio
+
 
 # Class to enable controlled switching
 class Switch:
-	pin   = 0
-	state = False
-	lastTime = 0
-	lastOff= 0
-	#pfio = 0
-	#pfio = pifacedigitalio.PiFaceDigital()
-	
-	def __init__(self, pin):
-		self.pin = pin
-		#DELAY = 1.0  # seconds
-		self.pfio = pifacedigitalio.PiFaceDigital()
-		
-	def timed(self, freq, duration):
-		# Deactivate if time is up
-		if (time()-self.lastTime) >= duration and self.state == True:
-		    self.lastTime = time()
-		    self.state = False
-		    return self.write()
 
-		# Activate
-		if (time()-self.lastTime) >= freq and self.state == False:
-		    self.lastTime = time()
-		    self.state = True
-		    return self.write()
+    def __init__(self, pin):
+        self.pin = pin
+        self.pfio = pifacedigitalio.PiFaceDigital()
+        self.state = False
+        self.lastTime = time()
 
-	def switch(self, state):
-		self.state = state
-		return self.write()
+    def timed(self, freq, duration):
+        # Deactivate if time is up
+        if (time() - self.lastTime) >= duration and self.state == True:
+            return self.write(False)
 
-	def write(self):
-		try:
-			if self.state:
-				self.pfio.output_pins[self.pin].turn_on()
-			else:
-				self.pfio.output_pins[self.pin].turn_off()
-		except Exception as e:
-			print ("Write error to output %d" % self.pin)
-			return self.state
+        # Activate
+        if (time() - self.lastTime) >= freq and self.state == False:
+            return self.write(True)
+
+    def write(self, state):
+        try:
+            if self.state:
+                self.pfio.output_pins[self.pin].turn_on()
+            else:
+                self.pfio.output_pins[self.pin].turn_off()
+            self.lastTime = time()
+            self.state = self.pfio.output_pins[self.pin].value
+        except:
+            print("Write error to output %d" % self.pin)
+        finally:
+            return self.state
+
+    def __del__(self):
+        self.write(False)
+        print('\nSwitch %d off\n' % self.pin)
