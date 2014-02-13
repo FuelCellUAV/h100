@@ -2,6 +2,21 @@
 
 import binascii, multiprocessing, serial, time
 
+
+class Quick:
+    def __init__(self):
+        self.ser = serial.Serial('/dev/ttyAMA0',38400,timeout=2,rtscts=1)
+
+    def send(self, data):
+        print(self.ser.write(data),' bytes sent')
+#        x=''
+        time.sleep(1)
+       # while True:
+        x = (self.ser.read(10))
+           # if x: break
+        return x
+
+
 class FlowBus232:
 	def __init__(self):
 		self.bus = serial.Serial("/dev/ttyAMA0",38400,timeout=5)
@@ -79,7 +94,7 @@ class FlowBus232:
 			#incoming data
 			return getValue(data, 4)
 			
-		else
+		else:
 			return False
 		
 	def run(self):
