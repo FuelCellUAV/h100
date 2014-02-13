@@ -86,8 +86,8 @@ class FuelCellDisplay(multiprocessing.Process):
         # If the user presses button 5 display the ip address
 
     #        self.ip_display_flag = False
-    #       self.listener = pifacecad.SwitchEventListener(chip=self.cad)
-    #      self.listener.register(0, pifacecad.IODIR_OFF,self.cad.lcd.write('Hello world!'))
+     #   self.listener = pifacecad.SwitchEventListener(chip=self.cad)
+    #    self.listener.register(0, pifacecad.IODIR_OFF,self.cad.lcd.write('Hello world!'))
     #     self.listener.register(0, pifacecad.IODIR_ON, self.cad.lcd.clear())
     #    self.listener.activate()
 

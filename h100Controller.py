@@ -148,9 +148,9 @@ class H100():
     ##############
     # State Off Routine
     def stateOff(self):
-        self.h2.switch(False)
-        self.fan.switch(False)
-        self.purge.switch(False)
+        self.h2.write(False)
+        self.fan.write(False)
+        self.purge.write(False)
 
     # State Startup Routine
     def stateStartup(self):
@@ -160,24 +160,24 @@ class H100():
 
     # State On Routine
     def stateOn(self):
-        self.h2.switch(True)
-        self.fan.switch(True)
+        self.h2.write(True)
+        self.fan.write(True)
         self.purge.timed(self.purgeFreq, self.purgeTime)
 
     # State Shutdown Routine
     def stateShutdown(self):
-        self.h2.switch(False)
+        self.h2.write(False)
         self.fan.timed(0, self.stopTime)
         self.purge.timed(0, self.stopTime)
 
     # State Error Routine
     def stateError(self):
-        self.h2.switch(False)
-        self.purge.switch(False)
+        self.h2.write(False)
+        self.purge.write(False)
         if max(self.temp) > self.cutoffTemp:
-            self.fan.switch(True)
+            self.fan.write(True)
         else:
-            self.fan.switch(False)
+            self.fan.write(False)
 
     ##############
     #EXT. GETTERS#
