@@ -115,13 +115,12 @@ if __name__ == "__main__":
 
     try:
 
-        h100.run()
         display.start()
 
         while True:
 
             print('\n', time.time(), end='\t')
-
+            h100.run()
             # PRINT STATE
             _print_state(h100, display)
 
