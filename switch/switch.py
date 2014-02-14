@@ -27,6 +27,9 @@ class Switch:
 
     def __init__(self, pin):
         self.pin = pin
+        self.state = False
+        self.lastTime = 0
+        self.lastOff = 0
         self.pfio = pifacedigitalio.PiFaceDigital()
         self.state = False
         self.lastTime = time()
@@ -42,7 +45,7 @@ class Switch:
 
     def write(self, state):
         try:
-            if self.state:
+            if state:
                 self.pfio.output_pins[self.pin].turn_on()
             else:
                 self.pfio.output_pins[self.pin].turn_off()
