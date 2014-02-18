@@ -10,7 +10,7 @@ class Quick:
     def send(self, data):
         print(self.ser.write(data),' bytes sent')
 #        x=''
-        time.sleep(1)
+        time.sleep(0.25)
        # while True:
         x = (self.ser.read(10))
            # if x: break

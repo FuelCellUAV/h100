@@ -7,8 +7,12 @@ args = parser.parse_args()
 args.i += '\r\n'
 
 ser=Quick()
-x=ser.send(bytearray(args.i,'ascii'))
+#x=ser.send(bytearray(args.i,'ascii'))
 
-print(len(x), ' bytes received')
-print(x)
+while True:
+    i = input('Enter message to send:   ')
+    i += '\r\n'
+    x = ser.send(bytearray(i, 'ascii'))
+    print(len(x), ' bytes received')
+    print(x)
 
