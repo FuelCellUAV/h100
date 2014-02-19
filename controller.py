@@ -93,10 +93,10 @@ display.fuelCellName('H100')
 # Main #
 ########
 try:
-    h100.run()
     display.start()
 
     while (True):
+        h100.run()
         print('\n', time.time(), end='\t')
 
         # PRINT STATE

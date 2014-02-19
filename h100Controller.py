@@ -82,18 +82,21 @@ class H100():
     ##############
     def run(self):
         timeChange = time()
-        self.state = self.STATE.off
+#        self.state = self.STATE.off
 
         # BUTTONS
         if self.__getButton(self.off):  # Turn off
-            if self.state == self.STATE.startup or self.state.value == self.STATE.on:
+            print('off button')
+            if self.state == self.STATE.startup or self.state == self.STATE.on:
                 self.state = self.STATE.shutdown
                 timeChange = time()
         elif self.__getButton(self.on):  # Turn on
+            print('on button')
             if self.state == self.STATE.off:
                 self.state = self.STATE.startup
                 timeChange = time()
         elif self.__getButton(self.reset):  # Reset error
+            print('reset button')
             if self.state == self.STATE.error:
                 self.state = self.STATE.off
                 timeChange = time()
