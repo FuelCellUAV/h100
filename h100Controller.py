@@ -43,7 +43,6 @@ class H100():
     Temp = tmp102.Tmp102()
 
     # Define Switches
-    pfio = pifacedigitalio.PiFaceDigital()  # Start piface
     fan = switch.Switch(0)
     h2 = switch.Switch(1)
     purge = switch.Switch(2)
@@ -76,6 +75,9 @@ class H100():
         self.purgeCtrl = purgeControl
         self.purgeFreq = purgeFreq
         self.purgeTime = purgeTime
+        self.timeChange = time()
+        self.pfio = pifacedigitalio.PiFaceDigital()  # Start piface
+
 
     ##############
     #    MAIN    #
@@ -85,15 +87,15 @@ class H100():
         if self.__getButton(self.off):  # Turn off
             if self.state == self.STATE.startup or self.state == self.STATE.on:
                 self.state = self.STATE.shutdown
-                timeChange = time()
+                self.timeChange = time()
         elif self.__getButton(self.on):  # Turn on
             if self.state == self.STATE.off:
                 self.state = self.STATE.startup
-                timeChange = time()
+                self.timeChange = time()
         elif self.__getButton(self.reset):  # Reset error
             if self.state == self.STATE.error:
                 self.state = self.STATE.off
-                timeChange = time()
+                self.timeChange = time()
                 # OVER TEMPERATURE
         if max(self.temp) > self.cutoffTemp:
             self.state = self.STATE.error
@@ -118,13 +120,13 @@ class H100():
             self.stateOff()
         if self.state == self.STATE.startup:
             self.stateStartup()
-            if (time() - timeChange) > self.startTime:
+            if (time() - self.timeChange) > self.startTime:
                 self.state = self.STATE.on
         if self.state == self.STATE.on:
             self.stateOn()
         if self.state == self.STATE.shutdown:
             self.stateShutdown()
-            if (time() - timeChange) > self.stopTime:
+            if (time() - self.timeChange) > self.stopTime:
                 self.state = self.STATE.off
         if self.state == self.STATE.error:
             self.stateError()
@@ -132,8 +134,8 @@ class H100():
     def shutdown(self):
         # When the programme exits, put through the shutdown routine
         if self.state != self.STATE.off:
-            timeChange = time()
-            while (time() - timeChange) < self.stopTime:
+            self.timeChange = time()
+            while (time() - self.timeChange) < self.stopTime:
                 self.stateShutdown()
             self.stateOff()
             self.state = self.STATE.off
