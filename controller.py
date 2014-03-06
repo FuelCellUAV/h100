@@ -112,10 +112,11 @@ try:
 
         # TEMPERATURE
         print('t', end='\t')
-        #        print(h100.getTemperature()[0], end='\t')
-        #        print(h100.getTemperature()[1], end='\t')
+        print(h100.getTemperature()[0], end='\t')
+        print(h100.getTemperature()[1], end='\t')
         print('%.3f' % h100.getTemperature()[2], end='\t')
-        #        print(h100.getTemperature()[3], end='\t')
+        print(h100.getTemperature()[3], end='\t')
+        print('%.3f' % max(h100.getTemperature()), end='\t')
         display.temperature(max(h100.getTemperature()))
 
         # PURGE

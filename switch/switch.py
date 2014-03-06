@@ -43,7 +43,7 @@ class Switch:
     def write(self, state):
 #        try:
             if state:
-                print('switch on')
+#                print('switch on')
                 self.pfio.output_pins[self.pin].turn_on()
             else:
                 self.pfio.output_pins[self.pin].turn_off()

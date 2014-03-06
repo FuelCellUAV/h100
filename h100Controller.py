@@ -38,10 +38,6 @@ def enum(*sequential, **named):
 # CONTROLLER #
 ##############
 class H100():
-    # Define Sensors
-    Adc = adcpi.AdcPi2Daemon()
-    Temp = tmp102.Tmp102()
-
     # Define Switches
     fan = switch.Switch(0)
     h2 = switch.Switch(1)
@@ -70,6 +66,10 @@ class H100():
     # INITIALISE #
     ##############
     def __init__(self, purgeControl=0, purgeFreq=30, purgeTime=0.5):
+        # Define Sensors
+        self.Adc = adcpi.AdcPi2Daemon()
+        self.Temp = tmp102.Tmp102()
+
         self.Adc.daemon = True
         self.Adc.start()
         self.purgeCtrl = purgeControl
