@@ -44,17 +44,13 @@ class Switch:
             return self.write(True)
 
     def write(self, state):
-        try:
-            if state:
-                self.pfio.output_pins[self.pin].turn_on()
-            else:
-                self.pfio.output_pins[self.pin].turn_off()
-            self.lastTime = time()
-            self.state = self.pfio.output_pins[self.pin].value
-#        except:
-#            print("Write error to output %d" % self.pin)
- #       finally:
-            return self.state
+        if state:
+            self.pfio.output_pins[self.pin].turn_on()
+        else:
+            self.pfio.output_pins[self.pin].turn_off()
+        self.lastTime = time()
+        self.state = self.pfio.output_pins[self.pin].value
+        return self.state
 
     def __del__(self):
         self.write(False)

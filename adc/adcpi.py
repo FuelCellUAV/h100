@@ -29,14 +29,12 @@ class AdcPi2:
 
     @staticmethod
     def changechannel(address, adcConfig):
-#    def changechannel(self, address, adcConfig):
         with i2c.I2CMaster() as bus:
             bus.transaction(
                 i2c.writing_bytes(address, adcConfig))
 
     @staticmethod
     def getadcreading(address, adcConfig):
-#    def getadcreading(self, address, adcConfig):
         with i2c.I2CMaster() as bus:
 
             # create byte array and fill with initial values to define size
@@ -108,5 +106,7 @@ class AdcPi2Daemon(AdcPi2, multiprocessing.Process):
                 self.val[5] = self.get(self.adc_address2, 0xBC)
                 self.val[6] = self.get(self.adc_address2, 0xDC)
                 self.val[7] = self.get(self.adc_address2, 0xFC)
+        except exception as e:
+            pass
         finally:
             print('\nADC Shut Down\n')
