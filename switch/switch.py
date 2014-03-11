@@ -51,9 +51,9 @@ class Switch:
                 self.pfio.output_pins[self.pin].turn_off()
             self.lastTime = time()
             self.state = self.pfio.output_pins[self.pin].value
-        except:
-            print("Write error to output %d" % self.pin)
-        finally:
+#        except:
+#            print("Write error to output %d" % self.pin)
+ #       finally:
             return self.state
 
     def __del__(self):

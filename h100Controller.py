@@ -36,8 +36,7 @@ def enum(*sequential, **named):
 ##############
 # CONTROLLER #
 ##############
-class H100:
-
+class H100():
     ##############
     # INITIALISE #
     ##############
@@ -65,6 +64,9 @@ class H100:
         self.purgeCtrl = purgeControl
         self.purgeFreq = purgeFreq
         self.purgeTime = purgeTime
+        self.timeChange = time()
+        self.pfio = pifacedigitalio.PiFaceDigital()  # Start piface
+
 
         # State
         self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')

@@ -29,12 +29,14 @@ class AdcPi2:
 
     @staticmethod
     def changechannel(address, adcConfig):
+#    def changechannel(self, address, adcConfig):
         with i2c.I2CMaster() as bus:
             bus.transaction(
                 i2c.writing_bytes(address, adcConfig))
 
     @staticmethod
     def getadcreading(address, adcConfig):
+#    def getadcreading(self, address, adcConfig):
         with i2c.I2CMaster() as bus:
 
             # create byte array and fill with initial values to define size
@@ -93,7 +95,7 @@ class AdcPi2Daemon(AdcPi2, multiprocessing.Process):
     def __init__(self):
         multiprocessing.Process.__init__(self)
         self.threadId = 1
-        self.Name = 'AdcPi2'
+        self.Name = 'AdcPi2Daemon'
 
     def run(self):
         try:
