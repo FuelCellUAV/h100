@@ -24,6 +24,8 @@ from display import h100Display
 from purge import pid
 from h100Controller import H100
 from switch import switch
+from tdiLoadbank import loadbank
+from writer import MyWriter
 
 def _parse_comandline():
 
@@ -40,10 +42,9 @@ def _display_header(display):
 
     print("\nFuel Cell Controller")
     print("Horizon H-100 Stack")
-    print("(c) Simon Howroyd 2013")
+    print("(c) Simon Howroyd 2014")
     print("Loughborough University\n")
 
-    print("controller  Copyright (C) 2013  Simon Howroyd")
     print("This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.")
     print("This is free software, and you are welcome to redistribute it,")
     print("under certain conditions; type `show c' for details.\n")
@@ -57,11 +58,24 @@ def _print_state(h100, display):
     print(h100.getState(), end='\t')
     display.state(h100.getState())
 
-def _print_electric(h100, display):
+def _print_electric(h100, display, load):
 
     print('v1', '\t', '%.3f' % h100.getVoltage()[0], end='\t')
+    print('v2', '\t', '%.3f' % load.voltage(), end='\t')
     print('a1', '\t', '%.3f' % h100.getCurrent()[0], end='\t')
+    print('a2', '\t', '%.3f' % load.current(), end='\t')
     print('p1', '\t', '%.3f' % h100.getPower()[0], end='\t')
+    print('p2', '\t', '%.3f' % load.power(), end='\t')
+    c = load.mode()
+    if 'VOLTAGE' in c:
+        print('cv', '\t', '%.3f' % load.constantVoltage(), end='\t')
+    elif 'CURRENT' in c:
+        print('cc', '\t', '%.3f' % load.constantCurrent(), end='\t')
+    elif 'POWER' in c:
+        print('cp', '\t', '%.3f' % load.constantPower(), end='\t')
+    else:
+        print('??', '\t', '0.0', end='\t')
+        
     display.voltage(h100.getVoltage()[0])
     display.current(h100.getCurrent()[0])
 
@@ -76,7 +90,7 @@ def _print_temperature(h100, display):
 
 def _print_purge(h100):
 
-    print('c', end='\t')
+    print('pf/pt', end='\t')
     print('%.3f' % h100.getPurgeFrequency(), end='\t')
     print('%.3f' % h100.getPurgeTime(), end='\t')
 
@@ -91,8 +105,11 @@ if __name__ == "__main__":
 
     # Look at user arguments
     if args.out:  # save to output file
-        writer = MyWriter(sys.stdout, args.out)
-        sys.stdout = writer
+        writer = MyWriter(sys.stdout, ('/media/FUELCELL/' + time.strftime('%y%m%d %H%M%S') + ' ' + args.out + '.tsv'))
+    else:
+        writer = MyWriter(sys.stdout, ('/media/FUELCELL/' + time.strftime('%y%m%d %H%M%S') + '.tsv'))
+
+    sys.stdout = writer
 
     if args.purgeController:
         purge = pid.Pid(10, 1, 1)
@@ -103,9 +120,12 @@ if __name__ == "__main__":
     h100 = H100(purgeControl=purge, purgeFreq=args.purgeFreq, purgeTime=args.purgeTime)
     #h100.daemon = True
 
-    #Initialise display class
+    # Initialise display class
     display = h100Display.FuelCellDisplay(1, "PF Display")
     display.daemon = True  # To ensure the process is killed on exit
+
+    # Initialise loadbank class
+    load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
 
     ########
     # Main #
@@ -119,13 +139,13 @@ if __name__ == "__main__":
 
         while True:
 
-            print('\n', time.time(), end='\t')
+            print('\n', '%.5f' % time.time(), end='\t')
             h100.run()
             # PRINT STATE
             _print_state(h100, display)
 
             # ELECTRIC
-            _print_electric(h100, display)
+            _print_electric(h100, display, load)
 
             # TEMPERATURE
             _print_temperature(h100, display)
