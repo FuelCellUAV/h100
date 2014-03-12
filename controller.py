@@ -105,9 +105,9 @@ if __name__ == "__main__":
 
     # Look at user arguments
     if args.out:  # save to output file
-        writer = MyWriter(sys.stdout, ('/media/FUELCELL/' + time.strftime('%y%m%d %H%M%S') + ' ' + args.out + '.tsv'))
+        writer = MyWriter(sys.stdout, ('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + ' ' + args.out + '.tsv'))
     else:
-        writer = MyWriter(sys.stdout, ('/media/FUELCELL/' + time.strftime('%y%m%d %H%M%S') + '.tsv'))
+        writer = MyWriter(sys.stdout, ('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + '.tsv'))
 
     sys.stdout = writer
 
