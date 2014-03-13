@@ -106,7 +106,5 @@ class AdcPi2Daemon(AdcPi2, multiprocessing.Process):
                 self.val[5] = self.get(self.adc_address2, 0xBC)
                 self.val[6] = self.get(self.adc_address2, 0xDC)
                 self.val[7] = self.get(self.adc_address2, 0xFC)
-        except exception as e:
-            pass
         finally:
             print('\nADC Shut Down\n')
