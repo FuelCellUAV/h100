@@ -227,11 +227,11 @@ class H100():
     ##############
     # Get Current (internal)
     def __getCurrent(self, channel):
-        return (abs(self.Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046
+        return ((abs(self.Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046) - 0.01 ### 0.01 added
 
     # Get Voltage (internal)
     def __getVoltage(self, channel):
-        return (abs(self.Adc.val[channel] * 1000 / 60.9559671563))
+        return (abs(self.Adc.val[channel] * 1000 / 60.9559671563) + 0.025) ### 0.025 added
 
     # Get Temperature (internal)
     def __getTemperature(self):
