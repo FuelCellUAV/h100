@@ -30,16 +30,22 @@ load=scheduler.PowerScheduler('./tdiLoadbank/test.txt','158.125.152.225',10001,'
 
 setpoint = 0
 setpointLast = -1
-input('Press any key to start')
+
+input('Press enter to start')
 startTime = time.time()
 load.load('on')
 
 # Get Current (internal)
 def __getCurrent(Adc, channel):
-    return ((abs(Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046) - 0.01 ### 0.01 added
+        current = ((abs(Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046) - 0.145 ### 0.11 added
+        #if current < 0.4: current = 0 # Account for opamp validity
+        return current
+
 # Get Voltage (internal)
 def __getVoltage(Adc, channel):
-    return (abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.025) ### 0.025 added
+        voltage = (abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.029) ### 0.015 added
+        #voltage = voltage + 0.01*__getCurrent(adc,0)
+        return voltage
 
 with open((load.filename.split('.')[0] + 'Results' + time.strftime('%y%m%d%H%M%S') + '.txt'),'w') as file:
     while setpoint >= 0:
