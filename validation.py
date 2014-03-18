@@ -26,24 +26,26 @@ adc = adcpi.AdcPi2Daemon()
 adc.daemon = True
 adc.start()
 
-load=scheduler.PowerScheduler('./tdiLoadbank/test.txt','158.125.152.225',10001,'fuelcell')
+load=scheduler.PowerScheduler('./tdiLoadbank/test2.txt','158.125.152.225',10001,'fuelcell')
 
 setpoint = 0
 setpointLast = -1
 
 input('Press enter to start')
-startTime = time.time()
+load.startTime = time.time()
 load.load('on')
 
 # Get Current (internal)
 def __getCurrent(Adc, channel):
         current = ((abs(Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046) - 0.145 ### 0.11 added
-        #if current < 0.4: current = 0 # Account for opamp validity
-        return current
+#        if current < 0.4: current = 0 # Account for opamp validity
+        return current + 0.1
 
 # Get Voltage (internal)
 def __getVoltage(Adc, channel):
         voltage = (abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.029) ### 0.015 added
+        current = __getCurrent(Adc,0)
+        if current>=0.5: voltage -= current*0.011 - 0.005
         #voltage = voltage + 0.01*__getCurrent(adc,0)
         return voltage
 
@@ -63,12 +65,12 @@ with open((load.filename.split('.')[0] + 'Results' + time.strftime('%y%m%d%H%M%S
         print('i', '\t', load.current(), '\t', __getCurrent(adc,0), end='\t')
         print('p', '\t', load.power(), '\t', (__getVoltage(adc,1)*__getCurrent(adc,0)), end='\n')
 
-        file.write(str(time.time()) + '\t' + str(time.time()-startTime) + '\t')
+        file.write(str(time.time()) + '\t' + str(time.time()-load.startTime) + '\t')
         file.write('ci'+'\t'+str(load.constantCurrent())+'\t')
         file.write('v'+'\t'+str(load.voltage())+'\t'+str(__getVoltage(adc,1))+'\t')
         file.write('i'+'\t'+str(load.current())+'\t'+str(__getCurrent(adc,0))+'\t')
         file.write('p'+'\t'+str(load.power())+'\t'+str(__getVoltage(adc,1)*__getCurrent(adc,0))+'\t')
-        file.write('e'+'\t'+str(load.voltage()-__getVoltage(adc,1))+'\t'+str(load.current()-__getCurrent(adc,0)))
+        file.write('e'+'\t'+str(__getVoltage(adc,1)-load.voltage())+'\t'+str(__getCurrent(adc,0)-load.current()))
         file.write('\n')
 load.constantCurrent('0')
 load.load('off')
