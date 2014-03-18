@@ -227,7 +227,9 @@ class H100():
     ##############
     # Get Current (internal)
     def __getCurrent(self, channel):
-        return ((abs(self.Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046) - 0.01 ### 0.01 added
+        current = ((abs(self.Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046) + 0.11 ### 0.11 added
+        #if current < 0.4: current = 0 # Account for opamp validity
+        return current
 
     # Get Voltage (internal)
     def __getVoltage(self, channel):
