@@ -26,7 +26,7 @@ adc = adcpi.AdcPi2Daemon()
 adc.daemon = True
 adc.start()
 
-load=scheduler.PowerScheduler('./tdiLoadbank/test2.txt','158.125.152.225',10001,'fuelcell')
+load=scheduler.PowerScheduler('./tdiLoadbank/test.txt','158.125.152.225',10001,'fuelcell')
 
 setpoint = 0
 setpointLast = -1
@@ -37,13 +37,15 @@ load.load('on')
 
 # Get Current (internal)
 def __getCurrent(Adc, channel):
-        current = ((abs(Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046) - 0.145 ### 0.11 added
-#        if current < 0.4: current = 0 # Account for opamp validity
-        return current + 0.1
-
+#        current = ((abs(Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046) + 0.05
+#        current = abs(Adc.val[channel] * 1000 / 6.88) + 0.424
+        current = abs(Adc.val[channel] * 1000 / 6.9) + 0.424 - 0.125
+        if current < 0.475: current = 0 # Account for opamp validity
+        return current
+ 
 # Get Voltage (internal)
 def __getVoltage(Adc, channel):
-        voltage = (abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.029) ### 0.015 added
+        voltage = abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.029
         current = __getCurrent(Adc,0)
         if current>=0.5: voltage -= current*0.011 - 0.005
         #voltage = voltage + 0.01*__getCurrent(adc,0)
