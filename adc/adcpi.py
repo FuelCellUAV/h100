@@ -22,21 +22,51 @@ import quick2wire.i2c as i2c
 
 
 class AdcPi2:
-    adc_address1 = 0x68
-    adc_address2 = 0x69
-    varDivisior = 64  # from pdf sheet on adc addresses and config
-    varMultiplier = (2.495 / varDivisior) / 1000
+
+    def __init__(self, res=12):
+        if res != 12 and res != 14 and res != 16 and res !=18:
+            raise IndexError('Incorrect ADC Resolution')
+
+        self.config = []
+        self.config.append([0x68,0x90]) # Ch1
+        self.config.append([0x68,0xB0]) # Ch2
+        self.config.append([0x68,0xD0]) # Ch3
+        self.config.append([0x68,0xF0]) # Ch4
+        self.config.append([0x69,0x90]) # Ch5
+        self.config.append([0x69,0xB0]) # Ch6
+        self.config.append([0x69,0xD0]) # Ch7
+        self.config.append([0x69,0xF0]) # Ch8
+
+        if res is 12:
+            self.getadcreading = self.getadcreading12
+            self.varDivisior = 1
+        elif res is 14:
+            self.getadcreading = self.getadcreading12
+            self.varDivisior = 4
+            for x in range(len(self.config)):
+                self.config[x][1] = self.config[x][1] | 0b0100
+        elif res is 16:
+            self.getadcreading = self.getadcreading12
+            self.varDivisior = 16
+            for x in range(len(self.config)):
+                self.config[x][1] = self.config[x][1] | 0b1000
+        elif res is 18:
+            self.getadcreading = self.getadcreading18
+            self.varDivisior = 64
+            for x in range(len(self.config)):
+                self.config[x][1] = self.config[x][1] | 0b1100
+
+        self.varMultiplier = (2.495 / self.varDivisior) / 1000
 
     @staticmethod
-    def changechannel(address, adcConfig):
+    def changechannel(config):
         with i2c.I2CMaster() as bus:
             bus.transaction(
-                i2c.writing_bytes(address, adcConfig))
+                i2c.writing_bytes(config[0], config[1]))
 
     @staticmethod
-    def getadcreading(address, adcConfig):
+    def getadcreading18(config, multiplier):
         with i2c.I2CMaster() as bus:
-
             # create byte array and fill with initial values to define size
             adcreading = bytearray()
 
@@ -46,71 +76,78 @@ class AdcPi2:
             adcreading.append(0x00)
 
             adcreading = bus.transaction(
-                i2c.writing_bytes(address, adcConfig),
-                i2c.reading(address, 4))[0]
+                i2c.writing_bytes(config[0], config[1]),
+                i2c.reading(config[0], 4))[0]
 
+            # wait for new data
             h = adcreading[0]
             m = adcreading[1]
             l = adcreading[2]
             s = adcreading[3]
 
-            # wait for new data
             while (s & 128):
                 adcreading = bus.transaction(
-                    i2c.writing_bytes(address, adcConfig),
-                    i2c.reading(address, 4))[0]
+                    i2c.writing_bytes(config[0], config[1]),
+                    i2c.reading(config[0], 4))[0]
                 h = adcreading[0]
                 m = adcreading[1]
                 l = adcreading[2]
                 s = adcreading[3]
-
             # shift bits to product result
             t = ((h & 0b00000001) << 16) | (m << 8) | l
             # check if positive or negative number and invert if needed
             if h > 128:
                 t = ~(0x020000 - t)
-            return t * (2.495 / 64) / 1000
+            return t * multiplier
 
-    def get(self, address, config):
-        self.changechannel(address, config)
-        return self.getadcreading(address, config)
+    @staticmethod
+    def getadcreading12(config, multiplier):
+        with i2c.I2CMaster() as bus:
+            # create byte array and fill with initial values to define size
+            adcreading = bytearray()
 
-    def getChannel(self, channel):
-        if channel is 0:
-            return self.get(self.adc_address1, 0x9C)
-        elif channel is 1:
-            return self.get(self.adc_address1, 0xBC)
-        elif channel is 2:
-            return self.get(self.adc_address1, 0xDC)
-        elif channel is 3:
-            return self.get(self.adc_address1, 0xFC)
-        elif channel is 4:
-            return self.get(self.adc_address2, 0x9C)
-        elif channel is 5:
-            return self.get(self.adc_address2, 0xBC)
-        elif channel is 6:
-            return self.get(self.adc_address2, 0xDC)
-        elif channel is 7:
-            return self.get(self.adc_address2, 0xFC)
-        else: return -1
+            adcreading.append(0x00)
+            adcreading.append(0x00)
+            adcreading.append(0x00)
 
+            adcreading = bus.transaction(
+                i2c.writing_bytes(config[0], config[1]),
+                i2c.reading(config[0], 3))[0]
+
+            h = adcreading[0]
+            l = adcreading[1]
+            s = adcreading[2]
+
+            while (s & 128):
+                adcreading = bus.transaction(
+                    i2c.writing_bytes(config[0], config[1]),
+                    i2c.reading(config[0], 3))[0]
+                h = adcreading[0]
+                l = adcreading[1]
+                s = adcreading[2]
+
+            # shift bits to product result
+            t = (h << 8) | l
+            # check if positive or negative number and invert if needed
+            if h > 128:
+                t = ~(0x020000 - t)
+            return t * multiplier
+
+    def get(self, channel):
+        self.changechannel(self.config[channel])
+        return self.getadcreading(self.config[channel], self.varMultiplier)
 
     def printall(self):
-        print("Channel 1: %02f" % self.get(self.adc_address1, 0x9C)),
-        print("2: %02f" % self.get(self.adc_address1, 0xBC)),
-        print("3: %02f" % self.get(self.adc_address1, 0xDC)),
-        print("4: %02f" % self.get(self.adc_address1, 0xFC)),
-        print("5: %02f" % self.get(self.adc_address2, 0x9C)),
-        print("6: %02f" % self.get(self.adc_address2, 0xBC)),
-        print("7: %02f" % self.get(self.adc_address2, 0xDC)),
-        print("8: %02f" % self.get(self.adc_address2, 0xFC)),
+        for x in range(8):
+            print("%d: %02f" % (x+1, self.get(x))),
         print("\n")
 
 
 class AdcPi2Daemon(AdcPi2, multiprocessing.Process):
     val = multiprocessing.Array('d', range(8))
 
-    def __init__(self):
+    def __init__(self, res=12):
+        super().__init__(res)
         multiprocessing.Process.__init__(self)
         self.threadId = 1
         self.Name = 'AdcPi2Daemon'
@@ -118,13 +155,6 @@ class AdcPi2Daemon(AdcPi2, multiprocessing.Process):
     def run(self):
         try:
             while True:
-                self.val[0] = self.get(self.adc_address1, 0x9C)
-                self.val[1] = self.get(self.adc_address1, 0xBC)
-                self.val[2] = self.get(self.adc_address1, 0xDC)
-                self.val[3] = self.get(self.adc_address1, 0xFC)
-                self.val[4] = self.get(self.adc_address2, 0x9C)
-                self.val[5] = self.get(self.adc_address2, 0xBC)
-                self.val[6] = self.get(self.adc_address2, 0xDC)
-                self.val[7] = self.get(self.adc_address2, 0xFC)
+                for x in range(8): self.val[x] = self.get(x)
         finally:
             print('\nADC Shut Down\n')

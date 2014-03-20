@@ -22,7 +22,7 @@ import time
 from adc import adcpi
 from tdiLoadbank import scheduler
 
-adc = adcpi.AdcPi2()
+adc = adcpi.AdcPi2(18)
 #adc = adcpi.AdcPi2Daemon()
 #adc.daemon = True
 #adc.start()
@@ -39,16 +39,16 @@ load.load('on')
 # Get Current (internal)
 def __getCurrent(Adc, channel):
 #        current = abs(Adc.val[channel] * 1000 / 6.9) + 0.424 - 0.125
-        current = abs(Adc.getChannel(channel) * 1000 / 6.9) + 0.31
-        if current < 0.475: current = 0 # Account for opamp validity
+        current = abs(Adc.get(channel) * 1000 / 6.92) + 0.31 #inc divisor to lower error slope
+#        if current < 0.475: current = 0 # Account for opamp validity
         return current
  
 # Get Voltage (internal)
 def __getVoltage(Adc, channel):
 #        voltage = abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.029
-        voltage = abs(Adc.getChannel(channel) * 1000 / 60.0) - 0.28
-        current = __getCurrent(Adc,0)
-        if current>=0.5: voltage -= current*0.011 - 0.005
+        voltage = abs(Adc.get(channel) * 1000 / 47.5) - 5.74 #inc divisor to lower error slope
+#        current = __getCurrent(Adc,0)
+#        if current>=0.5: voltage -= current*0.011 - 0.005
         #voltage = voltage + 0.01*__getCurrent(adc,0)
         return voltage
 
@@ -65,8 +65,8 @@ with open((load.filename.split('.')[0] + 'Results' + time.strftime('%y%m%d%H%M%S
 
         print('ci\t%.3f'% load.constantCurrent(), end='\t')
         print('v\t%.3f' % load.voltage(), '\t%.3f' % __getVoltage(adc,4), end='\t')
-        print('i\t%.3f' % load.current(), '\t%.3f' % __getCurrent(adc,1), end='\t')
-        print('p\t%.3f' % load.power(), '\t%.3f' % (__getVoltage(adc,4)*__getCurrent(adc,1)), end='\n')
+        print('i\t%.3f' % load.current(), '\t%.3f' % __getCurrent(adc,0), end='\t')
+        print('p\t%.3f' % load.power(), '\t%.3f' % (__getVoltage(adc,4)*__getCurrent(adc,0)), end='\n')
 
         file.write(str(time.time()) + '\t' + str(time.time()-load.startTime) + '\t')
         file.write('ci'+'\t'+str(load.constantCurrent())+'\t')

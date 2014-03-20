@@ -22,8 +22,7 @@ from   time import sleep
 
 from   adcpi import *
 
-
-adc = AdcPi2()
+adc = AdcPi2(18)
 
 #########
 # Setup #
