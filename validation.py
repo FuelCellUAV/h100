@@ -22,7 +22,7 @@ import time
 from adc import adcpi
 from tdiLoadbank import scheduler
 
-adc = adcpi.AdcPi2(18)
+adc = adcpi.AdcPi2(12)
 #adc = adcpi.AdcPi2Daemon()
 #adc.daemon = True
 #adc.start()
@@ -40,16 +40,13 @@ load.load('on')
 def __getCurrent(Adc, channel):
 #        current = abs(Adc.val[channel] * 1000 / 6.9) + 0.424 - 0.125
         current = abs(Adc.get(channel) * 1000 / 6.92) + 0.31 #inc divisor to lower error slope
-#        if current < 0.475: current = 0 # Account for opamp validity
+        if current < 0.475: current = 0 # Account for opamp validity
         return current
  
 # Get Voltage (internal)
 def __getVoltage(Adc, channel):
 #        voltage = abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.029
         voltage = abs(Adc.get(channel) * 1000 / 47.5) - 5.74 #inc divisor to lower error slope
-#        current = __getCurrent(Adc,0)
-#        if current>=0.5: voltage -= current*0.011 - 0.005
-        #voltage = voltage + 0.01*__getCurrent(adc,0)
         return voltage
 
 with open((load.filename.split('.')[0] + 'Results' + time.strftime('%y%m%d%H%M%S') + '.txt'),'w') as file:
