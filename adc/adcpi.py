@@ -75,6 +75,26 @@ class AdcPi2:
         self.changechannel(address, config)
         return self.getadcreading(address, config)
 
+    def getChannel(self, channel):
+        if channel is 0:
+            return self.get(self.adc_address1, 0x9C)
+        elif channel is 1:
+            return self.get(self.adc_address1, 0xBC)
+        elif channel is 2:
+            return self.get(self.adc_address1, 0xDC)
+        elif channel is 3:
+            return self.get(self.adc_address1, 0xFC)
+        elif channel is 4:
+            return self.get(self.adc_address2, 0x9C)
+        elif channel is 5:
+            return self.get(self.adc_address2, 0xBC)
+        elif channel is 6:
+            return self.get(self.adc_address2, 0xDC)
+        elif channel is 7:
+            return self.get(self.adc_address2, 0xFC)
+        else: return -1
+
+
     def printall(self):
         print("Channel 1: %02f" % self.get(self.adc_address1, 0x9C)),
         print("2: %02f" % self.get(self.adc_address1, 0xBC)),

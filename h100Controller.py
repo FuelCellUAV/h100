@@ -48,9 +48,10 @@ class H100():
         self.reset = 2
 
         # Adc
-        self.Adc = adcpi.AdcPi2Daemon()
-        self.Adc.daemon = True
-        self.Adc.start()
+        self.Adc = adcpi.AdcPi2()
+#        self.Adc = adcpi.AdcPi2Daemon()
+#        self.Adc.daemon = True
+#        self.Adc.start()
 
         # Delays
         self.startTime = 3  # Seconds
@@ -227,13 +228,15 @@ class H100():
     ##############
     # Get Current (internal)
     def __getCurrent(self, channel):
-        current = ((abs(self.Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046) + 0.11 ### 0.11 added
+        current = ((abs(self.Adc.getChannel(channel) * 1000 / 4.2882799485) + 0.6009) / 1.6046) + 0.11 ### 0.11 added
+#        current = ((abs(self.Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046) + 0.11 ### 0.11 added
         #if current < 0.4: current = 0 # Account for opamp validity
         return current
 
     # Get Voltage (internal)
     def __getVoltage(self, channel):
-        voltage = (abs(self.Adc.val[channel] * 1000 / 60.9559671563) + 0.015) ### 0.015 added
+        voltage = (abs(self.Adc.getChannel(channel) * 1000 / 60.9559671563) + 0.015) ### 0.015 added
+#        voltage = (abs(self.Adc.val[channel] * 1000 / 60.9559671563) + 0.015) ### 0.015 added
         return voltage+0.01*self.__getCurrent(0)
 
     # Get Temperature (internal)
