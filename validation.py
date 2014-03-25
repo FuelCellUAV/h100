@@ -52,33 +52,43 @@ def __getVoltage(Adc, channel):
         voltage = abs(Adc.get(channel) * 1000 / 47.5) - 5.74 #inc divisor to lower error slope
         return voltage
 
-with open((load.filename.split('.')[0] + 'Results' + time.strftime('%y%m%d%H%M%S') + '.txt'),'w') as file:
-    while setpoint >= 0:
-        setpoint = load.findNow()
-        if setpoint != setpointLast and setpoint >=0:
-            setpointLast = setpoint
-            load.constantCurrent(str(setpoint))
-        ci = load.constantCurrent()
-        voltage = load.voltage()
-        current = load.current()
-        power = load.power()
-
-        print('ci\t%.3f'% load.constantCurrent(), end='\t')
-        print('v\t%.3f' % load.voltage(), '\t%.3f' % __getVoltage(adc,4), end='\t')
-        print('i\t%.3f' % load.current(), '\t%.3f' % __getCurrent(adc,0), end='\t')
-        print('p\t%.3f' % load.power(), '\t%.3f' % (__getVoltage(adc,4)*__getCurrent(adc,0)), end='\t')
-        print('t\t%.3f\t%.3f' % (temp.get(0x48), temp.get(0x49)))
-
-        file.write(str(time.time()) + '\t' + str(time.time()-load.startTime) + '\t')
-        file.write('ci'+'\t'+str(load.constantCurrent())+'\t')
-        file.write('v'+'\t'+str(load.voltage())+'\t'+str(__getVoltage(adc,4))+'\t')
-        file.write('i'+'\t'+str(load.current())+'\t'+str(__getCurrent(adc,0))+'\t')
-        file.write('p'+'\t'+str(load.power())+'\t'+str(__getVoltage(adc,4)*__getCurrent(adc,0))+'\t')
-        file.write('e'+'\t'+str(__getVoltage(adc,4)-load.voltage())+'\t'+str(__getCurrent(adc,0)-load.current())+'\t')
-        file.write('t'+'\t'+str(temp.get(0x48))+'\t'+str(temp.get(0x49)))
-        file.write('\n')
-load.constantCurrent('0')
-load.load('off')
-print('End of test.')
+try:
+    with open((load.filename.split('.')[0] + 'Results' + time.strftime('%y%m%d%H%M%S') + '.txt'),'w') as file:
+        while setpoint >= 0:
+            setpoint = load.findNow()
+            if setpoint != setpointLast and setpoint >=0:
+                setpointLast = setpoint
+                load.constantCurrent(str(setpoint))
+            ci = load.constantCurrent()
+            voltage = load.voltage()
+            current = load.current()
+            power = load.power()
+    
+            print('ci\t%.3f'% load.constantCurrent(), end='\t')
+            print('v\t%.3f' % load.voltage(), end='\t')
+    #        print('%.3f' % __getVoltage(adc,4), end='\t')
+            print('i\t%.3f' % load.current(), end='\t')
+    #        print('%.3f' % __getCurrent(adc,0), end='\t')
+            print('p\t%.3f' % load.power(), end='\t')
+    #        print('%.3f' % (__getVoltage(adc,4)*__getCurrent(adc,0)), end='\t')
+    #        print('t\t%.3f\t%.3f' % (temp.get(0x48), temp.get(0x49)))
+            print()
+    
+            file.write(str(time.time()) + '\t' + str(time.time()-load.startTime) + '\t')
+            file.write('ci'+'\t'+str(load.constantCurrent())+'\t')
+            file.write('v'+'\t'+str(load.voltage())+'\t')
+    #        file.write(str(__getVoltage(adc,4))+'\t')
+            file.write('i'+'\t'+str(load.current())+'\t')
+    #        file.write(str(__getCurrent(adc,0))+'\t')
+            file.write('p'+'\t'+str(load.power())+'\t')
+    #        file.write(str(__getVoltage(adc,4)*__getCurrent(adc,0))+'\t')
+    #        file.write('e'+'\t'+str(__getVoltage(adc,4)-load.voltage())+'\t'+str(__getCurrent(adc,0)-load.current())+'\t')
+    #        file.write('t'+'\t'+str(temp.get(0x48))+'\t'+str(temp.get(0x49)))
+            file.write('\n')
+finally:
+    # End
+    load.constantCurrent('0')
+    load.load('off')
+    print('End of test.')
 
 
