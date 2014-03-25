@@ -25,45 +25,52 @@ from purge import pid
 from h100Controller import H100
 from switch import switch
 #from tdiLoadbank import loadbank
-from writer import MyWriter
+#from writer import MyWriter
 
 def _parse_comandline():
 
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
-    parser.add_argument('--out', help='Name of the output logfile')
+    parser.add_argument('--out', help='Save my data to USB stick')
     parser.add_argument('--purgeController', type=int, default=0, help='Set to 1 for purge controller on')
     parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
     parser.add_argument('--purgeFreq'  	,type=float, 	default=30,	help='Time between purges in seconds')
 
     return parser.parse_args()
 
-def _display_header(display):
+def _display_header(display, logfile=''):
+    header = ("\n"
+              + "Fuel Cell Controller \n"
+              + "Horizon H-100 Stack \n"
+              + "(c) Simon Howroyd 2014 \n"
+              + "Loughborough University \n"
+              + "\n"
+              + "This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'. \n"
+              + "This is free software, and you are welcome to redistribute it, \n"
+              + "under certain conditions; type `show c' for details.\n"
+              + str(time.asctime())
+              + "\n\n")
 
-    print("\nFuel Cell Controller")
-    print("Horizon H-100 Stack")
-    print("(c) Simon Howroyd 2014")
-    print("Loughborough University\n")
-
-    print("This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.")
-    print("This is free software, and you are welcome to redistribute it,")
-    print("under certain conditions; type `show c' for details.\n")
-
-    print("%s\n" % time.asctime())
+    print(header)
+    if logfile: logfile.write(header)
 
     display.fuelCellName('H100')
 
-def _print_state(h100, display):
+def _print_state(h100, display, logfile=''):
+    state = h100.getState()
+    print(state+'\t')
+    if logfile: logfile.write(state+'\t')
+    display.state(state)
 
-    print(h100.getState(), end='\t')
-    display.state(h100.getState())
+def _print_electric(h100, display, load, logfile=''):
+    voltage = h100.getVoltage()[0]
+    current = h100.getCurrent()[0]
+    power   = h100.getPower()[0]
 
-def _print_electric(h100, display, load):
-
-    print('v1', '\t', '%.3f' % h100.getVoltage()[0], end='\t')
+    print('v1', '\t', '%.1f' % voltage, end='\t')
 #    print('v2', '\t', '%.3f' % load.voltage(), end='\t')
-    print('a1', '\t', '%.3f' % h100.getCurrent()[0], end='\t')
+    print('a1', '\t', '%.1f' % current, end='\t')
 #    print('a2', '\t', '%.3f' % load.current(), end='\t')
-    print('p1', '\t', '%.3f' % h100.getPower()[0], end='\t')
+    print('w1', '\t', '%.1f' % power, end='\t')
 #    print('p2', '\t', '%.3f' % load.power(), end='\t')
 #    c = load.mode()
 #    if 'VOLTAGE' in c:
@@ -74,24 +81,50 @@ def _print_electric(h100, display, load):
 #        print('cp', '\t', '%.3f' % load.constantPower(), end='\t')
 #    else:
 #        print('??', '\t', '0.0', end='\t')
-        
-    display.voltage(h100.getVoltage()[0])
-    display.current(h100.getCurrent()[0])
 
-def _print_temperature(h100, display):
+    if logfile:
+        logfile.write('v'+'\t'+str(voltage)+'\t')
+        logfile.write('a'+'\t'+str(current)+'\t')
+        logfile.write('w'+'\t'+str(power)+'\t')
+        
+    display.voltage(voltage)
+    display.current(current)
+
+def _print_temperature(h100, display, logfile=''):
+    t = []
+
+    for x in range(4):
+        t.append(h100.getTemperature()[x])
 
     print('t', end='\t')
-    print(h100.getTemperature()[0], end='\t')
-    print(h100.getTemperature()[1], end='\t')
-    print('%.3f' % h100.getTemperature()[2], end='\t')
-    print(h100.getTemperature()[3], end='\t')
+    for x in range(4):
+        print('%.1f' % t[x], end='\t')
+
+    if logfile:
+        logfile.write('t'+'\t')
+        for x in range(4):
+            logfile.write(str(t[x])+'\t')
+
     display.temperature(max(h100.getTemperature()))
 
-def _print_purge(h100):
+def _print_purge(h100, logfile=''):
+    pFreq = h100.getPurgeFrequency()
+    pTime = h100.getPurgeTime()
 
     print('pf/pt', end='\t')
-    print('%.3f' % h100.getPurgeFrequency(), end='\t')
-    print('%.3f' % h100.getPurgeTime(), end='\t')
+    print('%.1f' % pFreq, end='\t')
+    print('%.1f' % pTime, end='\t')
+
+    if logfile:
+        logfile.write('pf/pt'+'\t')
+        logfile.write(str(pFreq)+'\t'+str(pTime)+'\t')
+
+def _print_time(timeStart, logfile=''):
+    delta = time.time() - timeStart
+    
+    print('%.1f' % delta, end='\t')
+
+    if logfile: log.write(str(time.time())+'\t')
 
 if __name__ == "__main__":
 
@@ -104,11 +137,12 @@ if __name__ == "__main__":
 
     # Look at user arguments
     if args.out:  # save to output file
-        writer = MyWriter(sys.stdout, ('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + ' ' + args.out + '.tsv'))
+        #writer = MyWriter(sys.stdout, ('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + ' ' + args.out + '.tsv'))
+        log = open(('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + ' controller' + args.out + '.tsv'),'w')
     else:
-        writer = MyWriter(sys.stdout, ('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + '.tsv'))
-
-    sys.stdout = writer
+        log = ''
+        #writer = MyWriter(sys.stdout, ('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + '.tsv'))
+#    sys.stdout = writer
 
     if args.purgeController:
         purge = pid.Pid(10, 1, 1)
@@ -127,6 +161,8 @@ if __name__ == "__main__":
 #    load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
     load = 0
 
+    timeStart = time.time()
+
     ########
     # Main #
     ########
@@ -138,24 +174,31 @@ if __name__ == "__main__":
         display.start()
 
         while True:
-
-            print('\n', '%.5f' % time.time(), end='\t')
             h100.run()
+
+            # PRINT TIME
+            _print_time(timeStart, log)
+
             # PRINT STATE
-            _print_state(h100, display)
+            _print_state(h100, display, log)
 
-            # ELECTRIC
-            _print_electric(h100, display, load)
+            # PRINT ELECTRIC
+            _print_electric(h100, display, load, log)
 
-            # TEMPERATURE
-            _print_temperature(h100, display)
+            # PRINT TEMPERATURE
+            _print_temperature(h100, display, log)
 
-            # PURGE
-            _print_purge(h100)
+            # PRINT PURGE
+            _print_purge(h100, log)
+
+            # PRINT NEW LINE
+            print()
+            if log: log.write("\n")
 
     # Programme Exit Code
     finally:
         h100.shutdown()
+        if log: log.close()
         print('\n\n\nProgramme successfully exited and closed down\n\n')
 
     #######

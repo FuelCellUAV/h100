@@ -18,7 +18,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Includes
-import time
+import time, argparse
 from adc import adcpi
 from tdiLoadbank import scheduler
 from temperature import tmp102
@@ -39,6 +39,14 @@ input('Press enter to start')
 load.startTime = time.time()
 load.load('on')
 
+def _parse_comandline():
+
+    parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
+    parser.add_argument('--out', help='Save my data to USB stick')
+
+    return parser.parse_args()
+
+
 # Get Current (internal)
 def __getCurrent(Adc, channel):
 #        current = abs(Adc.val[channel] * 1000 / 6.9) + 0.424 - 0.125
@@ -53,7 +61,11 @@ def __getVoltage(Adc, channel):
         return voltage
 
 try:
-    with open((load.filename.split('.')[0] + 'Results' + time.strftime('%y%m%d%H%M%S') + '.txt'),'w') as file:
+    # Grab user args
+    args = _parse_comandline()
+
+#    with open((load.filename.split('.')[0] + 'Results' + time.strftime('%y%m%d%H%M%S') + '.txt'),'w') as file:
+    with open(('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + ' validation' + args.out + '.tsv'),'w') as file:
         while setpoint >= 0:
             setpoint = load.findNow()
             if setpoint != setpointLast and setpoint >=0:
