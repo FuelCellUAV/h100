@@ -53,13 +53,13 @@ def _display_header(display, logfile=''):
     print(header)
     if logfile: logfile.write(header)
 
-    display.fuelCellName('H100')
+    display.setName('H100')
 
 def _print_state(h100, display, logfile=''):
     state = h100.getState()
     print(state+'\t')
     if logfile: logfile.write(state+'\t')
-    display.state(state)
+    display.setState(state)
 
 def _print_electric(h100, display, load, logfile=''):
     voltage = h100.getVoltage()[0]
@@ -87,8 +87,8 @@ def _print_electric(h100, display, load, logfile=''):
         logfile.write('a'+'\t'+str(current)+'\t')
         logfile.write('w'+'\t'+str(power)+'\t')
         
-    display.voltage(voltage)
-    display.current(current)
+    display.setVolts(voltage)
+    display.setAmps(current)
 
 def _print_temperature(h100, display, logfile=''):
     t = []
@@ -105,7 +105,7 @@ def _print_temperature(h100, display, logfile=''):
         for x in range(4):
             logfile.write(str(t[x])+'\t')
 
-    display.temperature(max(h100.getTemperature()))
+    display.setTemp(max(h100.getTemperature()))
 
 def _print_purge(h100, logfile=''):
     pFreq = h100.getPurgeFrequency()
@@ -154,8 +154,9 @@ if __name__ == "__main__":
     #h100.daemon = True
 
     # Initialise display class
-    display = h100Display.FuelCellDisplay(1, "PF Display")
-    display.daemon = True  # To ensure the process is killed on exit
+    display = h100Display.FuelCellDisplay()
+#    display = h100Display.FuelCellDisplay(1, "PF Display")
+#    display.daemon = True  # To ensure the process is killed on exit
 
     # Initialise loadbank class
 #    load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
@@ -171,7 +172,7 @@ if __name__ == "__main__":
 
     try:
 
-        display.start()
+#        display.start()
 
         while True:
             h100.run()
@@ -199,6 +200,7 @@ if __name__ == "__main__":
     finally:
         h100.shutdown()
         if log: log.close()
+        display.off()
         print('\n\n\nProgramme successfully exited and closed down\n\n')
 
     #######

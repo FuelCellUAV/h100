@@ -28,23 +28,86 @@
 
 import ctypes, fcntl, multiprocessing, pifacecad, socket, struct
 
-# Fuel Cell Display Module
-class FuelCellDisplay(multiprocessing.Process):
-    # First define some pretty cutstom bitmaps!
-    temp_symbol_index = 0
-    progress_index = [1, 2, 3, 4, 5, 6, 7]
-    temperature_symbol = pifacecad.LCDBitmap(
-        [0x18, 0x18, 0x3, 0x4, 0x4, 0x4, 0x3, 0x0])
-    progress_symbol = [
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
-        pifacecad.LCDBitmap([0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
-    ]
+class FuelCellDisplay():
+    def __init__(self):
+        # First define some pretty cutstom bitmaps!
+        self._temp_symbol_index = 0
+        self._progress_index = [1, 2, 3, 4, 5, 6, 7]
 
+        self._temperature_symbol = pifacecad.LCDBitmap(
+            [0x18, 0x18, 0x3, 0x4, 0x4, 0x4, 0x3, 0x0])
+        self._progress_symbol = [
+            pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f]),
+            pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f]),
+            pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f]),
+            pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f]),
+            pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
+            pifacecad.LCDBitmap([0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
+            pifacecad.LCDBitmap([0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f])]
+
+        # Define the CAD board
+        self._cad = pifacecad.PiFaceCAD()
+        # Start up the screen
+        self._cad.lcd.blink_off()
+        self._cad.lcd.cursor_off()
+        self._cad.lcd.backlight_on()
+        self._cad.lcd.clear()
+
+    def setName(self, text):
+        return self.__setText(text, 3, [0,0])
+    def setState(self, text):
+        return self.__setText(text, 3, [4,0])
+    def setTemp(self, number):
+#        self.__setSymbol(self._temperature_symbol, 1, [12,0])
+        self.__update(self._temperature_symbol, [12,0], 0)
+        return self.__setFloat(number, 4, [8,0])
+    def setVolts(self, number):
+        self.__setText('V', 1, [4,1])
+        return self.__setFloat(number, 4, [0,1])
+    def setAmps(self, number):
+        self.__setText('A', 1, [10,1])
+        return self.__setFloat(number, 4, [6,1])
+
+    def off(self):
+        # Close down the screen
+        self._cad.lcd.home()
+        self._cad.lcd.backlight_off()
+        self._cad.lcd.clear()
+
+    def __setText(self, text, chars, ptr):
+        # Truncate
+        text = text[:chars].center(chars)
+        # Update display
+        return self.__update(text, ptr)
+
+    def __setFloat(self, number, chars, ptr):
+        # Convert number to string
+        numstr = str(number)
+        # Truncate
+        if len(str(numstr).split('.')[0]) > chars:
+            # Replace with 'x' if too long
+            numstr = "x" * chars
+        else:
+            # Truncate and justify
+            numstr = numstr[:chars].rjust(chars)
+        # Update display
+        return self.__update(numstr, ptr)
+
+    def __setSymbol(self, symbol, chars, ptr):
+        # Truncate, justify & update display
+        return self.__update(symbol[:chars].ljust(chars), ptr)
+
+    def __update(self, text, ptr, index=-1):
+        # Move cursor to correct place (col, row)
+        self._cad.lcd.set_cursor(ptr[0], ptr[1])
+        # Write text to screen
+        if index < 0: self._cad.lcd.write(text)
+        else: self._cad.lcd.write_custom_bitmap(index)
+        return text
+
+
+# Fuel Cell Display Module
+class FuelCellDisplayDaemon(FuelCellDisplay, multiprocessing.Process):
     # Define the CAD board
     cad = pifacecad.PiFaceCAD()
 
