@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+##!/usr/bin/python3
 
 # Fuel Cell Controller for the Horizon H100
 
@@ -48,7 +48,7 @@ class H100():
         self.reset = 2
 
         # Adc
-        self.Adc = adcpi.AdcPi2()
+        self.Adc = adcpi.AdcPi2(12)
 #        self.Adc = adcpi.AdcPi2Daemon()
 #        self.Adc.daemon = True
 #        self.Adc.start()
@@ -118,10 +118,10 @@ class H100():
             # todo, not important
 
         # SENSORS
-        self.amps[0] = self.__getCurrent(0)
-        self.volts[0] = self.__getVoltage(1)
+        self.amps[0] = self.__getCurrent(self.Adc, 0)
+        self.volts[0] = self.__getVoltage(self.Adc, 4)
         self.power[0] = self.volts[0] * self.amps[0]
-        self.temp = self.__getTemperature()
+        self.temp = self.__getTemperature(self.Temp)
 
         # PURGE CONTROL
         if self.purgeCtrl != 0:
@@ -227,25 +227,28 @@ class H100():
     #INT. GETTERS#
     ##############
     # Get Current (internal)
-    def __getCurrent(self, channel):
-        current = ((abs(self.Adc.getChannel(channel) * 1000 / 4.2882799485) + 0.6009) / 1.6046) + 0.11 ### 0.11 added
-#        current = ((abs(self.Adc.val[channel] * 1000 / 4.2882799485) + 0.6009) / 1.6046) + 0.11 ### 0.11 added
-        #if current < 0.4: current = 0 # Account for opamp validity
+    @staticmethod
+    def __getCurrent(Adc, channel):
+#        current = abs(Adc.val[channel] * 1000 / 6.9) + 0.424 - 0.125
+        current = abs(Adc.get(channel) * 1000 / 6.92) + 0.31 #inc divisor to lower error slope
+        if current < 0.475: current = 0 # Account for opamp validity        return current
         return current
 
     # Get Voltage (internal)
-    def __getVoltage(self, channel):
-        voltage = (abs(self.Adc.getChannel(channel) * 1000 / 60.9559671563) + 0.015) ### 0.015 added
-#        voltage = (abs(self.Adc.val[channel] * 1000 / 60.9559671563) + 0.015) ### 0.015 added
-        return voltage+0.01*self.__getCurrent(0)
+    @staticmethod
+    def __getVoltage(Adc, channel):
+#        voltage = abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.029
+        voltage = abs(Adc.get(channel) * 1000 / 47.5) - 5.74 #inc divisor to lower error slope
+        return voltage
 
     # Get Temperature (internal)
-    def __getTemperature(self):
+    @staticmethod
+    def __getTemperature(Temp):
         t = [0.0] * 4
-        t[0] = self.Temp.get(0x48)
-        t[1] = self.Temp.get(0x49)
-        t[2] = self.Temp.get(0x4a)
-        t[3] = self.Temp.get(0x4b)
+        t[0] = Temp.get(0x48)
+        t[1] = Temp.get(0x49)
+        t[2] = Temp.get(0x4a)
+        t[3] = Temp.get(0x4b)
         return t
 
     # Get Button (internal)

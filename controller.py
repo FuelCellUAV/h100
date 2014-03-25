@@ -24,12 +24,11 @@ from display import h100Display
 from purge import pid
 from h100Controller import H100
 from switch import switch
-from tdiLoadbank import loadbank
+#from tdiLoadbank import loadbank
 from writer import MyWriter
 
 def _parse_comandline():
 
-    # Define default global constants
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
     parser.add_argument('--out', help='Name of the output logfile')
     parser.add_argument('--purgeController', type=int, default=0, help='Set to 1 for purge controller on')
@@ -61,20 +60,20 @@ def _print_state(h100, display):
 def _print_electric(h100, display, load):
 
     print('v1', '\t', '%.3f' % h100.getVoltage()[0], end='\t')
-    print('v2', '\t', '%.3f' % load.voltage(), end='\t')
+#    print('v2', '\t', '%.3f' % load.voltage(), end='\t')
     print('a1', '\t', '%.3f' % h100.getCurrent()[0], end='\t')
-    print('a2', '\t', '%.3f' % load.current(), end='\t')
+#    print('a2', '\t', '%.3f' % load.current(), end='\t')
     print('p1', '\t', '%.3f' % h100.getPower()[0], end='\t')
-    print('p2', '\t', '%.3f' % load.power(), end='\t')
-    c = load.mode()
-    if 'VOLTAGE' in c:
-        print('cv', '\t', '%.3f' % load.constantVoltage(), end='\t')
-    elif 'CURRENT' in c:
-        print('cc', '\t', '%.3f' % load.constantCurrent(), end='\t')
-    elif 'POWER' in c:
-        print('cp', '\t', '%.3f' % load.constantPower(), end='\t')
-    else:
-        print('??', '\t', '0.0', end='\t')
+#    print('p2', '\t', '%.3f' % load.power(), end='\t')
+#    c = load.mode()
+#    if 'VOLTAGE' in c:
+#        print('cv', '\t', '%.3f' % load.constantVoltage(), end='\t')
+#    elif 'CURRENT' in c:
+#        print('cc', '\t', '%.3f' % load.constantCurrent(), end='\t')
+#    elif 'POWER' in c:
+#        print('cp', '\t', '%.3f' % load.constantPower(), end='\t')
+#    else:
+#        print('??', '\t', '0.0', end='\t')
         
     display.voltage(h100.getVoltage()[0])
     display.current(h100.getCurrent()[0])
@@ -82,10 +81,10 @@ def _print_electric(h100, display, load):
 def _print_temperature(h100, display):
 
     print('t', end='\t')
-    #        print(h100.getTemperature()[0], end='\t')
-    #        print(h100.getTemperature()[1], end='\t')
+    print(h100.getTemperature()[0], end='\t')
+    print(h100.getTemperature()[1], end='\t')
     print('%.3f' % h100.getTemperature()[2], end='\t')
-    #        print(h100.getTemperature()[3], end='\t')
+    print(h100.getTemperature()[3], end='\t')
     display.temperature(max(h100.getTemperature()))
 
 def _print_purge(h100):
@@ -125,7 +124,8 @@ if __name__ == "__main__":
     display.daemon = True  # To ensure the process is killed on exit
 
     # Initialise loadbank class
-    load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
+#    load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
+    load = 0
 
     ########
     # Main #
