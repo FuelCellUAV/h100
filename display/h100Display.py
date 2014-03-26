@@ -27,31 +27,33 @@
 # display.start()
 
 import ctypes, fcntl, multiprocessing, pifacecad, socket, struct
+import os, sys, signal, shlex, math, lirc
+from threading import Barrier  # must be using Python 3
+import subprocess
+import pifacecommon
+from pifacecad.lcd import LCD_WIDTH
+from .radio import Radio
 
 class FuelCellDisplay():
     def __init__(self):
-        # First define some pretty cutstom bitmaps!
-        self._temp_symbol_index = 0
-        self._progress_index = [1, 2, 3, 4, 5, 6, 7]
-
-        self._temperature_symbol = pifacecad.LCDBitmap(
-            [0x18, 0x18, 0x3, 0x4, 0x4, 0x4, 0x3, 0x0])
-        self._progress_symbol = [
-            pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f]),
-            pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f]),
-            pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f]),
-            pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f]),
-            pifacecad.LCDBitmap([0x0, 0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
-            pifacecad.LCDBitmap([0x0, 0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f]),
-            pifacecad.LCDBitmap([0x0, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f])]
-
         # Define the CAD board
         self._cad = pifacecad.PiFaceCAD()
+
+        # First define some pretty cutstom bitmaps!
+        self._temp_symbol_index = 7
+        self._temperature_symbol = pifacecad.LCDBitmap(
+            [0x18, 0x18, 0x3, 0x4, 0x4, 0x4, 0x3, 0x0])
+
+        # Save my pretty custom bitmaps to the memory (max 8 allowed)
+        self._cad.lcd.store_custom_bitmap(self._temp_symbol_index, self._temperature_symbol)
+
         # Start up the screen
         self._cad.lcd.blink_off()
         self._cad.lcd.cursor_off()
         self._cad.lcd.backlight_on()
         self._cad.lcd.clear()
+
+        self._isOn = 1
 
     def setName(self, text):
         return self.__setText(text, 3, [0,0])
@@ -73,6 +75,7 @@ class FuelCellDisplay():
         self._cad.lcd.home()
         self._cad.lcd.backlight_off()
         self._cad.lcd.clear()
+        print('\n\nDisplay off\n\n')
 
     def __setText(self, text, chars, ptr):
         # Truncate
@@ -101,24 +104,116 @@ class FuelCellDisplay():
         # Move cursor to correct place (col, row)
         self._cad.lcd.set_cursor(ptr[0], ptr[1])
         # Write text to screen
-        if index < 0: self._cad.lcd.write(text)
-        else: self._cad.lcd.write_custom_bitmap(index)
+        if self._isOn:
+            if index < 0: self._cad.lcd.write(text)
+            else: self._cad.lcd.write_custom_bitmap(index)
         return text
+
+
+
+
+
+class FuelCellDisplayRadio(FuelCellDisplay):
+    def __init__(self):
+        # Initialise the fuel cell display
+        super().__init__()
+        
+        self.UPDATE_INTERVAL = 1
+        self.STATIONS = [
+            {'name': "6 Music",
+             'source': 'http://www.bbc.co.uk/radio/listen/live/r6_aaclca.pls',
+             'info': 'http://www.bbc.co.uk/radio/player/bbc_6music'},
+            {'name': "Radio 2",
+             'source': 'http://www.bbc.co.uk/radio/listen/live/r2_aaclca.pls',
+             'info': None},
+            {'name': "Radio 4",
+             'source': 'http://www.bbc.co.uk/radio/listen/live/r4_aaclca.pls',
+             'info': None},
+            {'name': "5 Live",
+             'source': 'http://www.bbc.co.uk/radio/listen/live/r5l_aaclca.pls',
+             'info': None},
+            {'name': "Radio 4 Extra",
+             'source': 'http://www.bbc.co.uk/radio/listen/live/r4x_aaclca.pls',
+             'info': None},
+            {'name': "Planet Rock",
+             'source': 'http://tx.sharp-stream.com/icecast.php?i=planetrock.mp3',
+             'info': None},
+        ]
+        
+        # Custom radio symbols
+        self.PLAY_SYMBOL = pifacecad.LCDBitmap(
+            [0x10, 0x18, 0x1c, 0x1e, 0x1c, 0x18, 0x10, 0x0])
+        self.PAUSE_SYMBOL = pifacecad.LCDBitmap(
+            [0x0, 0x1b, 0x1b, 0x1b, 0x1b, 0x1b, 0x0, 0x0])
+        self.INFO_SYMBOL = pifacecad.LCDBitmap(
+            [0x6, 0x6, 0x0, 0x1e, 0xe, 0xe, 0xe, 0x1f])
+        self.MUSIC_SYMBOL = pifacecad.LCDBitmap(
+            [0x2, 0x3, 0x2, 0x2, 0xe, 0x1e, 0xc, 0x0])
+
+        self.PLAY_SYMBOL_INDEX = 0
+        self.PAUSE_SYMBOL_INDEX = 1
+        self.INFO_SYMBOL_INDEX = 2
+        self.MUSIC_SYMBOL_INDEX = 3
+
+    def radio_preset_switch(event):
+        global radio
+        radio.change_station(event.pin_num)
+
+    def startRadio(self):
+        # test for mpalyer
+        try:
+            subprocess.call(["mplayer"], stdout=open('/dev/null'))
+        except OSError as e:
+            if e.errno == os.errno.ENOENT:
+                print(
+                    "MPlayer was not found, install with "
+                    "`sudo apt-get install mplayer`")
+                #sys.exit(1)
+                return -1
+            else:
+                raise  # Something else went wrong while trying to run `mplayer`
+
+        global radio
+        radio = Radio(self._cad)
+        radio.play()
+    
+        # listener cannot deactivate itself so we have to wait until it has
+        # finished using a barrier.
+        global end_barrier
+        end_barrier = Barrier(2)
+    
+        # wait for button presses
+        self.switchlistener = pifacecad.SwitchEventListener(chip=self._cad)
+        for pstation in range(4):
+            self.switchlistener.register(
+                pstation, pifacecad.IODIR_ON, self.radio_preset_switch)
+        self.switchlistener.register(4, pifacecad.IODIR_ON, end_barrier.wait)
+        self.switchlistener.register(5, pifacecad.IODIR_ON, radio.toggle_playing)
+        self.switchlistener.register(6, pifacecad.IODIR_ON, radio.previous_station)
+        self.switchlistener.register(7, pifacecad.IODIR_ON, radio.next_station)
+    
+        self.switchlistener.activate()
+
+    def stopRadio(self):
+        try:
+            # exit
+            radio.close()
+            switchlistener.deactivate()
+            if irlistener_activated:
+                irlistener.deactivate()
+        except NameError: pass
+
+    def off(self):
+        self.stopRadio()
+        # Close down the screen
+        self._cad.lcd.home()
+        self._cad.lcd.backlight_off()
+        self._cad.lcd.clear()
+        print('\n\nDisplay off\n\n')
 
 
 # Fuel Cell Display Module
 class FuelCellDisplayDaemon(FuelCellDisplay, multiprocessing.Process):
-    # Define the CAD board
-    cad = pifacecad.PiFaceCAD()
-
-    # Define our variables to display
-    fcName = multiprocessing.Array(ctypes.c_char, 10)
-    fcState = multiprocessing.Array(ctypes.c_char, 10)
-    temp = multiprocessing.Value('d', 10.0)
-    power = multiprocessing.Value('d', 000)
-    vFc = multiprocessing.Value('d', 9.0)
-    iFc = multiprocessing.Value('d', 10.0)
-
     # This runs once when the class is created
     def __init__(self, threadID, name):
         # Initialise the multiprocess utility
@@ -126,17 +221,7 @@ class FuelCellDisplayDaemon(FuelCellDisplay, multiprocessing.Process):
         self.threadID = threadID
         self.name = name
 
-        # Save my pretty custom bitmaps to the memory (max 8 allowed)
-        self.cad.lcd.store_custom_bitmap(self.temp_symbol_index, self.temperature_symbol)
-        for x in range(len(self.progress_index)):
-            self.cad.lcd.store_custom_bitmap(self.progress_index[x], self.progress_symbol[x])
-
-        # Clear the display screen and turn the backlight on
-        self.cad.lcd.clear()
-        self.cad.lcd.blink_off()
-        self.cad.lcd.cursor_off()
-        self.cad.lcd.backlight_on()
-
+        super().__init__()
         # If the user presses button 5 display the ip address
 
     #        self.ip_display_flag = False
@@ -149,59 +234,15 @@ class FuelCellDisplayDaemon(FuelCellDisplay, multiprocessing.Process):
     def run(self):
         counter = 0
         try:
-            while True:
-                # Set the cursor to the beginning
-                self.cad.lcd.home()
-
-                # Write the top line
-                self.cad.lcd.write('{:<4} {:^3} {:>4.1f}'
-                                   .format(self.fcName.value[:4].decode('utf-8'),
-                                           self.fcState.value[:3].decode('utf-8'), self.temp.value))
-                self.cad.lcd.write_custom_bitmap(self.temp_symbol_index)
-                self.cad.lcd.write(' ')
-
+            while True: pass
                 # A statement for my pretty bitmap animation
-                self.cad.lcd.write_custom_bitmap(self.progress_index[counter])
-                if counter < 6:
-                    counter += 1
-                else:
-                    counter = 0
-
-                # Write the bottom line
-                self.cad.lcd.write('\n{:2.0f}V {:2.0f}A  {:>5.1f}W '
-                                   .format(self.vFc.value, self.iFc.value, self.vFc.value * self.iFc.value))
+#                self.cad.lcd.write_custom_bitmap(self.progress_index[counter])
+#                if counter < 6:
+#                    counter += 1
+#                else:
+#                    counter = 0
         finally:
-            self.end()
-            print('\n\nDisplay off\n\n')
-
-    # Call this function to change the fuel cell name (max 4x char will be displayed)
-    def fuelCellName(self, fcName):
-        self.fcName.value = fcName.encode('utf-8')
-        return
-
-    # Call this function to change the fuel cell state (max 3x char will be displayed)
-    def state(self, fcState):
-        self.fcState.value = fcState.encode('utf-8')
-        return
-
-    # Call this function to change the fuel cell temperature
-    def temperature(self, temperature):
-        self.temp.value = temperature
-        return
-
-    # Call this function to change the fuel cell voltage
-    def voltage(self, voltage):
-        self.vFc.value = voltage
-        return
-
-    # Call this function to change the fuel cell current
-    def current(self, current):
-        self.iFc.value = current
-        return
-
-    def end(self):
-        self.cad.lcd.clear()
-        self.cad.lcd.backlight_off()
+            self.off()
 
     # The following is all TODO
 

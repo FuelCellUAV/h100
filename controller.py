@@ -34,6 +34,7 @@ def _parse_comandline():
     parser.add_argument('--purgeController', type=int, default=0, help='Set to 1 for purge controller on')
     parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
     parser.add_argument('--purgeFreq'  	,type=float, 	default=30,	help='Time between purges in seconds')
+    parser.add_argument('--display'  	,type=int, 	default=1,	help='Piface CAD')
 
     return parser.parse_args()
 
@@ -57,7 +58,7 @@ def _display_header(display, logfile=''):
 
 def _print_state(h100, display, logfile=''):
     state = h100.getState()
-    print(state+'\t')
+    print(state, end='\t')
     if logfile: logfile.write(state+'\t')
     display.setState(state)
 
@@ -138,7 +139,7 @@ if __name__ == "__main__":
     # Look at user arguments
     if args.out:  # save to output file
         #writer = MyWriter(sys.stdout, ('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + ' ' + args.out + '.tsv'))
-        log = open(('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + ' controller' + args.out + '.tsv'),'w')
+        log = open(('/media/usb0/' + time.strftime('%y%m%d-%H%M%S') + '-controller-' + args.out + '.tsv'),'w')
     else:
         log = ''
         #writer = MyWriter(sys.stdout, ('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + '.tsv'))
@@ -155,6 +156,7 @@ if __name__ == "__main__":
 
     # Initialise display class
     display = h100Display.FuelCellDisplay()
+    display._isOn = args.display
 #    display = h100Display.FuelCellDisplay(1, "PF Display")
 #    display.daemon = True  # To ensure the process is killed on exit
 
