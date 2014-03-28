@@ -26,11 +26,9 @@ from temperature import tmp102
 def _parse_comandline():
 
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
-    parser.add_argument('--outFile', type=int, default=0, help='Save my data to USB stick')
-    parser.add_argument('--inFile', type=str, default='test.txt', help='input flight profile')
-
+    parser.add_argument('--out', type=str, default='', help='Save my data to USB stick')
+    parser.add_argument('--profile', type=str, default='test.txt', help='input flight profile')
     return parser.parse_args()
-
 
 # Get Current (internal)
 def __getCurrent(Adc, channel):
@@ -52,7 +50,7 @@ try:
     adc = adcpi.AdcPi2(12)
     temp = tmp102.Tmp102()
     
-    load=scheduler.PowerScheduler(args.inFile,'158.125.152.225',10001,'fuelcell')
+    load=scheduler.PowerScheduler(args.profile,'158.125.152.225',10001,'fuelcell')
 
     setpoint = 0
     setpointLast = -1
@@ -60,6 +58,9 @@ try:
     input('Press enter to start')
     load.startTime = time.time()
     load.load('on')
+
+    if args.out:
+        file = open(('/media/usb/' + time.strftime('%y%m%d-%H%M%S') + '-validation-' + str(args.out) + '.tsv'),'w')
 
     while setpoint >= 0:
         setpoint = load.findNow()
@@ -73,31 +74,20 @@ try:
     
         print('ci\t%.3f'% load.constantCurrent(), end='\t')
         print('v\t%.3f' % load.voltage(), end='\t')
-    #   print('%.3f' % __getVoltage(adc,4), end='\t')
         print('i\t%.3f' % load.current(), end='\t')
-    #   print('%.3f' % __getCurrent(adc,0), end='\t')
         print('p\t%.3f' % load.power(), end='\t')
-    #   print('%.3f' % (__getVoltage(adc,4)*__getCurrent(adc,0)), end='\t')
-    #   print('t\t%.3f\t%.3f' % (temp.get(0x48), temp.get(0x49)))
         print()
 
-        if args.outFile:
-#    with open((load.filename.split('.')[0] + 'Results' + time.strftime('%y%m%d%H%M%S') + '.txt'),'w') as file:
-            with open(('/media/usb/' + time.strftime('%y%m%d-%H%M%S') + '-validation-' + str(args.outFile) + '.tsv'),'w') as file:
-    
-                file.write(str(time.time()) + '\t' + str(time.time()-load.startTime) + '\t')
-                file.write('ci'+'\t'+str(load.constantCurrent())+'\t')
-                file.write('v'+'\t'+str(load.voltage())+'\t')
-        #        file.write(str(__getVoltage(adc,4))+'\t')
-                file.write('i'+'\t'+str(load.current())+'\t')
-        #        file.write(str(__getCurrent(adc,0))+'\t')
-                file.write('p'+'\t'+str(load.power())+'\t')
-    #        file.write(str(__getVoltage(adc,4)*__getCurrent(adc,0))+'\t')
-    #        file.write('e'+'\t'+str(__getVoltage(adc,4)-load.voltage())+'\t'+str(__getCurrent(adc,0)-load.current())+'\t')
-    #        file.write('t'+'\t'+str(temp.get(0x48))+'\t'+str(temp.get(0x49)))
-                file.write('\n')
+        if args.out:
+            file.write(str(time.time()) + '\t' + str(time.time()-load.startTime) + '\t')
+            file.write('ci'+'\t'+str(load.constantCurrent())+'\t')
+            file.write('v'+'\t'+str(load.voltage())+'\t')
+            file.write('i'+'\t'+str(load.current())+'\t')
+            file.write('p'+'\t'+str(load.power())+'\t')
+            file.write('\n')
 finally:
     # End
+    file.close()
     load.constantCurrent('0')
     load.load('off')
     print('End of test.')

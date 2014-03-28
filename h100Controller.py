@@ -48,7 +48,7 @@ class H100():
         self.reset = 2
 
         # Adc
-        self.Adc = adcpi.AdcPi2(16)
+        self.Adc = adcpi.AdcPi2(18)
 #        self.Adc = adcpi.AdcPi2Daemon()
 #        self.Adc.daemon = True
 #        self.Adc.start()

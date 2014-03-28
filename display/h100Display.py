@@ -61,7 +61,7 @@ class FuelCellDisplay():
         return self.__setText(text, 3, [4,0])
     def setTemp(self, number):
 #        self.__setSymbol(self._temperature_symbol, 1, [12,0])
-        self.__update(self._temperature_symbol, [12,0], 0)
+        self.__update(self._temperature_symbol, [12,0], self._temp_symbol_index)
         return self.__setFloat(number, 4, [8,0])
     def setVolts(self, number):
         self.__setText('V', 1, [4,1])

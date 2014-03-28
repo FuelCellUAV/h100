@@ -24,17 +24,18 @@ from display import h100Display
 from purge import pid
 from h100Controller import H100
 from switch import switch
-#from tdiLoadbank import loadbank
+from tdiLoadbank import loadbank
 #from writer import MyWriter
 
 def _parse_comandline():
 
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
-    parser.add_argument('--out', help='Save my data to USB stick')
+    parser.add_argument('--out', type=str, default='', help='Save my data to USB stick')
     parser.add_argument('--purgeController', type=int, default=0, help='Set to 1 for purge controller on')
     parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
     parser.add_argument('--purgeFreq'  	,type=float, 	default=30,	help='Time between purges in seconds')
-    parser.add_argument('--display'  	,type=int, 	default=1,	help='Piface CAD')
+    parser.add_argument('--display'  	,type=int, 	default=1,	help='Piface CAD (1 is on, 0 is off)')
+    parser.add_argument('--load'  	,type=int, 	default=0,	help='Load (1 is on, 0 is off)')
 
     return parser.parse_args()
 
@@ -67,27 +68,38 @@ def _print_electric(h100, display, load, logfile=''):
     current = h100.getCurrent()[0]
     power   = h100.getPower()[0]
 
-    print('v1', '\t', '%.1f' % voltage, end='\t')
-#    print('v2', '\t', '%.3f' % load.voltage(), end='\t')
-    print('a1', '\t', '%.1f' % current, end='\t')
-#    print('a2', '\t', '%.3f' % load.current(), end='\t')
-    print('w1', '\t', '%.1f' % power, end='\t')
-#    print('p2', '\t', '%.3f' % load.power(), end='\t')
-#    c = load.mode()
-#    if 'VOLTAGE' in c:
-#        print('cv', '\t', '%.3f' % load.constantVoltage(), end='\t')
-#    elif 'CURRENT' in c:
-#        print('cc', '\t', '%.3f' % load.constantCurrent(), end='\t')
-#    elif 'POWER' in c:
-#        print('cp', '\t', '%.3f' % load.constantPower(), end='\t')
-#    else:
-#        print('??', '\t', '0.0', end='\t')
-
+    print('v', '\t', '%.1f' % voltage, end='\t')
+    print('a', '\t', '%.1f' % current, end='\t')
+    print('w', '\t', '%.1f' % power, end='\t')
+    
     if logfile:
         logfile.write('v'+'\t'+str(voltage)+'\t')
         logfile.write('a'+'\t'+str(current)+'\t')
         logfile.write('w'+'\t'+str(power)+'\t')
-        
+
+    if load is not 0:
+        modeLoad    = load.mode()
+        voltageLoad = load.voltage()
+        currentLoad = load.current()
+        powerLoad   = load.power()
+        if 'VOLTAGE' in modeLoad:
+            print('cv', '\t', '%.3f' % load.constantVoltage(), end='\t')
+        elif 'CURRENT' in modeLoad:
+            print('cc', '\t', '%.3f' % load.constantCurrent(), end='\t')
+        elif 'POWER' in modeLoad:
+            print('cp', '\t', '%.3f' % load.constantPower(), end='\t')
+        else:
+            print('??', '\t', '0.0', end='\t')
+
+        print('vL', '\t', '%.3f' % voltageLoad, end='\t')
+        print('aL', '\t', '%.3f' % currentLoad, end='\t')
+        print('wL', '\t', '%.3f' % powerLoad, end='\t')
+
+        if logfile:
+            logfile.write('vL'+'\t'+str(voltageLoad)+'\t')
+            logfile.write('aL'+'\t'+str(currentLoad)+'\t')
+            logfile.write('wL'+'\t'+str(powerLoad)+'\t')
+
     display.setVolts(voltage)
     display.setAmps(current)
 
@@ -161,8 +173,10 @@ if __name__ == "__main__":
 #    display.daemon = True  # To ensure the process is killed on exit
 
     # Initialise loadbank class
-#    load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
-    load = 0
+    if args.load:
+        load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
+    else:
+        load = 0
 
     timeStart = time.time()
 
