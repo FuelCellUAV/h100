@@ -134,7 +134,7 @@ def _reader():
             if not line: # EOF, remove file from input list
                 inputList.remove(file)
             elif line.rstrip(): # optional: skipping empty lines
-                return line
+                return line.lower()
     return ''
 
 def _profile(profile, isRunning):
