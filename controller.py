@@ -24,7 +24,7 @@ from display import h100Display
 from purge import pid
 from h100Controller import H100
 from switch import switch
-from tdiLoadbank import loadbank
+from tdiLoadbank import scheduler
 
 def _parse_comandline():
 
@@ -35,6 +35,7 @@ def _parse_comandline():
     parser.add_argument('--purgeFreq'  	,type=float, 	default=30,	help='Time between purges in seconds')
     parser.add_argument('--display'  	,type=int, 	default=1,	help='Piface CAD (1 is on, 0 is off)')
     parser.add_argument('--load'  	,type=int, 	default=0,	help='Load (1 is on, 0 is off)')
+    parser.add_argument('--profile'  	,type=str, 	default='',	help='Name of flight profile file')
 
     return parser.parse_args()
 
@@ -136,6 +137,15 @@ def _reader():
                 return line
     return ''
 
+def _profile(profile, isRunning):
+    if isRunning:
+        # Do running
+        isRunning = profile.main(isRunning)
+    else:
+        pass
+    
+    return isRunning
+
 if __name__ == "__main__":
 
     #########
@@ -164,37 +174,49 @@ if __name__ == "__main__":
     display = h100Display.FuelCellDisplay()
     display._isOn = args.display
     # Initialise loadbank class
+    if args.profile:
+        profile = scheduler.PowerScheduler(args.profile, '158.125.152.225', 10001, 'fuelcell')
+    else: profile = ''
     if args.load:
-        load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
+        if profile: load = profile
+        else:
+            load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
     else:
-        load = 0
+        load = ''
 
     # Record start time
     timeStart = time.time()
+
+    #
+    _isRunning = 0
 
     ########
     # Main #
     ########
 
     _display_header(print)
-    print("Type command to see data: [time, stat, elec, temp, purg] ")
+    print("Type command: [time, stat, elec, temp, purg] ")
 
     try:
         while True:
             h100.run()
+            _isRunning = _profile(profile, _isRunning)
 
-            # PRINT USER REQUESTED DATA
+            # HANDLE USER REQUESTED DATA
             request = _reader()
-            if 'time' in request:
+            if 'time?' in request:
                 _print_time(timeStart, print)
-            elif 'stat' in request:
+            elif 'stat?' in request:
                 _print_state(h100, print)
-            elif 'elec' in request:
-                _print_electric(h100, print)
-            elif 'temp' in request:
+            elif 'elec?' in request:
+                _print_electric(h100, load, print)
+            elif 'temp?' in request:
                 _print_temperature(h100, print)
-            elif 'purg' in request:
+            elif 'purg?' in request:
                 _print_purge(h100, print)
+            elif 'fly' in request:
+                _isRunning = 1
+                
             if request: print()
 
             # LOG TIME
