@@ -18,7 +18,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import libraries
-import argparse, sys, time
+import argparse, sys, time, select
 
 from display import h100Display
 from purge import pid
@@ -121,6 +121,21 @@ def _writer(function, data):
         function(str(data)+'\t')
     return data
 
+def _reader():
+    inputList = [sys.stdin]
+    while inputList:
+        ready = select.select(inputList, [], [], 0.001)[0]
+        if not ready:
+            return '' # No user input received
+        else:
+            for file in ready:
+                line = file.readline()
+            if not line: # EOF, remove file from input list
+                inputList.remove(file)
+            elif line.rstrip(): # optional: skipping empty lines
+                return line
+    return ''
+
 if __name__ == "__main__":
 
     #########
@@ -162,29 +177,42 @@ if __name__ == "__main__":
     ########
 
     _display_header(print)
-    print()
+    print("Type command to see data: ")
 
     try:
         while True:
             h100.run()
 
-            # PRINT TIME
+            # PRINT USER REQUESTED DATA
+            request = _reader()
+            if 'time' in request:
+                _print_time(timeStart, print)
+            elif 'stat' in request:
+                _print_state(h100, print)
+            elif 'elec' in request:
+                _print_electric(h100, print)
+            elif 'temp' in request:
+                _print_temperature(h100, print)
+            elif 'purg' in request:
+                _print_purge(h100, print)
+            if request: print()
+
+            # LOG TIME
             _print_time(timeStart, log.write)
 
-            # PRINT STATE
+            # LOG STATE
             _print_state(h100, log.write)
 
-            # PRINT ELECTRIC
+            # LOG ELECTRIC
             _print_electric(h100, load, log.write)
 
-            # PRINT TEMPERATURE
+            # LOG TEMPERATURE
             _print_temperature(h100, log.write)
 
-            # PRINT PURGE
+            # LOG PURGE
             _print_purge(h100, log.write)
 
             # PRINT NEW LINE
-#            print()
             if log: log.write("\n")
 
     # Programme Exit Code
