@@ -25,7 +25,6 @@ from purge import pid
 from h100Controller import H100
 from switch import switch
 from tdiLoadbank import loadbank
-#from writer import MyWriter
 
 def _parse_comandline():
 
@@ -39,7 +38,7 @@ def _parse_comandline():
 
     return parser.parse_args()
 
-def _display_header(display, logfile=''):
+def _display_header(*destination):
     header = ("\n"
               + "Fuel Cell Controller \n"
               + "Horizon H-100 Stack \n"
@@ -52,92 +51,75 @@ def _display_header(display, logfile=''):
               + str(time.asctime())
               + "\n\n")
 
-    print(header)
-    if logfile: logfile.write(header)
+    for write in destination: _writer(write, header),
+    return header
+    #display.setName('H100')
 
-    display.setName('H100')
-
-def _print_state(h100, display, logfile=''):
+def _print_state(h100, *destination):
     state = h100.getState()
-    print(state, end='\t')
-    if logfile: logfile.write(state+'\t')
-    display.setState(state)
+    for write in destination: _writer(write, state),
+    return state
+    #print(state, end='\t')
+    #if logfile: logfile.write(state+'\t')
+    #display.setState(state)
 
-def _print_electric(h100, display, load, logfile=''):
-    voltage = h100.getVoltage()[0]
-    current = h100.getCurrent()[0]
-    power   = h100.getPower()[0]
+def _print_electric(h100, load='', *destination):
+    electric = []
+    electric.append(h100.getVoltage()[0])
+    electric.append(h100.getCurrent()[0])
+    electric.append(h100.getPower()[0])
 
-    print('v', '\t', '%.1f' % voltage, end='\t')
-    print('a', '\t', '%.1f' % current, end='\t')
-    print('w', '\t', '%.1f' % power, end='\t')
-    
-    if logfile:
-        logfile.write('v'+'\t'+str(voltage)+'\t')
-        logfile.write('a'+'\t'+str(current)+'\t')
-        logfile.write('w'+'\t'+str(power)+'\t')
+    if load:
+        electric.append(load.mode())
+        electric.append(load.voltage())
+        electric.append(load.current())
+        electric.append(load.power())
 
-    if load is not 0:
-        modeLoad    = load.mode()
-        voltageLoad = load.voltage()
-        currentLoad = load.current()
-        powerLoad   = load.power()
-        if 'VOLTAGE' in modeLoad:
-            print('cv', '\t', '%.3f' % load.constantVoltage(), end='\t')
-        elif 'CURRENT' in modeLoad:
-            print('cc', '\t', '%.3f' % load.constantCurrent(), end='\t')
-        elif 'POWER' in modeLoad:
-            print('cp', '\t', '%.3f' % load.constantPower(), end='\t')
-        else:
-            print('??', '\t', '0.0', end='\t')
+    for write in destination:
+        for cell in electric:      
+            _writer(write, cell)
 
-        print('vL', '\t', '%.3f' % voltageLoad, end='\t')
-        print('aL', '\t', '%.3f' % currentLoad, end='\t')
-        print('wL', '\t', '%.3f' % powerLoad, end='\t')
+    return electric
+    #display.setVolts(voltage)
+    #display.setAmps(current)
 
-        if logfile:
-            logfile.write('vL'+'\t'+str(voltageLoad)+'\t')
-            logfile.write('aL'+'\t'+str(currentLoad)+'\t')
-            logfile.write('wL'+'\t'+str(powerLoad)+'\t')
-
-    display.setVolts(voltage)
-    display.setAmps(current)
-
-def _print_temperature(h100, display, logfile=''):
-    t = []
-
+def _print_temperature(h100, *destination):
+    temp = []
     for x in range(4):
-        t.append(h100.getTemperature()[x])
+        temp.append(h100.getTemperature()[x])
 
-    print('t', end='\t')
-    for x in range(4):
-        print('%.1f' % t[x], end='\t')
+    for write in destination:
+        for cell in temp:      
+            _writer(write, cell)
+    return temp
+    #display.setTemp(max(h100.getTemperature()))
 
-    if logfile:
-        logfile.write('t'+'\t')
-        for x in range(4):
-            logfile.write(str(t[x])+'\t')
+def _print_purge(h100, *destination):
+    purge = []
+    purge.append(h100.getPurgeFrequency())
+    purge.append(h100.getPurgeTime())
 
-    display.setTemp(max(h100.getTemperature()))
+    for write in destination:
+        for cell in purge:
+            _writer(write, cell)
+    return purge
 
-def _print_purge(h100, logfile=''):
-    pFreq = h100.getPurgeFrequency()
-    pTime = h100.getPurgeTime()
-
-    print('pf/pt', end='\t')
-    print('%.1f' % pFreq, end='\t')
-    print('%.1f' % pTime, end='\t')
-
-    if logfile:
-        logfile.write('pf/pt'+'\t')
-        logfile.write(str(pFreq)+'\t'+str(pTime)+'\t')
-
-def _print_time(timeStart, logfile=''):
-    delta = time.time() - timeStart
+def _print_time(timeStart, *destination):
+    mytime = []
+    mytime.append(time.time())
+    mytime.append(time.time() - timeStart)
     
-    print('%.1f' % delta, end='\t')
+    for write in destination:
+        for cell in mytime:
+            _writer(write, cell)
+    return mytime
 
-    if logfile: log.write(str(time.time())+'\t')
+def _writer(function, data):
+    try:
+        function(str(data)+'\t', end='')
+    except TypeError: # Not a print function
+        function(str(data)+'\t')
+    return data
 
 if __name__ == "__main__":
 
@@ -148,68 +130,61 @@ if __name__ == "__main__":
     # Grab user args
     args = _parse_comandline()
 
-    # Look at user arguments
-    if args.out:  # save to output file
-        #writer = MyWriter(sys.stdout, ('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + ' ' + args.out + '.tsv'))
+    ## Look at user arguments
+    # Logfile
+    if args.out:
         log = open(('/media/usb0/' + time.strftime('%y%m%d-%H%M%S') + '-controller-' + args.out + '.tsv'),'w')
     else:
-        log = ''
-        #writer = MyWriter(sys.stdout, ('/media/usb0/' + time.strftime('%y%m%d %H%M%S') + '.tsv'))
-#    sys.stdout = writer
-
+        log = open("/dev/null",'w')
+    # Purge Controller
     if args.purgeController:
         purge = pid.Pid(10, 1, 1)
     else:
         purge = 0
 
+    ## Initialise classes
     # Initialise controller class
     h100 = H100(purgeControl=purge, purgeFreq=args.purgeFreq, purgeTime=args.purgeTime)
-    #h100.daemon = True
-
     # Initialise display class
     display = h100Display.FuelCellDisplay()
     display._isOn = args.display
-#    display = h100Display.FuelCellDisplay(1, "PF Display")
-#    display.daemon = True  # To ensure the process is killed on exit
-
     # Initialise loadbank class
     if args.load:
         load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
     else:
         load = 0
 
+    # Record start time
     timeStart = time.time()
 
     ########
     # Main #
     ########
 
-    _display_header(display)
+    _display_header(print)
+    print()
 
     try:
-
-#        display.start()
-
         while True:
             h100.run()
 
             # PRINT TIME
-            _print_time(timeStart, log)
+            _print_time(timeStart, log.write)
 
             # PRINT STATE
-            _print_state(h100, display, log)
+            _print_state(h100, log.write)
 
             # PRINT ELECTRIC
-            _print_electric(h100, display, load, log)
+            _print_electric(h100, load, log.write)
 
             # PRINT TEMPERATURE
-            _print_temperature(h100, display, log)
+            _print_temperature(h100, log.write)
 
             # PRINT PURGE
-            _print_purge(h100, log)
+            _print_purge(h100, log.write)
 
             # PRINT NEW LINE
-            print()
+#            print()
             if log: log.write("\n")
 
     # Programme Exit Code
