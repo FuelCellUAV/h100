@@ -24,7 +24,7 @@ from display import h100Display
 from purge import pid
 from h100Controller import H100
 from switch import switch
-from tdiLoadbank import scheduler
+from tdiLoadbank import loadbank, scheduler
 
 def _parse_comandline():
 
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     display._isOn = args.display
     # Initialise loadbank class
     if args.profile:
-        profile = scheduler.PowerScheduler(args.profile, '158.125.152.225', 10001, 'fuelcell')
+        profile = scheduler.PowerScheduler(args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
     else: profile = ''
     if args.load:
         if profile: load = profile
