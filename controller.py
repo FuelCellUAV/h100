@@ -177,7 +177,7 @@ if __name__ == "__main__":
     ########
 
     _display_header(print)
-    print("Type command to see data: ")
+    print("Type command to see data: [time, stat, elec, temp, purg] ")
 
     try:
         while True:
