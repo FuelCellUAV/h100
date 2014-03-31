@@ -42,9 +42,6 @@ class UserInterface(object):
         self.__one_off_command_list = []
 
 
-    def _parse(self line
-
-    ):
 
 
     # Read user input

@@ -198,9 +198,10 @@ class H100():
 
     @state.setter
     def state(self, state):
-        if state in self.STATE:
+        if state.strip() in list(self.STATE.reverse_mapping):
             self.__state = state
-            print("CHANGED STATE TO ", state)
+        else:
+            print("State not found in ",list(self.STATE.reverse_mapping))
 
     # Get Current
     @property

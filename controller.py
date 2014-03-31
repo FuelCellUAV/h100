@@ -146,7 +146,7 @@ def _reader():
             if not __line:  # EOF, remove file from input list
                 __inputlist.remove(__file)
             elif __line.rstrip():  # optional: skipping empty lines
-                return __line.lower()
+                return __line.lower().strip()
 
     return ''
 
@@ -210,7 +210,7 @@ if __name__ == "__main__":
     _display_header(print)
     display.name = "H100"
 
-    print("Type command: [time, stat, elec, temp, purg] ")
+    print("Type command: [time, stat, elec, temp, purg, fly] ")
 
     try:
         while True:
@@ -219,38 +219,59 @@ if __name__ == "__main__":
 
             # HANDLE USER REQUESTED DATA
             request = _reader()
-            if 'time?' in request:
-                _print_time(timeStart, print)
-            elif 'stat?' in request:
-                _print_state(h100, print)
-            elif 'elec?' in request:
-                _print_electric(h100, load, print)
-            elif 'temp?' in request:
-                _print_temperature(h100, print)
-            elif 'purg?' in request:
-                _print_purge(h100, print)
-            elif 'fly' in request:
-                _isRunning = 1
+            if request:
+                request = request.split(' ')
+                req_len = len(request)
+                for x in range(req_len): request[x] = request[x].strip()
 
-            elif 'stat' in request:
-                h100.state = h100.STATE.error
+                if req_len is 1:
+                    if   request[0].startswith("time?"):
+                        _print_time(timeStart, print)
+                    elif request[0].startswith("stat?"):
+                        _print_state(h100, print)
+                    elif request[0].startswith("elec?"):
+                        _print_electric(h100, load, print)
+                    elif request[0].startswith("temp?"):
+                        _print_temperature(h100, print)
+                    elif request[0].startswith("purg?"):
+                        _print_purge(h100, print)
+                    elif request[0].startswith("fly?"):
+                        if _isRunning: print("Currently flying")
+                        else: print("In the hangar")
 
-            if request: print()
+                elif req_len is 2:
+                    if   request[0].startswith("stat"):
+                        _new_state = request[1]
+                        print('Changing state to',_new_state,'...',end='')
+                        h100.state = _new_state
+                        if h100.state is _new_state:
+                            print("done!")
+                        else: print("failed")
+                    elif request[0].startswith("fly"):
+                        if int(request[1]) is 0 and _isRunning is 1:
+                            _isRunning = 0
+                            print("Landing")
+                        elif int(request[1]) is 1 and _isRunning is 0:
+                            _isRunning = 1
+                            print("Taking off")
+
+                print()
 
             # LOG TIME
             _print_time(timeStart, log.write)
 
             # LOG STATE
-            _print_state(h100, log.write, display.state)
-
+            display.state = _print_state(h100, log.write)
+            
             # LOG ELECTRIC
             electric = _print_electric(h100, load, log.write)
-            display.voltage(electric[0])
-            display.current(electric[1])
+            display.voltage = electric[0]
+            display.current = electric[1]
+            display.power = electric[2]
 
             # LOG TEMPERATURE
             temp = _print_temperature(h100, log.write)
-            display.temperature(max(temp))
+            display.temperature = max(temp)
 
             # LOG PURGE
             _print_purge(h100, log.write)
