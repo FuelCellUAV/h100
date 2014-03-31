@@ -43,51 +43,51 @@ class H100():
     def __init__(self, purgeControl=0, purgeFreq=30, purgeTime=0.5):
 
         # Actions
-        self.on = 0
-        self.off = 1
-        self.reset = 2
+        self.__on = 0
+        self.__off = 1
+        self.__reset = 2
 
         # Adc
-        self.Adc = adcpi.AdcPi2(18)
-#        self.Adc = adcpi.AdcPi2Daemon()
+        self.__Adc = adcpi.AdcPi2(18)
+        #        self.Adc = adcpi.AdcPi2Daemon()
 #        self.Adc.daemon = True
 #        self.Adc.start()
 
         # Delays
-        self.startTime = 3  # Seconds
-        self.stopTime = 10  # Seconds
-        self.cutoffTemp = 30  # Celsius
+        self.__startTime = 3  # Seconds
+        self.__stopTime = 10  # Seconds
+        self.__cutoffTemp = 30  # Celsius
 
         # PiFace Interface
-        self.pfio = pifacedigitalio.PiFaceDigital()  # Start piface
+        self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface
 
         # Purge settings
-        self.purgeCtrl = purgeControl
-        self.purgeFreq = purgeFreq
-        self.purgeTime = purgeTime
-        self.timeChange = time()
-        self.pfio = pifacedigitalio.PiFaceDigital()  # Start piface
+        self.__purgeCtrl = purgeControl
+        self.__purgeFreq = purgeFreq
+        self.__purgeTime = purgeTime
+        self.__timeChange = time()
+        self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface
 
 
         # State
-        self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
-        self.state = self.STATE.off
+        self.__STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
+        self.__state = self.__STATE.off
 
         # Switches
-        self.fan = switch.Switch(0)
-        self.h2 = switch.Switch(1)
-        self.purge = switch.Switch(2)
+        self.__fan = switch.Switch(0)
+        self.__h2 = switch.Switch(1)
+        self.__purge = switch.Switch(2)
 
         # Temperature
-        self.Temp = tmp102.Tmp102()
+        self.__Temp = tmp102.Tmp102()
 
         # Variables
-        self.amps = [0.0] * 8
-        self.volts = [0.0] * 8
-        self.power = [0.0] * 4
-        self.temp = [0.0] * 4
+        self.__amps = [0.0] * 8
+        self.__volts = [0.0] * 8
+        self.__power = [0.0] * 4
+        self.__temp = [0.0] * 4
 
-        self.timeChange = time()
+        self.__timeChange = time()
 
     ##############
     #    MAIN    #
@@ -95,64 +95,64 @@ class H100():
     def run(self):
 
         # BUTTONS
-        if self.__getButton(self.off):  # Turn off
-            if self.state == self.STATE.startup or self.state == self.STATE.on:
-                self.state = self.STATE.shutdown
+        if self._getButton(self.__off):  # Turn off
+            if self.__state == self.__STATE.startup or self.__state == self.__STATE.on:
+                self.__state = self.__STATE.shutdown
+                self.__timeChange = time()
+
+        elif self._getButton(self.__on):  # Turn on
+            if self.__state == self.__STATE.off:
+                self.__state = self.__STATE.startup
                 self.timeChange = time()
 
-        elif self.__getButton(self.on):  # Turn on
-            if self.state == self.STATE.off:
-                self.state = self.STATE.startup
-                self.timeChange = time()
-
-        elif self.__getButton(self.reset):  # Reset error
-            if self.state == self.STATE.error:
-                self.state = self.STATE.off
-                self.timeChange = time()
+        elif self._getButton(self.__reset):  # Reset error
+            if self.__state == self.__STATE.error:
+                self.__state = self.__STATE.off
+                self.__timeChange = time()
 
         # OVER TEMPERATURE
-        if max(self.temp) > self.cutoffTemp:
-            self.state = self.STATE.error
+        if max(self.__temp) > self.__cutoffTemp:
+            self.__state = self.__STATE.error
 
             # OVER/UNDER VOLTAGE
             # todo, not important
 
         # SENSORS
-        self.amps[0] = self.__getCurrent(self.Adc, 0)
-        self.volts[0] = self.__getVoltage(self.Adc, 4)
-        self.power[0] = self.volts[0] * self.amps[0]
-        self.temp = self.__getTemperature(self.Temp)
+        self.__amps[0] = self._getCurrent(self.__Adc, 0)
+        self.__volts[0] = self._getVoltage(self.__Adc, 4)
+        self.__power[0] = self.__volts[0] * self.__amps[0]
+        self.__temp = self._getTemperature(self.__Temp)
 
         # PURGE CONTROL
-        if self.purgeCtrl != 0:
-            vTarget = -1.2 * self.amps[0] + 21  # From polarisation curve
-            vError = self.volts[0] - vTarget
-            self.purgeFreq = self.purgeCtrl(vError)
+        if self.__purgeCtrl != 0:
+            vTarget = -1.2 * self.__amps[0] + 21  # From polarisation curve
+            vError = self.__volts[0] - vTarget
+            self.purgeFreq = self.__purgeCtrl(vError)
 
         # STATE MACHINE
-        if self.state == self.STATE.off:
-            self.stateOff()
-        if self.state == self.STATE.startup:
-            self.stateStartup()
-            if (time() - self.timeChange) > self.startTime:
-                self.state = self.STATE.on
-        if self.state == self.STATE.on:
-            self.stateOn()
-        if self.state == self.STATE.shutdown:
-            self.stateShutdown()
-            if (time() - self.timeChange) > self.stopTime:
-                self.state = self.STATE.off
-        if self.state == self.STATE.error:
-            self.stateError()
+        if self.__state == self.__STATE.off:
+            self._stateOff()
+        if self.__state == self.__STATE.startup:
+            self._stateStartup()
+            if (time() - self.__timeChange) > self.__startTime:
+                self.__state = self.__STATE.on
+        if self.__state == self.__STATE.on:
+            self._stateOn()
+        if self.__state == self.__STATE.shutdown:
+            self._stateShutdown()
+            if (time() - self.__timeChange) > self.__stopTime:
+                self.__state = self.__STATE.off
+        if self.__state == self.__STATE.error:
+            self._stateError()
 
     def shutdown(self):
         # When the programme exits, put through the shutdown routine
-        if self.state != self.STATE.off:
-            self.timeChange = time()
-            while (time() - self.timeChange) < self.stopTime:
-                self.stateShutdown()
-            self.stateOff()
-            self.state = self.STATE.off
+        if self.__state != self.__STATE.off:
+            self.__timeChange = time()
+            while (time() - self.__timeChange) < self.__stopTime:
+                self._stateShutdown()
+            self._stateOff()
+            self.__state = self.__STATE.off
             print('Fuel Cell Off')
         print('\n\n\nFuel Cell Shut Down\n\n')
 
@@ -160,90 +160,97 @@ class H100():
     #  ROUTINES  #
     ##############
     # State Off Routine
-    def stateOff(self):
-        self.h2.write(False)
-        self.fan.write(False)
-        self.purge.write(False)
+    def _stateOff(self):
+        self.__h2.write(False)
+        self.__fan.write(False)
+        self.__purge.write(False)
 
     # State Startup Routine
-    def stateStartup(self):
-        self.h2.timed(0, self.startTime)
-        self.fan.timed(0, self.startTime)
-        self.purge.timed(0, self.startTime)
+    def _stateStartup(self):
+        self.__h2.timed(0, self.__startTime)
+        self.__fan.timed(0, self.__startTime)
+        self.__purge.timed(0, self.__startTime)
 
     # State On Routine
-    def stateOn(self):
-        self.h2.write(True)
-        self.fan.write(True)
-        self.purge.timed(self.purgeFreq, self.purgeTime)
+    def _stateOn(self):
+        self.__h2.write(True)
+        self.__fan.write(True)
+        self.__purge.timed(self.__purgeFreq, self.__purgeTime)
 
     # State Shutdown Routine
-    def stateShutdown(self):
-        self.h2.write(False)
-        self.fan.timed(0, self.stopTime)
-        self.purge.timed(0, self.stopTime)
+    def _stateShutdown(self):
+        self.__h2.write(False)
+        self.__fan.timed(0, self.__stopTime)
+        self.__purge.timed(0, self.__stopTime)
 
     # State Error Routine
-    def stateError(self):
-        self.h2.write(False)
-        self.purge.write(False)
-        if max(self.temp) > self.cutoffTemp:
-            self.fan.write(True)
+    def _stateError(self):
+        self.__h2.write(False)
+        self.__purge.write(False)
+        if max(self.__temp) > self.__cutoffTemp:
+            self.__fan.write(True)
         else:
-            self.fan.write(False)
+            self.__fan.write(False)
 
     ##############
     #EXT. GETTERS#
     ##############
-    # Get State String (global)
-    def getState(self):
+    # Get State String
+    @property
+    def state(self):
         return self.state
 
-    # Get Current (global)
-    def getCurrent(self):
-        return self.amps
+    # Get Current
+    @property
+    def current(self):
+        return self.__amps
 
-    # Get Voltage (global)
-    def getVoltage(self):
-        return self.volts
+    # Get Voltage
+    @property
+    def voltage(self):
+        return self.__volts
 
-    # Get Power (global)
-    def getPower(self):
-        return self.power
+    # Get Power
+    @property
+    def power(self):
+        return self.__power
 
-    # Get Temperature (global)
-    def getTemperature(self):
-        return self.temp
+    # Get Temperature
+    @property
+    def temperature(self):
+        return self.__temp
 
-    # Get Purge Frequency (global)
-    def getPurgeFrequency(self):
-        return self.purgeFreq
+    # Get Purge Frequency
+    @property
+    def purgefrequency(self):
+        return self.__purgeFreq
 
-    # Get Purge Time (global)
-    def getPurgeTime(self):
-        return self.purgeTime
+    # Get Purge Time
+    @property
+    def purgetime(self):
+        return self.__purgeTime
 
     ##############
     #INT. GETTERS#
     ##############
     # Get Current (internal)
     @staticmethod
-    def __getCurrent(Adc, channel):
-#        current = abs(Adc.val[channel] * 1000 / 6.9) + 0.424 - 0.125
+    def _getCurrent(Adc, channel):
+        #        current = abs(Adc.val[channel] * 1000 / 6.9) + 0.424 - 0.125
         current = abs(Adc.get(channel) * 1000 / 6.92) + 0.31 #inc divisor to lower error slope
         if current < 0.475: current = 0 # Account for opamp validity        return current
         return current
 
     # Get Voltage (internal)
     @staticmethod
-    def __getVoltage(Adc, channel):
-#        voltage = abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.029
+    def _getVoltage(Adc, channel):
+        #        voltage = abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.029
         voltage = abs(Adc.get(channel) * 1000 / 47.5) - 5.74 #inc divisor to lower error slope
         return voltage
 
     # Get Temperature (internal)
     @staticmethod
-    def __getTemperature(Temp):
+    def _getTemperature(Temp):
         t = [0.0] * 4
         t[0] = Temp.get(0x48)
         t[1] = Temp.get(0x49)
@@ -252,6 +259,6 @@ class H100():
         return t
 
     # Get Button (internal)
-    def __getButton(self, button):
-        return self.pfio.input_pins[button].value
+    def _getButton(self, button):
+        return self.__pfio.input_pins[button].value
 

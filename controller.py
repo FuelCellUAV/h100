@@ -63,9 +63,9 @@ def _print_state(h100, *destination):
 
 def _print_electric(h100, load='', *destination):
     electric = [
-        h100.getVoltage()[0],
-        h100.getCurrent()[0],
-        h100.getPower()[0],
+        h100.voltage[0],
+        h100.current[0],
+        h100.power[0],
     ]
 
     if load:
@@ -84,10 +84,10 @@ def _print_electric(h100, load='', *destination):
 
 def _print_temperature(h100, *destination):
     temperature = [
-        h100.getTemperature()[0],
-        h100.getTemperature()[1],
-        h100.getTemperature()[2],
-        h100.getTemperature()[3],
+        h100.temperature[0],
+        h100.temperature[1],
+        h100.temperature[2],
+        h100.temperature[3],
     ]
 
     for write in destination:
@@ -99,8 +99,8 @@ def _print_temperature(h100, *destination):
 
 def _print_purge(h100, *destination):
     purge = [
-        h100.getPurgeFrequency(),
-        h100.getPurgeTime(),
+        h100.purgefrequency,
+        h100.purgetime,
     ]
 
     for write in destination:
@@ -132,17 +132,22 @@ def _writer(function, data):
 
 def _reader():
     __inputlist = [sys.stdin]
+
     while __inputlist:
         __ready = select.select(__inputlist, [], [], 0.001)[0]
+
         if not __ready:
             return '' # No user input received
+
         else:
             for __file in __ready:
                 __line = __file.readline()
+
             if not __line:  # EOF, remove file from input list
                 __inputlist.remove(__file)
             elif __line.rstrip():  # optional: skipping empty lines
                 return __line.lower()
+
     return ''
 
 def _profile(profile, isRunning):
