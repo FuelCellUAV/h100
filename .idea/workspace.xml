@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="38c56368-0fed-4d59-a918-033bf4beb2ac" name="Default" comment="typo fix">
+    <list default="true" id="38c56368-0fed-4d59-a918-033bf4beb2ac" name="Default" comment="h100controller property rewrite">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/userinterface.py" />
+      <change type="DELETED" beforePath="C:\Users\Simon\Documents\pyCharm\h100\input.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/controller.py" afterPath="$PROJECT_DIR$/controller.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/h100Controller.py" afterPath="$PROJECT_DIR$/h100Controller.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="h100.iws" />
@@ -27,10 +28,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="controller.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="controller.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/controller.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="106" column="13" selection-start="3409" selection-end="3409" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4794">
+            <state line="218" column="0" selection-start="6308" selection-end="6308" vertical-scroll-proportion="0.12068965" vertical-offset="3580" max-vertical-offset="4624">
               <folding>
                 <element signature="e#800#834#0" expanded="true" />
               </folding>
@@ -38,21 +39,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="h100Controller.py" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/h100Controller.py">
+      <file leaf-file-name="userinterface.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/userinterface.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="31" column="19" selection-start="1168" selection-end="1168" vertical-scroll-proportion="-2.8917625" vertical-offset="3546" max-vertical-offset="4590">
-              <folding>
-                <element signature="e#793#814#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="h100Display.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/display/h100Display.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="30" column="44" selection-start="1353" selection-end="1353" vertical-scroll-proportion="0.0" vertical-offset="1336" max-vertical-offset="5593">
+            <state line="18" column="27" selection-start="455" selection-end="474" vertical-scroll-proportion="0.0" vertical-offset="44" max-vertical-offset="1088">
               <folding />
             </state>
           </provider>
@@ -93,6 +83,8 @@
         <option value="$PROJECT_DIR$/temperature/tmp102.py" />
         <option value="$PROJECT_DIR$/display/h100Display.py" />
         <option value="$PROJECT_DIR$/h100Controller.py" />
+        <option value="$PROJECT_DIR$/ui.py" />
+        <option value="$PROJECT_DIR$/userinterface.py" />
         <option value="$PROJECT_DIR$/controller.py" />
       </list>
     </option>
@@ -216,6 +208,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Simon\Documents\pyCharm\h100" />
       <recent name="C:\Users\Rob\Documents\GitHub\h100" />
     </key>
   </component>
@@ -234,9 +227,11 @@
             <option name="mySupportsDeletion" value="false" />
             <option name="myCanBeAbsent" value="false" />
             <option name="myId" value="UPDATED" />
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/__pycache__/h100Controller.cpython-32.pyc</PATH>
             <PATH vcs="Git" revision="">$PROJECT_DIR$/controller.py</PATH>
             <PATH vcs="Git" revision="">$PROJECT_DIR$/display/__pycache__/h100Display.cpython-32.pyc</PATH>
             <PATH vcs="Git" revision="">$PROJECT_DIR$/display/h100Display.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/h100Controller.py</PATH>
           </FILE-GROUP>
           <FILE-GROUP>
             <option name="myUpdateName" value="Created" />
@@ -505,7 +500,11 @@
       <created>1396266096629</created>
       <updated>1396266096629</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="h100controller property rewrite">
+      <created>1396269306491</created>
+      <updated>1396269306491</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -516,6 +515,7 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32990655" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.159375" sideWeight="0.67156863" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -525,7 +525,6 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3271028" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -549,7 +548,8 @@
     <MESSAGE value="fixed formatting" />
     <MESSAGE value="cad display rewrite" />
     <MESSAGE value="typo fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="typo fix" />
+    <MESSAGE value="h100controller property rewrite" />
+    <option name="LAST_COMMIT_MESSAGE" value="h100controller property rewrite" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -578,7 +578,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="21" column="0" selection-start="815" selection-end="815" vertical-scroll-proportion="0.0" vertical-offset="357" max-vertical-offset="4471">
           <folding>
-            <element signature="e#793#814#0" expanded="true" />
+            <element signature="e#793#814#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -610,7 +610,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="21" column="0" selection-start="814" selection-end="814" vertical-scroll-proportion="0.0" vertical-offset="357" max-vertical-offset="4284">
           <folding>
-            <element signature="e#793#814#0" expanded="true" />
+            <element signature="e#793#814#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -635,7 +635,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="21" column="0" selection-start="814" selection-end="814" vertical-scroll-proportion="0.0" vertical-offset="357" max-vertical-offset="4284">
           <folding>
-            <element signature="e#793#814#0" expanded="true" />
+            <element signature="e#793#814#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -669,7 +669,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="42" column="0" selection-start="1336" selection-end="1336" vertical-scroll-proportion="0.0" vertical-offset="714" max-vertical-offset="4114">
           <folding>
-            <element signature="e#793#814#0" expanded="true" />
+            <element signature="e#793#814#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -694,7 +694,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="42" column="0" selection-start="1336" selection-end="1336" vertical-scroll-proportion="0.0" vertical-offset="816" max-vertical-offset="3842">
           <folding>
-            <element signature="e#793#814#0" expanded="true" />
+            <element signature="e#793#814#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -719,7 +719,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="209" column="18" selection-start="6286" selection-end="6286" vertical-scroll-proportion="0.0" vertical-offset="68" max-vertical-offset="3825">
           <folding>
-            <element signature="e#793#814#0" expanded="true" />
+            <element signature="e#793#814#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -747,7 +747,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="209" column="18" selection-start="6286" selection-end="6286" vertical-scroll-proportion="0.0" vertical-offset="68" max-vertical-offset="3825">
           <folding>
-            <element signature="e#793#814#0" expanded="true" />
+            <element signature="e#793#814#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -821,15 +821,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/input.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1044">
-          <folding>
-            <element signature="e#129#139#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/temperature/tmp102.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="2" column="0" selection-start="20" selection-end="20" vertical-scroll-proportion="0.03256705" vertical-offset="0" max-vertical-offset="1044">
@@ -844,20 +835,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/controller.py">
+    <entry file="file://$PROJECT_DIR$/h100Controller.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="106" column="13" selection-start="3409" selection-end="3409" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4794">
+        <state line="28" column="19" selection-start="998" selection-end="998" vertical-scroll-proportion="-0.35153258" vertical-offset="843" max-vertical-offset="4539">
           <folding>
-            <element signature="e#800#834#0" expanded="true" />
+            <element signature="e#793#814#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/h100Controller.py">
+    <entry file="file://$PROJECT_DIR$/userinterface.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="19" selection-start="1168" selection-end="1168" vertical-scroll-proportion="-2.8917625" vertical-offset="3546" max-vertical-offset="4590">
+        <state line="18" column="27" selection-start="455" selection-end="474" vertical-scroll-proportion="0.0" vertical-offset="44" max-vertical-offset="1088">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/controller.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="218" column="0" selection-start="6308" selection-end="6308" vertical-scroll-proportion="0.12068965" vertical-offset="3580" max-vertical-offset="4624">
           <folding>
-            <element signature="e#793#814#0" expanded="true" />
+            <element signature="e#800#834#0" expanded="true" />
           </folding>
         </state>
       </provider>
