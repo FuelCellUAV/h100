@@ -250,12 +250,13 @@ if __name__ == "__main__":
                     elif request[0].startswith("fly"):
                         if int(request[1]) is 0 and _isRunning is 1:
                             _isRunning = 0
-                            print("Landing")
+                            print("...landing")
                         elif int(request[1]) is 1 and _isRunning is 0:
                             _isRunning = 1
-                            print("Taking off")
+                            print("...taking off")
 
                 print()
+
 
             # LOG TIME
             _print_time(timeStart, log.write)
