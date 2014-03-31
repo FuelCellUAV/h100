@@ -48,15 +48,36 @@ class FuelCellDisplay():
         self.__cad.lcd.store_custom_bitmap(self.__temp_symbol_index, self.__temperature_symbol)
 
         # Start up the screen
-        self.on()
+        self.__on = self.on()
 
-        self.__on = True
-
+        # Screen data
         self.__name = ''
         self.__state = ''
         self.__temp = ''
         self.__volts = ''
         self.__amps = ''
+
+
+    @staticmethod
+    def turnon(cad):
+
+        # Start up the screen
+        cad.lcd.blink_off()
+        cad.lcd.cursor_off()
+        cad.lcd.backlight_on()
+        cad.lcd.clear()
+        return True
+
+    @staticmethod
+    def turnoff(cad):
+
+        # Close down the screen
+        cad.lcd.home()
+        cad.lcd.backlight_off()
+        cad.lcd.clear()
+        print('\n\nDisplay off\n\n')
+        return False
+
 
     @property
     def on(self):
@@ -141,25 +162,7 @@ class FuelCellDisplay():
 
         raise AttributeError
 
-    @staticmethod
-    def turnon(cad):
 
-        # Start up the screen
-        self.cad.lcd.blink_off()
-        self.cad.lcd.cursor_off()
-        self.cad.lcd.backlight_on()
-        self.cad.lcd.clear()
-        return True
-
-    @staticmethod
-    def turnoff(cad):
-
-        # Close down the screen
-        cad.lcd.home()
-        cad.lcd.backlight_off()
-        cad.lcd.clear()
-        print('\n\nDisplay off\n\n')
-        return False
 
 
 class FuelCellDisplayRadio(FuelCellDisplay):
