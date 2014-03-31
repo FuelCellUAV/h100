@@ -48,7 +48,7 @@ class FuelCellDisplay():
         self.__cad.lcd.store_custom_bitmap(self.__temp_symbol_index, self.__temperature_symbol)
 
         # Start up the screen
-        self.__on = self.on()
+        self.__on = True
 
         # Screen data
         self.__name = ''
@@ -81,7 +81,7 @@ class FuelCellDisplay():
 
     @property
     def on(self):
-        return self._on
+        return self.__on
 
     @on.setter
     def on(self, switch):
@@ -121,7 +121,7 @@ class FuelCellDisplay():
 
     @voltage.setter
     def voltage(self, number):
-        self._update(self.__cad, 'V', 1, [4, 1])
+        self._update(self.__cad, 'V', [4, 1], 1)
         self.__volts = self._update(self.__cad, number, [0, 1], 4)
 
     @property
@@ -130,7 +130,7 @@ class FuelCellDisplay():
 
     @current.setter
     def current(self, number):
-        self._update(self.__cad, 'A', 1, [10, 1])
+        self._update(self.__cad, 'A', [10, 1], 1)
         self.__amps = self._update(self.__cad, number, [6, 1], 4)
 
     @staticmethod
@@ -142,7 +142,7 @@ class FuelCellDisplay():
         if type(data) is str:
             data = data[:precision].center(precision)
 
-        elif type(data) is float:
+        elif type(data) is float or int:
             # Convert number to string
             data = str(data)
             # Truncate

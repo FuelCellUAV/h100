@@ -18,7 +18,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import libraries
-import argparse, sys, time, select, os
+import argparse, sys, time, select
 
 from display import h100Display
 from purge import pid
@@ -68,8 +68,8 @@ def _print_electric(h100, load='', *destination):
         h100.getPower()[0],
     ]
 
-    if load is not None or os.path.dirname(load.name) is not "/dev/null":
-        electric + [
+    if load:
+        electric = electric + [
             load.mode(),
             load.voltage(),
             load.current(),
@@ -202,7 +202,7 @@ if __name__ == "__main__":
     ########
 
     _display_header(print)
-    display.name("H100")
+    display.name = "H100"
 
     print("Type command: [time, stat, elec, temp, purg] ")
 
@@ -232,16 +232,16 @@ if __name__ == "__main__":
             _print_time(timeStart, log.write)
 
             # LOG STATE
-            _print_state(h100, log.write, display.state)
+            display.state =_print_state(h100, log.write)
 
             # LOG ELECTRIC
             electric = _print_electric(h100, load, log.write)
-            display.voltage(electric[0])
-            display.current(electric[1])
+            display.voltage = electric[0]
+            display.current = electric[1]
 
             # LOG TEMPERATURE
             temp = _print_temperature(h100, log.write)
-            display.temperature(max(temp))
+            display.temperature = max(temp)
 
             # LOG PURGE
             _print_purge(h100, log.write)
@@ -253,7 +253,7 @@ if __name__ == "__main__":
     finally:
         h100.shutdown()
         if log: log.close()
-        display.off()
+        display.on = False
         print('\n\n\nProgramme successfully exited and closed down\n\n')
 
     #######
