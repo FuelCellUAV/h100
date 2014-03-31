@@ -18,7 +18,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import libraries
-import argparse, sys, time, select
+import argparse, sys, time, select, os
 
 from display import h100Display
 from purge import pid
@@ -26,8 +26,8 @@ from h100Controller import H100
 from switch import switch
 from tdiLoadbank import loadbank, scheduler
 
-def _parse_comandline():
 
+def _parse_commandline():
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
     parser.add_argument('--out', type=str, default='', help='Save my data to USB stick')
     parser.add_argument('--purgeController', type=int, default=0, help='Set to 1 for purge controller on')
@@ -51,90 +51,98 @@ def _display_header(*destination):
               + "under certain conditions; type `show c' for details.\n"
               + str(time.asctime())
               + "\n\n")
-
     for write in destination: _writer(write, header),
+
     return header
-    #display.setName('H100')
 
 def _print_state(h100, *destination):
     state = h100.getState()
     for write in destination: _writer(write, state),
+
     return state
-    #print(state, end='\t')
-    #if logfile: logfile.write(state+'\t')
-    #display.setState(state)
 
 def _print_electric(h100, load='', *destination):
-    electric = []
-    electric.append(h100.getVoltage()[0])
-    electric.append(h100.getCurrent()[0])
-    electric.append(h100.getPower()[0])
+    electric = [
+        h100.getVoltage()[0],
+        h100.getCurrent()[0],
+        h100.getPower()[0],
+    ]
 
-    if load:
-        electric.append(load.mode())
-        electric.append(load.voltage())
-        electric.append(load.current())
-        electric.append(load.power())
+    if load is not None or os.path.dirname(load.name) is not "/dev/null":
+        electric + [
+            load.mode(),
+            load.voltage(),
+            load.current(),
+            load.power(),
+        ]
 
     for write in destination:
-        for cell in electric:      
+        for cell in electric:
             _writer(write, cell)
 
     return electric
-    #display.setVolts(voltage)
-    #display.setAmps(current)
 
 def _print_temperature(h100, *destination):
-    temp = []
-    for x in range(4):
-        temp.append(h100.getTemperature()[x])
+    temperature = [
+        h100.getTemperature()[0],
+        h100.getTemperature()[1],
+        h100.getTemperature()[2],
+        h100.getTemperature()[3],
+    ]
 
     for write in destination:
-        for cell in temp:      
+        for cell in temperature:
             _writer(write, cell)
-    return temp
-    #display.setTemp(max(h100.getTemperature()))
+
+    return temperature
+
 
 def _print_purge(h100, *destination):
-    purge = []
-    purge.append(h100.getPurgeFrequency())
-    purge.append(h100.getPurgeTime())
+    purge = [
+        h100.getPurgeFrequency(),
+        h100.getPurgeTime(),
+    ]
 
     for write in destination:
         for cell in purge:
             _writer(write, cell)
+
     return purge
 
 def _print_time(timeStart, *destination):
-    mytime = []
-    mytime.append(time.time())
-    mytime.append(time.time() - timeStart)
-    
+    delta = [
+        time.time(),
+        time.time() - timeStart,
+    ]
+
     for write in destination:
-        for cell in mytime:
+        for cell in delta:
             _writer(write, cell)
-    return mytime
+
+    return delta
+
 
 def _writer(function, data):
     try:
         function(str(data)+'\t', end='')
     except TypeError: # Not a print function
         function(str(data)+'\t')
+
     return data
 
 def _reader():
-    inputList = [sys.stdin]
-    while inputList:
-        ready = select.select(inputList, [], [], 0.001)[0]
-        if not ready:
+    __inputlist = [sys.stdin]
+    while __inputlist:
+        __ready = select.select(__inputlist, [], [], 0.001)[0]
+        if not __ready:
             return '' # No user input received
         else:
-            for file in ready:
-                line = file.readline()
-            if not line: # EOF, remove file from input list
-                inputList.remove(file)
-            elif line.rstrip(): # optional: skipping empty lines
-                return line.lower()
+            for __file in __ready:
+                __line = __file.readline()
+            if not __line:  # EOF, remove file from input list
+                __inputlist.remove(__file)
+            elif __line.rstrip():  # optional: skipping empty lines
+                return __line.lower()
     return ''
 
 def _profile(profile, isRunning):
@@ -153,26 +161,25 @@ if __name__ == "__main__":
     #########
 
     # Grab user args
-    args = _parse_comandline()
+    args = _parse_commandline()
 
     ## Look at user arguments
     # Logfile
     if args.out:
-        log = open(('/media/usb0/' + time.strftime('%y%m%d-%H%M%S') + '-controller-' + args.out + '.tsv'),'w')
+        log = open(("/media/usb0/" + time.strftime("%y%m%d-%H%M%S") + "-controller-" + args.out + ".tsv"), 'w')
     else:
         log = open("/dev/null",'w')
     # Purge Controller
     if args.purgeController:
         purge = pid.Pid(10, 1, 1)
     else:
-        purge = 0
+        purge = False
 
     ## Initialise classes
     # Initialise controller class
     h100 = H100(purgeControl=purge, purgeFreq=args.purgeFreq, purgeTime=args.purgeTime)
     # Initialise display class
     display = h100Display.FuelCellDisplay()
-    display._isOn = args.display
     # Initialise loadbank class
     if args.profile:
         profile = scheduler.PowerScheduler(args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
@@ -195,6 +202,8 @@ if __name__ == "__main__":
     ########
 
     _display_header(print)
+    display.name("H100")
+
     print("Type command: [time, stat, elec, temp, purg] ")
 
     try:
@@ -223,13 +232,16 @@ if __name__ == "__main__":
             _print_time(timeStart, log.write)
 
             # LOG STATE
-            _print_state(h100, log.write)
+            _print_state(h100, log.write, display.state)
 
             # LOG ELECTRIC
-            _print_electric(h100, load, log.write)
+            electric = _print_electric(h100, load, log.write)
+            display.voltage(electric[0])
+            display.current(electric[1])
 
             # LOG TEMPERATURE
-            _print_temperature(h100, log.write)
+            temp = _print_temperature(h100, log.write)
+            display.temperature(max(temp))
 
             # LOG PURGE
             _print_purge(h100, log.write)

@@ -37,80 +37,129 @@ from .radio import Radio
 class FuelCellDisplay():
     def __init__(self):
         # Define the CAD board
-        self._cad = pifacecad.PiFaceCAD()
+        self.__cad = pifacecad.PiFaceCAD()
 
         # First define some pretty cutstom bitmaps!
-        self._temp_symbol_index = 7
-        self._temperature_symbol = pifacecad.LCDBitmap(
+        self.__temp_symbol_index = 7
+        self.__temperature_symbol = pifacecad.LCDBitmap(
             [0x18, 0x18, 0x3, 0x4, 0x4, 0x4, 0x3, 0x0])
 
         # Save my pretty custom bitmaps to the memory (max 8 allowed)
-        self._cad.lcd.store_custom_bitmap(self._temp_symbol_index, self._temperature_symbol)
+        self.__cad.lcd.store_custom_bitmap(self.__temp_symbol_index, self.__temperature_symbol)
 
         # Start up the screen
-        self._cad.lcd.blink_off()
-        self._cad.lcd.cursor_off()
-        self._cad.lcd.backlight_on()
-        self._cad.lcd.clear()
+        self.on()
 
-        self._isOn = 1
+        self.__on = True
 
-    def setName(self, text):
-        return self.__setText(text, 3, [0,0])
-    def setState(self, text):
-        return self.__setText(text, 3, [4,0])
-    def setTemp(self, number):
-#        self.__setSymbol(self._temperature_symbol, 1, [12,0])
-        self.__update(self._temperature_symbol, [12,0], self._temp_symbol_index)
-        return self.__setFloat(number, 4, [8,0])
-    def setVolts(self, number):
-        self.__setText('V', 1, [4,1])
-        return self.__setFloat(number, 4, [0,1])
-    def setAmps(self, number):
-        self.__setText('A', 1, [10,1])
-        return self.__setFloat(number, 4, [6,1])
+        self.__name = ''
+        self.__state = ''
+        self.__temp = ''
+        self.__volts = ''
+        self.__amps = ''
 
-    def off(self):
-        # Close down the screen
-        self._cad.lcd.home()
-        self._cad.lcd.backlight_off()
-        self._cad.lcd.clear()
-        print('\n\nDisplay off\n\n')
+    @property
+    def on(self):
+        return self._on
 
-    def __setText(self, text, chars, ptr):
-        # Truncate
-        text = text[:chars].center(chars)
-        # Update display
-        return self.__update(text, ptr)
+    @on.setter
+    def on(self, switch):
+        if self.__on is True and switch is False:
+            self.__on = self.turnoff(self.__cad)
+        elif self.__on is False and switch is True:
+            self.__on = self.turnon(self.__cad)
 
-    def __setFloat(self, number, chars, ptr):
-        # Convert number to string
-        numstr = str(number)
-        # Truncate
-        if len(str(numstr).split('.')[0]) > chars:
-            # Replace with 'x' if too long
-            numstr = "x" * chars
-        else:
-            # Truncate and justify
-            numstr = numstr[:chars].rjust(chars)
-        # Update display
-        return self.__update(numstr, ptr)
+    @property
+    def name(self):
+        return self.__name
 
-    def __setSymbol(self, symbol, chars, ptr):
-        # Truncate, justify & update display
-        return self.__update(symbol[:chars].ljust(chars), ptr)
+    @name.setter
+    def name(self, text):
+        self.__name = self._update(self.__cad, text, [0, 0], 3)
 
-    def __update(self, text, ptr, index=-1):
+    @property
+    def state(self):
+        return self.__state
+
+    @state.setter
+    def state(self, text):
+        self.__state = self._update(self.__cad, text, [4, 0], 3)
+
+    @property
+    def temperature(self):
+        return self.__temp
+
+    @temperature.setter
+    def temperature(self, number):
+        self._update(self.__cad, self.__temperature_symbol, [12, 0], index=self.__temp_symbol_index)
+        self.__temp = self._update(self.__cad, number, [8, 0], 4)
+
+    @property
+    def voltage(self):
+        return self.__volts
+
+    @voltage.setter
+    def voltage(self, number):
+        self._update(self.__cad, 'V', 1, [4, 1])
+        self.__volts = self._update(self.__cad, number, [0, 1], 4)
+
+    @property
+    def current(self):
+        return self.__amps
+
+    @current.setter
+    def current(self, number):
+        self._update(self.__cad, 'A', 1, [10, 1])
+        self.__amps = self._update(self.__cad, number, [6, 1], 4)
+
+    @staticmethod
+    def _update(cad, data, ptr, precision=1, index=-1):
+
         # Move cursor to correct place (col, row)
-        self._cad.lcd.set_cursor(ptr[0], ptr[1])
-        # Write text to screen
-        if self._isOn:
-            if index < 0: self._cad.lcd.write(text)
-            else: self._cad.lcd.write_custom_bitmap(index)
-        return text
+        cad.lcd.set_cursor(ptr[0], ptr[1])
 
+        if type(data) is str:
+            data = data[:precision].center(precision)
 
+        elif type(data) is float:
+            # Convert number to string
+            data = str(data)
+            # Truncate
+            if len(data.split('.')[0]) > precision:
+                # Replace with 'x' if too long
+                data = 'x' * precision
+            else:
+                # Truncate and justify
+                data = data[:precision].rjust(precision)
 
+        if index < 0 and type(data) is str:
+            cad.lcd.write(data)
+            return data
+        elif index >= 0:
+            cad.lcd.write_custom_bitmap(index)
+            return index
+
+        raise AttributeError
+
+    @staticmethod
+    def turnon(cad):
+
+        # Start up the screen
+        self.cad.lcd.blink_off()
+        self.cad.lcd.cursor_off()
+        self.cad.lcd.backlight_on()
+        self.cad.lcd.clear()
+        return True
+
+    @staticmethod
+    def turnoff(cad):
+
+        # Close down the screen
+        cad.lcd.home()
+        cad.lcd.backlight_off()
+        cad.lcd.clear()
+        print('\n\nDisplay off\n\n')
+        return False
 
 
 class FuelCellDisplayRadio(FuelCellDisplay):
