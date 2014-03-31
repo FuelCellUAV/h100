@@ -48,7 +48,7 @@ class FuelCellDisplay():
         self.__cad.lcd.store_custom_bitmap(self.__temp_symbol_index, self.__temperature_symbol)
 
         # Start up the screen
-        self.__on = True
+        self.__on = False
 
         # Screen data
         self.__name = ''
@@ -96,7 +96,7 @@ class FuelCellDisplay():
 
     @name.setter
     def name(self, text):
-        self.__name = self._update(self.__cad, text, [0, 0], 3)
+        self.__name = self._update(self.__cad, text, [0, 0], 4)
 
     @property
     def state(self):
@@ -104,7 +104,7 @@ class FuelCellDisplay():
 
     @state.setter
     def state(self, text):
-        self.__state = self._update(self.__cad, text, [4, 0], 3)
+        self.__state = self._update(self.__cad, text, [5, 0], 3)
 
     @property
     def temperature(self):
@@ -112,8 +112,8 @@ class FuelCellDisplay():
 
     @temperature.setter
     def temperature(self, number):
-        self._update(self.__cad, self.__temperature_symbol, [12, 0], index=self.__temp_symbol_index)
-        self.__temp = self._update(self.__cad, number, [8, 0], 4)
+        self._update(self.__cad, self.__temperature_symbol, [13, 0], index=self.__temp_symbol_index)
+        self.__temp = self._update(self.__cad, number, [9, 0], 4)
 
     @property
     def voltage(self):

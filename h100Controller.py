@@ -49,9 +49,6 @@ class H100():
 
         # Adc
         self.__Adc = adcpi.AdcPi2(18)
-        #        self.Adc = adcpi.AdcPi2Daemon()
-#        self.Adc.daemon = True
-#        self.Adc.start()
 
         # Delays
         self.__startTime = 3  # Seconds
@@ -198,7 +195,7 @@ class H100():
     # Get State String
     @property
     def state(self):
-        return self.state
+        return self.__state
 
     # Get Current
     @property

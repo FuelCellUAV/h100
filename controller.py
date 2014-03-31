@@ -56,7 +56,8 @@ def _display_header(*destination):
     return header
 
 def _print_state(h100, *destination):
-    state = h100.getState()
+    state = h100.state
+
     for write in destination: _writer(write, state),
 
     return state
@@ -185,6 +186,7 @@ if __name__ == "__main__":
     h100 = H100(purgeControl=purge, purgeFreq=args.purgeFreq, purgeTime=args.purgeTime)
     # Initialise display class
     display = h100Display.FuelCellDisplay()
+    display.on = True
     # Initialise loadbank class
     if args.profile:
         profile = scheduler.PowerScheduler(args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
@@ -237,7 +239,7 @@ if __name__ == "__main__":
             _print_time(timeStart, log.write)
 
             # LOG STATE
-            display.state =_print_state(h100, log.write)
+            display.state = _print_state(h100, log.write)
 
             # LOG ELECTRIC
             electric = _print_electric(h100, load, log.write)
