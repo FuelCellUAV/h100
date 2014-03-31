@@ -65,10 +65,9 @@ class H100():
         self.__timeChange = time()
         self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface
 
-
         # State
-        self.__STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
-        self.__state = self.__STATE.off
+        self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
+        self.__state = self.STATE.off
 
         # Switches
         self.__fan = switch.Switch(0)
@@ -93,23 +92,23 @@ class H100():
 
         # BUTTONS
         if self._getButton(self.__off):  # Turn off
-            if self.__state == self.__STATE.startup or self.__state == self.__STATE.on:
-                self.__state = self.__STATE.shutdown
+            if self.__state == self.STATE.startup or self.__state == self.__STATE.on:
+                self.__state = self.STATE.shutdown
                 self.__timeChange = time()
 
         elif self._getButton(self.__on):  # Turn on
-            if self.__state == self.__STATE.off:
-                self.__state = self.__STATE.startup
+            if self.__state == self.STATE.off:
+                self.__state = self.STATE.startup
                 self.timeChange = time()
 
         elif self._getButton(self.__reset):  # Reset error
-            if self.__state == self.__STATE.error:
-                self.__state = self.__STATE.off
+            if self.__state == self.STATE.error:
+                self.__state = self.STATE.off
                 self.__timeChange = time()
 
         # OVER TEMPERATURE
         if max(self.__temp) > self.__cutoffTemp:
-            self.__state = self.__STATE.error
+            self.__state = self.STATE.error
 
             # OVER/UNDER VOLTAGE
             # todo, not important
@@ -127,29 +126,29 @@ class H100():
             self.purgeFreq = self.__purgeCtrl(vError)
 
         # STATE MACHINE
-        if self.__state == self.__STATE.off:
+        if self.__state == self.STATE.off:
             self._stateOff()
-        if self.__state == self.__STATE.startup:
+        if self.__state == self.STATE.startup:
             self._stateStartup()
             if (time() - self.__timeChange) > self.__startTime:
-                self.__state = self.__STATE.on
-        if self.__state == self.__STATE.on:
+                self.__state = self.STATE.on
+        if self.__state == self.STATE.on:
             self._stateOn()
-        if self.__state == self.__STATE.shutdown:
+        if self.__state == self.STATE.shutdown:
             self._stateShutdown()
             if (time() - self.__timeChange) > self.__stopTime:
-                self.__state = self.__STATE.off
-        if self.__state == self.__STATE.error:
+                self.__state = self.STATE.off
+        if self.__state == self.STATE.error:
             self._stateError()
 
     def shutdown(self):
         # When the programme exits, put through the shutdown routine
-        if self.__state != self.__STATE.off:
+        if self.__state != self.STATE.off:
             self.__timeChange = time()
             while (time() - self.__timeChange) < self.__stopTime:
                 self._stateShutdown()
             self._stateOff()
-            self.__state = self.__STATE.off
+            self.__state = self.STATE.off
             print('Fuel Cell Off')
         print('\n\n\nFuel Cell Shut Down\n\n')
 
@@ -196,6 +195,12 @@ class H100():
     @property
     def state(self):
         return self.__state
+
+    @state.setter
+    def state(self, state):
+        if state in self.STATE:
+            self.__state = state
+            print("CHANGED STATE TO ", state)
 
     # Get Current
     @property

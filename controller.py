@@ -20,8 +20,6 @@
 # Import libraries
 import argparse, sys, time, select
 
-from userinterface import *
-
 from display import h100Display
 from purge import pid
 from h100Controller import H100
@@ -124,7 +122,6 @@ def _print_time(timeStart, *destination):
 
     return delta
 
-
 def _writer(function, data):
     try:
         function(str(data)+'\t', end='')
@@ -203,20 +200,6 @@ if __name__ == "__main__":
         # Record start time
     timeStart = time.time()
 
-    ## Setup user interface
-    # LOG TIME
-    ui.repeat_command_list(_print_time(timeStart, log.write))
-    # LOG STATE
-    ui.repeat_command_list(_print_state(h100, log.write))
-    # LOG ELECTRIC
-    ui.repeat_command_list(_print_electric(h100, load, log.write))
-    # LOG TEMPERATURE
-    ui.repeat_command_list(_print_temperature(h100, log.write))
-    # LOG PURGE
-    ui.repeat_command_list(_print_purge(h100, log.write))
-    # PRINT NEW LINE
-    if log: ui.repeat_command_list(log.write("\n"))
-
     #
     _isRunning = 0
 
@@ -232,7 +215,6 @@ if __name__ == "__main__":
     try:
         while True:
             h100.run()
-            ui.run()
             _isRunning = _profile(profile, _isRunning)
 
             # HANDLE USER REQUESTED DATA
@@ -249,9 +231,32 @@ if __name__ == "__main__":
                 _print_purge(h100, print)
             elif 'fly' in request:
                 _isRunning = 1
-                
+
+            elif 'stat' in request:
+                h100.state = h100.STATE.error
+
             if request: print()
 
+            # LOG TIME
+            _print_time(timeStart, log.write)
+
+            # LOG STATE
+            _print_state(h100, log.write, display.state)
+
+            # LOG ELECTRIC
+            electric = _print_electric(h100, load, log.write)
+            display.voltage(electric[0])
+            display.current(electric[1])
+
+            # LOG TEMPERATURE
+            temp = _print_temperature(h100, log.write)
+            display.temperature(max(temp))
+
+            # LOG PURGE
+            _print_purge(h100, log.write)
+
+            # PRINT NEW LINE
+            if log: log.write("\n")
 
 
     # Programme Exit Code
