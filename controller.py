@@ -24,8 +24,6 @@ from display import h100Display
 from purge import pid
 from h100Controller import H100
 from switch import switch
-from tdiLoadbank import loadbank, scheduler
-
 
 def _parse_commandline():
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
@@ -34,8 +32,6 @@ def _parse_commandline():
     parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
     parser.add_argument('--purgeFreq'  	,type=float, 	default=30,	help='Time between purges in seconds')
     parser.add_argument('--display'  	,type=int, 	default=1,	help='Piface CAD (1 is on, 0 is off)')
-    parser.add_argument('--load'  	,type=int, 	default=0,	help='Load (1 is on, 0 is off)')
-    parser.add_argument('--profile'  	,type=str, 	default='',	help='Name of flight profile file')
 
     return parser.parse_args()
 
@@ -62,20 +58,12 @@ def _print_state(h100, *destination):
 
     return state
 
-def _print_electric(h100, load='', *destination):
+def _print_electric(h100, *destination):
     electric = [
         h100.voltage[0],
         h100.current[0],
         h100.power[0],
     ]
-
-    if load:
-        electric = electric + [
-            load.mode(),
-            load.voltage(),
-            load.current(),
-            load.power(),
-        ]
 
     for write in destination:
         for cell in electric:
@@ -150,10 +138,10 @@ def _reader():
 
     return ''
 
-def _profile(profile, isRunning):
+def _profile(isRunning):
     if isRunning:
         # Do running
-        isRunning = profile.main(isRunning)
+        pass
     else:
         pass
     
@@ -186,16 +174,6 @@ if __name__ == "__main__":
     # Initialise display class
     display = h100Display.FuelCellDisplay()
     display.on = True
-    # Initialise loadbank class
-    if args.profile:
-        profile = scheduler.PowerScheduler(args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
-    else: profile = ''
-    if args.load:
-        if profile: load = profile
-        else:
-            load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
-    else:
-        load = ''
 
         # Record start time
     timeStart = time.time()
@@ -215,7 +193,7 @@ if __name__ == "__main__":
     try:
         while True:
             h100.run()
-            _isRunning = _profile(profile, _isRunning)
+            _isRunning = _profile(_isRunning)
 
             # HANDLE USER REQUESTED DATA
             request = _reader()
@@ -230,7 +208,7 @@ if __name__ == "__main__":
                     elif request[0].startswith("stat?"):
                         _print_state(h100, print)
                     elif request[0].startswith("elec?"):
-                        _print_electric(h100, load, print)
+                        _print_electric(h100, print)
                     elif request[0].startswith("temp?"):
                         _print_temperature(h100, print)
                     elif request[0].startswith("purg?"):
@@ -265,7 +243,7 @@ if __name__ == "__main__":
             display.state = _print_state(h100, log.write)
             
             # LOG ELECTRIC
-            electric = _print_electric(h100, load, log.write)
+            electric = _print_electric(h100, log.write)
             display.voltage = electric[0]
             display.current = electric[1]
             display.power = electric[2]
