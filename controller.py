@@ -188,8 +188,14 @@ def _reader():
                 return __line.lower().strip()
     return ''
 
-
-
+def _profile(isRunning):
+    if isRunning:
+        # Do running
+        pass
+    else:
+        pass
+    
+    return isRunning
 
 if __name__ == "__main__":
 
@@ -284,6 +290,7 @@ if __name__ == "__main__":
                 print('load.update():\t'),print(time.time()-timer)
                 timer=time.time()
 
+            _isRunning = _profile(_isRunning)
 
             # HANDLE USER REQUESTED DATA
             request = _reader()
