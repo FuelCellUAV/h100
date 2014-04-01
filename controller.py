@@ -18,67 +18,134 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import libraries
-import argparse, sys, time
+import argparse, sys, time, select
 
 from display import h100Display
 from purge import pid
 from h100Controller import H100
 from switch import switch
 
-def _parse_comandline():
-
-    # Define default global constants
+def _parse_commandline():
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
-    parser.add_argument('--out', help='Name of the output logfile')
+    parser.add_argument('--out', type=str, default='', help='Save my data to USB stick')
     parser.add_argument('--purgeController', type=int, default=0, help='Set to 1 for purge controller on')
     parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
     parser.add_argument('--purgeFreq'  	,type=float, 	default=30,	help='Time between purges in seconds')
+    parser.add_argument('--display'  	,type=int, 	default=1,	help='Piface CAD (1 is on, 0 is off)')
 
     return parser.parse_args()
 
-def _display_header(display):
+def _display_header(*destination):
+    header = ("\n"
+              + "Fuel Cell Controller \n"
+              + "Horizon H-100 Stack \n"
+              + "(c) Simon Howroyd 2014 \n"
+              + "Loughborough University \n"
+              + "\n"
+              + "This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'. \n"
+              + "This is free software, and you are welcome to redistribute it, \n"
+              + "under certain conditions; type `show c' for details.\n"
+              + str(time.asctime())
+              + "\n\n")
+    for write in destination: _writer(write, header),
 
-    print("\nFuel Cell Controller")
-    print("Horizon H-100 Stack")
-    print("(c) Simon Howroyd 2013")
-    print("Loughborough University\n")
+    return header
 
-    print("controller  Copyright (C) 2013  Simon Howroyd")
-    print("This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.")
-    print("This is free software, and you are welcome to redistribute it,")
-    print("under certain conditions; type `show c' for details.\n")
+def _print_state(h100, *destination):
+    state = h100.state
 
-    print("%s\n" % time.asctime())
+    for write in destination: _writer(write, state),
 
-    display.fuelCellName('H100')
+    return state
 
-def _print_state(h100, display):
+def _print_electric(h100, *destination):
+    electric = [
+        h100.voltage[0],
+        h100.current[0],
+        h100.power[0],
+    ]
 
-    print(h100.getState(), end='\t')
-    display.state(h100.getState())
+    for write in destination:
+        for cell in electric:
+            _writer(write, cell)
 
-def _print_electric(h100, display):
+    return electric
 
-    print('v1', '\t', '%.3f' % h100.getVoltage()[0], end='\t')
-    print('a1', '\t', '%.3f' % h100.getCurrent()[0], end='\t')
-    print('p1', '\t', '%.3f' % h100.getPower()[0], end='\t')
-    display.voltage(h100.getVoltage()[0])
-    display.current(h100.getCurrent()[0])
+def _print_temperature(h100, *destination):
+    temperature = [
+        h100.temperature[0],
+        h100.temperature[1],
+        h100.temperature[2],
+        h100.temperature[3],
+    ]
 
-def _print_temperature(h100, display):
+    for write in destination:
+        for cell in temperature:
+            _writer(write, cell)
 
-    print('t', end='\t')
-    #        print(h100.getTemperature()[0], end='\t')
-    #        print(h100.getTemperature()[1], end='\t')
-    print('%.3f' % h100.getTemperature()[2], end='\t')
-    #        print(h100.getTemperature()[3], end='\t')
-    display.temperature(max(h100.getTemperature()))
+    return temperature
 
-def _print_purge(h100):
 
-    print('c', end='\t')
-    print('%.3f' % h100.getPurgeFrequency(), end='\t')
-    print('%.3f' % h100.getPurgeTime(), end='\t')
+def _print_purge(h100, *destination):
+    purge = [
+        h100.purgefrequency,
+        h100.purgetime,
+    ]
+
+    for write in destination:
+        for cell in purge:
+            _writer(write, cell)
+
+    return purge
+
+def _print_time(timeStart, *destination):
+    delta = [
+        time.time(),
+        time.time() - timeStart,
+    ]
+
+    for write in destination:
+        for cell in delta:
+            _writer(write, cell)
+
+    return delta
+
+def _writer(function, data):
+    try:
+        function(str(data)+'\t', end='')
+    except TypeError: # Not a print function
+        function(str(data)+'\t')
+
+    return data
+
+def _reader():
+    __inputlist = [sys.stdin]
+
+    while __inputlist:
+        __ready = select.select(__inputlist, [], [], 0.001)[0]
+
+        if not __ready:
+            return '' # No user input received
+
+        else:
+            for __file in __ready:
+                __line = __file.readline()
+
+            if not __line:  # EOF, remove file from input list
+                __inputlist.remove(__file)
+            elif __line.rstrip():  # optional: skipping empty lines
+                return __line.lower().strip()
+
+    return ''
+
+def _profile(isRunning):
+    if isRunning:
+        # Do running
+        pass
+    else:
+        pass
+    
+    return isRunning
 
 if __name__ == "__main__":
 
@@ -87,55 +154,116 @@ if __name__ == "__main__":
     #########
 
     # Grab user args
-    args = _parse_comandline()
+    args = _parse_commandline()
 
-    # Look at user arguments
-    if args.out:  # save to output file
-        writer = MyWriter(sys.stdout, args.out)
-        sys.stdout = writer
-
+    ## Look at user arguments
+    # Logfile
+    if args.out:
+        log = open(("/media/usb0/" + time.strftime("%y%m%d-%H%M%S") + "-controller-" + args.out + ".tsv"), 'w')
+    else:
+        log = open("/dev/null",'w')
+    # Purge Controller
     if args.purgeController:
         purge = pid.Pid(10, 1, 1)
     else:
-        purge = 0
+        purge = False
 
+    ## Initialise classes
     # Initialise controller class
     h100 = H100(purgeControl=purge, purgeFreq=args.purgeFreq, purgeTime=args.purgeTime)
-    #h100.daemon = True
+    # Initialise display class
+    display = h100Display.FuelCellDisplay()
+    display.on = True
 
-    #Initialise display class
-    display = h100Display.FuelCellDisplay(1, "PF Display")
-    display.daemon = True  # To ensure the process is killed on exit
+        # Record start time
+    timeStart = time.time()
+
+    #
+    _isRunning = 0
 
     ########
     # Main #
     ########
 
-    _display_header(display)
+    _display_header(print)
+    display.name = "H100"
+
+    print("Type command: [time, stat, elec, temp, purg, fly] ")
 
     try:
-
-        display.start()
-
         while True:
-
-            print('\n', time.time(), end='\t')
             h100.run()
-            # PRINT STATE
-            _print_state(h100, display)
+            _isRunning = _profile(_isRunning)
 
-            # ELECTRIC
-            _print_electric(h100, display)
+            # HANDLE USER REQUESTED DATA
+            request = _reader()
+            if request:
+                request = request.split(' ')
+                req_len = len(request)
+                for x in range(req_len): request[x] = request[x].strip()
 
-            # TEMPERATURE
-            _print_temperature(h100, display)
+                if req_len is 1:
+                    if   request[0].startswith("time?"):
+                        _print_time(timeStart, print)
+                    elif request[0].startswith("stat?"):
+                        _print_state(h100, print)
+                    elif request[0].startswith("elec?"):
+                        _print_electric(h100, print)
+                    elif request[0].startswith("temp?"):
+                        _print_temperature(h100, print)
+                    elif request[0].startswith("purg?"):
+                        _print_purge(h100, print)
+                    elif request[0].startswith("fly?"):
+                        if _isRunning: print("Currently flying")
+                        else: print("In the hangar")
 
-            # PURGE
-            _print_purge(h100)
+                elif req_len is 2:
+                    if   request[0].startswith("stat"):
+                        _new_state = request[1]
+                        print('Changing state to',_new_state,'...',end='')
+                        h100.state = _new_state
+                        if h100.state is _new_state:
+                            print("done!")
+                        else: print("failed")
+                    elif request[0].startswith("fly"):
+                        if int(request[1]) is 0 and _isRunning is 1:
+                            _isRunning = 0
+                            print("...landing")
+                        elif int(request[1]) is 1 and _isRunning is 0:
+                            _isRunning = 1
+                            print("...taking off")
+
+                print()
+
+
+            # LOG TIME
+            _print_time(timeStart, log.write)
+
+            # LOG STATE
+            display.state = _print_state(h100, log.write)
+            
+            # LOG ELECTRIC
+            electric = _print_electric(h100, log.write)
+            display.voltage = electric[0]
+            display.current = electric[1]
+            display.power = electric[2]
+
+            # LOG TEMPERATURE
+            temp = _print_temperature(h100, log.write)
+            display.temperature = max(temp)
+
+            # LOG PURGE
+            _print_purge(h100, log.write)
+
+            # PRINT NEW LINE
+            if log: log.write("\n")
+
 
     # Programme Exit Code
     finally:
         h100.shutdown()
+        if log: log.close()
+        display.on = False
         print('\n\n\nProgramme successfully exited and closed down\n\n')
 
     #######
