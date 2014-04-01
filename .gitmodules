@@ -7,6 +7,3 @@
 [submodule "pifacecad"]
 	path = pifacecad
 	url = https://github.com/piface/pifacecad.git
-[submodule "tdiLoadbank"]
-	path = tdiLoadbank
-	url = https://github.com/FuelCellUAV/tdiLoadbank.git
