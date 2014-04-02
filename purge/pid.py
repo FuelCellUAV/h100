@@ -4,9 +4,7 @@ from time import time
 
 # Class to control purge frequency
 class Pid:
-
     def __init__(self, p, i, d, adjustment=0):
-
         self.Kp = p
         self.Ki = i
         self.Kd = d
@@ -19,7 +17,6 @@ class Pid:
         self.timeLast = 0
 
     def __call__(self, error):
-
         dt = time() - self.timeLast
 
         self.integral += error * dt
@@ -36,7 +33,6 @@ class Pid:
         return self.zero + (self.Kp * error + self.Ki * self.integral + self.Kd * derivative)
 
     def doReset(self):
-
         self.error = 0
         self.errorLast = 0
         self.integral = 0

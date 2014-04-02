@@ -42,8 +42,6 @@ class UserInterface(object):
         self.__one_off_command_list = []
 
 
-
-
     # Read user input
     @staticmethod
     def _getline(read_list):

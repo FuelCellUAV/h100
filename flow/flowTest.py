@@ -22,7 +22,7 @@ from   time import sleep
 from   flow import *
 
 
-flow  =FlowBus232()
+flow = FlowBus232()
 
 #########
 # Setup #

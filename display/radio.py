@@ -100,7 +100,7 @@ class Radio(object):
 
     def update_station(self):
         """Updates the station status."""
-        message = self.current_station['name'].ljust(LCD_WIDTH-1)
+        message = self.current_station['name'].ljust(LCD_WIDTH - 1)
         self.cad.lcd.set_cursor(1, 0)
         self.cad.lcd.write(message)
 

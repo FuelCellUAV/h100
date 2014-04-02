@@ -23,23 +23,24 @@ import quick2wire.i2c as i2c
 class AdcPi2:
     def __init__(self, res=12):
         # Check if user inputted a valid resolution
-        if res != 12 and res != 14 and res != 16 and res !=18:
+        if res != 12 and res != 14 and res != 16 and res != 18:
             raise IndexError('Incorrect ADC Resolution')
-        else: self.__res = res
+        else:
+            self.__res = res
 
         # Build default address and configuration register
-        self.__config = [[0x68,0x90],
-                       [0x68,0xB0],
-                       [0x68,0xD0],
-                       [0x68,0xF0],
-                       [0x69,0x90],
-                       [0x69,0xB0],
-                       [0x69,0xD0],
-                       [0x69,0xF0]]
+        self.__config = [[0x68, 0x90],
+                         [0x68, 0xB0],
+                         [0x68, 0xD0],
+                         [0x68, 0xF0],
+                         [0x69, 0x90],
+                         [0x69, 0xB0],
+                         [0x69, 0xD0],
+                         [0x69, 0xF0]]
 
         # Set resolution in configuration register
         for x in range(len(self.__config)):
-            self.__config[x][1] = self.__config[x][1] | int((res-12)/2)<<2
+            self.__config[x][1] = self.__config[x][1] | int((res - 12) / 2) << 2
 
         # Set the calibration multiplier
         self.__varDivisor = 0b1 << (res - 12)
@@ -57,7 +58,7 @@ class AdcPi2:
     def __getadcreading(config, multiplier, res):
         with i2c.I2CMaster() as bus:
             # Calculate how many bytes we will receive for this resolution
-            numBytes = int(max(0, res/2 - 8) + 3)
+            numBytes = int(max(0, res / 2 - 8) + 3)
 
             # Initialise the ADC
             adcreading = bus.transaction(
@@ -73,7 +74,8 @@ class AdcPi2:
             # Shift bits to product result
             if numBytes is 4:
                 t = ((adcreading[0] & 0b00000001) << 16) | (adcreading[1] << 8) | adcreading[2]
-            else: t = (adcreading[0] << 8) | adcreading[1]
+            else:
+                t = (adcreading[0] << 8) | adcreading[1]
 
             # Check if positive or negative number and invert if needed
             if adcreading[0] > 128:
@@ -90,7 +92,7 @@ class AdcPi2:
     # Print all channels to screen
     def printall(self):
         for x in range(8):
-            print("%d: %02f" % (x+1, self.get(x)), end = '\t')
+            print("%d: %02f" % (x + 1, self.get(x)), end='\t')
         print()
 
 

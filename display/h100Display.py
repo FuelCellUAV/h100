@@ -34,6 +34,7 @@ import pifacecommon
 from pifacecad.lcd import LCD_WIDTH
 from .radio import Radio
 
+
 class FuelCellDisplay():
     def __init__(self):
         # Define the CAD board
@@ -163,13 +164,11 @@ class FuelCellDisplay():
         raise AttributeError
 
 
-
-
 class FuelCellDisplayRadio(FuelCellDisplay):
     def __init__(self):
         # Initialise the fuel cell display
         super().__init__()
-        
+
         self.UPDATE_INTERVAL = 1
         self.STATIONS = [
             {'name': "6 Music",
@@ -191,7 +190,7 @@ class FuelCellDisplayRadio(FuelCellDisplay):
              'source': 'http://tx.sharp-stream.com/icecast.php?i=planetrock.mp3',
              'info': None},
         ]
-        
+
         # Custom radio symbols
         self.PLAY_SYMBOL = pifacecad.LCDBitmap(
             [0x10, 0x18, 0x1c, 0x1e, 0x1c, 0x18, 0x10, 0x0])
@@ -228,12 +227,12 @@ class FuelCellDisplayRadio(FuelCellDisplay):
         global radio
         radio = Radio(self._cad)
         radio.play()
-    
+
         # listener cannot deactivate itself so we have to wait until it has
         # finished using a barrier.
         global end_barrier
         end_barrier = Barrier(2)
-    
+
         # wait for button presses
         self.switchlistener = pifacecad.SwitchEventListener(chip=self._cad)
         for pstation in range(4):
@@ -243,7 +242,7 @@ class FuelCellDisplayRadio(FuelCellDisplay):
         self.switchlistener.register(5, pifacecad.IODIR_ON, radio.toggle_playing)
         self.switchlistener.register(6, pifacecad.IODIR_ON, radio.previous_station)
         self.switchlistener.register(7, pifacecad.IODIR_ON, radio.next_station)
-    
+
         self.switchlistener.activate()
 
     def stopRadio(self):
@@ -253,7 +252,8 @@ class FuelCellDisplayRadio(FuelCellDisplay):
             switchlistener.deactivate()
             if irlistener_activated:
                 irlistener.deactivate()
-        except NameError: pass
+        except NameError:
+            pass
 
     def off(self):
         self.stopRadio()
@@ -276,8 +276,9 @@ class FuelCellDisplayDaemon(FuelCellDisplay, multiprocessing.Process):
         super().__init__()
         # If the user presses button 5 display the ip address
 
-    #        self.ip_display_flag = False
-     #   self.listener = pifacecad.SwitchEventListener(chip=self.cad)
+        #        self.ip_display_flag = False
+        #   self.listener = pifacecad.SwitchEventListener(chip=self.cad)
+
     #    self.listener.register(0, pifacecad.IODIR_OFF,self.cad.lcd.write('Hello world!'))
     #     self.listener.register(0, pifacecad.IODIR_ON, self.cad.lcd.clear())
     #    self.listener.activate()
@@ -287,12 +288,12 @@ class FuelCellDisplayDaemon(FuelCellDisplay, multiprocessing.Process):
         counter = 0
         try:
             while True: pass
-                # A statement for my pretty bitmap animation
-#                self.cad.lcd.write_custom_bitmap(self.progress_index[counter])
-#                if counter < 6:
-#                    counter += 1
-#                else:
-#                    counter = 0
+            # A statement for my pretty bitmap animation
+        #                self.cad.lcd.write_custom_bitmap(self.progress_index[counter])
+        #                if counter < 6:
+        #                    counter += 1
+        #                else:
+        #                    counter = 0
         finally:
             self.off()
 

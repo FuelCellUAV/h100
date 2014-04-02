@@ -21,7 +21,7 @@
 from   time import sleep
 from   flow import *
 
-flow  = FlowBus232Daemon()
+flow = FlowBus232Daemon()
 flow.daemon = True
 flow.start()
 

@@ -5,7 +5,6 @@ from quick2wire.i2c import I2CMaster, writing_bytes, reading
 
 # Class to read I2c TMP102 Temperature Sensor
 class Tmp102:
-
     @staticmethod
     def get(address):
         with I2CMaster(1) as master:
@@ -20,7 +19,6 @@ class Tmp102:
 
 
 class Tmp102Daemon(Tmp102, multiprocessing.Process):
-
     def __init__(self):
         multiprocessing.Process.__init__(self)
 

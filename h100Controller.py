@@ -201,7 +201,7 @@ class H100():
         if state.strip() in list(self.STATE.reverse_mapping):
             self.__state = state
         else:
-            print("State not found in ",list(self.STATE.reverse_mapping))
+            print("State not found in ", list(self.STATE.reverse_mapping))
 
     # Get Current
     @property
@@ -240,15 +240,15 @@ class H100():
     @staticmethod
     def _getCurrent(Adc, channel):
         #        current = abs(Adc.val[channel] * 1000 / 6.9) + 0.424 - 0.125
-        current = abs(Adc.get(channel) * 1000 / 6.92) + 0.31 #inc divisor to lower error slope
-        if current < 0.475: current = 0 # Account for opamp validity        return current
+        current = abs(Adc.get(channel) * 1000 / 6.92) + 0.31  #inc divisor to lower error slope
+        if current < 0.475: current = 0  # Account for opamp validity        return current
         return current
 
     # Get Voltage (internal)
     @staticmethod
     def _getVoltage(Adc, channel):
         #        voltage = abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.029
-        voltage = abs(Adc.get(channel) * 1000 / 47.5) - 5.74 #inc divisor to lower error slope
+        voltage = abs(Adc.get(channel) * 1000 / 47.5) - 5.74  #inc divisor to lower error slope
         return voltage
 
     # Get Temperature (internal)

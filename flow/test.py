@@ -6,7 +6,7 @@ parser.add_argument('--i', type=str, default=':06030101210000')
 args = parser.parse_args()
 args.i += '\r\n'
 
-ser=Quick()
+ser = Quick()
 #x=ser.send(bytearray(args.i,'ascii'))
 
 while True:

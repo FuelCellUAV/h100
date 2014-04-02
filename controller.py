@@ -211,7 +211,7 @@ if __name__ == "__main__":
         # Record start time
     timeStart = time.time()
 
-#    _isRunning = 0
+    #    _isRunning = 0
 
     ########
     # Main #
