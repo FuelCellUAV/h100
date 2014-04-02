@@ -158,14 +158,14 @@ def _reader():
     return ''
 
 
-def _profile(profile, isRunning):
-    if isRunning:
-        # Do running
-        isRunning = profile.main(isRunning)
-    else:
-        pass
-
-    return isRunning
+#def _profile(profile, isRunning):
+#    if isRunning:
+#        # Do running
+#        isRunning = profile.main(isRunning)
+#    else:
+#        pass
+#
+#    return isRunning
 
 
 if __name__ == "__main__":
@@ -211,8 +211,7 @@ if __name__ == "__main__":
         # Record start time
     timeStart = time.time()
 
-    #
-    _isRunning = 0
+#    _isRunning = 0
 
     ########
     # Main #
@@ -226,7 +225,7 @@ if __name__ == "__main__":
     try:
         while True:
             h100.run()
-            _isRunning = _profile(profile, _isRunning)
+            profile.run()
 
             # HANDLE USER REQUESTED DATA
             request = _reader()
@@ -247,7 +246,7 @@ if __name__ == "__main__":
                     elif request[0].startswith("purg?"):
                         _print_purge(h100, print)
                     elif request[0].startswith("fly?"):
-                        if _isRunning:
+                        if profile and profile.running:
                             print("Currently flying")
                         else:
                             print("In the hangar")
@@ -262,12 +261,7 @@ if __name__ == "__main__":
                         else:
                             print("failed")
                     elif request[0].startswith("fly"):
-                        if int(request[1]) is 0 and _isRunning is 1:
-                            _isRunning = 0
-                            print("...landing")
-                        elif int(request[1]) is 1 and _isRunning is 0:
-                            _isRunning = 1
-                            print("...taking off")
+                        profile.running = request[1]
 
                 print()
 
