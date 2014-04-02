@@ -225,7 +225,8 @@ if __name__ == "__main__":
     try:
         while True:
             h100.run()
-            profile.run()
+            if profile:
+                profile.run()
 
             # HANDLE USER REQUESTED DATA
             request = _reader()
