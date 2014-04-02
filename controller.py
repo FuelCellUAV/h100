@@ -31,13 +31,14 @@ def _parse_commandline():
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
     parser.add_argument('--out', type=str, default='', help='Save my data to USB stick')
     parser.add_argument('--purgeController', type=int, default=0, help='Set to 1 for purge controller on')
-    parser.add_argument('--purgeTime'  	,type=float, 	default=0.5,	help='How long to purge for in seconds')
-    parser.add_argument('--purgeFreq'  	,type=float, 	default=30,	help='Time between purges in seconds')
-    parser.add_argument('--display'  	,type=int, 	default=1,	help='Piface CAD (1 is on, 0 is off)')
-    parser.add_argument('--load'  	,type=int, 	default=0,	help='Load (1 is on, 0 is off)')
-    parser.add_argument('--profile'  	,type=str, 	default='',	help='Name of flight profile file')
+    parser.add_argument('--purgeTime', type=float, default=0.5, help='How long to purge for in seconds')
+    parser.add_argument('--purgeFreq', type=float, default=30, help='Time between purges in seconds')
+    parser.add_argument('--display', type=int, default=1, help='Piface CAD (1 is on, 0 is off)')
+    parser.add_argument('--load', type=int, default=0, help='Load (1 is on, 0 is off)')
+    parser.add_argument('--profile', type=str, default='', help='Name of flight profile file')
 
     return parser.parse_args()
+
 
 def _display_header(*destination):
     header = ("\n"
@@ -55,12 +56,14 @@ def _display_header(*destination):
 
     return header
 
+
 def _print_state(h100, *destination):
     state = h100.state
 
     for write in destination: _writer(write, state),
 
     return state
+
 
 def _print_electric(h100, load='', *destination):
     electric = [
@@ -71,10 +74,10 @@ def _print_electric(h100, load='', *destination):
 
     if load:
         electric = electric + [
-            load.mode(),
-            load.voltage(),
-            load.current(),
-            load.power(),
+            load.mode,
+            load.voltage,
+            load.current,
+            load.power,
         ]
 
     for write in destination:
@@ -82,6 +85,7 @@ def _print_electric(h100, load='', *destination):
             _writer(write, cell)
 
     return electric
+
 
 def _print_temperature(h100, *destination):
     temperature = [
@@ -110,6 +114,7 @@ def _print_purge(h100, *destination):
 
     return purge
 
+
 def _print_time(timeStart, *destination):
     delta = [
         time.time(),
@@ -122,13 +127,15 @@ def _print_time(timeStart, *destination):
 
     return delta
 
+
 def _writer(function, data):
     try:
-        function(str(data)+'\t', end='')
-    except TypeError: # Not a print function
-        function(str(data)+'\t')
+        function(str(data) + '\t', end='')
+    except TypeError:  # Not a print function
+        function(str(data) + '\t')
 
     return data
+
 
 def _reader():
     __inputlist = [sys.stdin]
@@ -137,7 +144,7 @@ def _reader():
         __ready = select.select(__inputlist, [], [], 0.001)[0]
 
         if not __ready:
-            return '' # No user input received
+            return ''  # No user input received
 
         else:
             for __file in __ready:
@@ -150,14 +157,16 @@ def _reader():
 
     return ''
 
+
 def _profile(profile, isRunning):
     if isRunning:
         # Do running
         isRunning = profile.main(isRunning)
     else:
         pass
-    
+
     return isRunning
+
 
 if __name__ == "__main__":
 
@@ -173,7 +182,7 @@ if __name__ == "__main__":
     if args.out:
         log = open(("/media/usb0/" + time.strftime("%y%m%d-%H%M%S") + "-controller-" + args.out + ".tsv"), 'w')
     else:
-        log = open("/dev/null",'w')
+        log = open("/dev/null", 'w')
     # Purge Controller
     if args.purgeController:
         purge = pid.Pid(10, 1, 1)
@@ -189,9 +198,11 @@ if __name__ == "__main__":
     # Initialise loadbank class
     if args.profile:
         profile = scheduler.PowerScheduler(args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
-    else: profile = ''
+    else:
+        profile = ''
     if args.load:
-        if profile: load = profile
+        if profile:
+            load = profile
         else:
             load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
     else:
@@ -225,7 +236,7 @@ if __name__ == "__main__":
                 for x in range(req_len): request[x] = request[x].strip()
 
                 if req_len is 1:
-                    if   request[0].startswith("time?"):
+                    if request[0].startswith("time?"):
                         _print_time(timeStart, print)
                     elif request[0].startswith("stat?"):
                         _print_state(h100, print)
@@ -236,17 +247,20 @@ if __name__ == "__main__":
                     elif request[0].startswith("purg?"):
                         _print_purge(h100, print)
                     elif request[0].startswith("fly?"):
-                        if _isRunning: print("Currently flying")
-                        else: print("In the hangar")
+                        if _isRunning:
+                            print("Currently flying")
+                        else:
+                            print("In the hangar")
 
                 elif req_len is 2:
-                    if   request[0].startswith("stat"):
+                    if request[0].startswith("stat"):
                         _new_state = request[1]
-                        print('Changing state to',_new_state,'...',end='')
+                        print('Changing state to', _new_state, '...', end='')
                         h100.state = _new_state
                         if h100.state is _new_state:
                             print("done!")
-                        else: print("failed")
+                        else:
+                            print("failed")
                     elif request[0].startswith("fly"):
                         if int(request[1]) is 0 and _isRunning is 1:
                             _isRunning = 0
@@ -263,7 +277,7 @@ if __name__ == "__main__":
 
             # LOG STATE
             display.state = _print_state(h100, log.write)
-            
+
             # LOG ELECTRIC
             electric = _print_electric(h100, load, log.write)
             display.voltage = electric[0]
@@ -280,14 +294,14 @@ if __name__ == "__main__":
             # PRINT NEW LINE
             if log: log.write("\n")
 
-
     # Programme Exit Code
     finally:
         h100.shutdown()
-        if log: log.close()
+        if log:
+            log.close()
         display.on = False
         print('\n\n\nProgramme successfully exited and closed down\n\n')
 
-    #######
-    # End #
-    #######
+        #######
+        # End #
+        #######
