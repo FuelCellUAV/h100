@@ -92,7 +92,7 @@ class H100():
 
         # BUTTONS
         if self._getButton(self.__off):  # Turn off
-            if self.__state == self.STATE.startup or self.__state == self.__STATE.on:
+            if self.__state == self.STATE.startup or self.__state == self.STATE.on:
                 self.__state = self.STATE.shutdown
                 self.__timeChange = time()
 
@@ -239,17 +239,15 @@ class H100():
     # Get Current (internal)
     @staticmethod
     def _getCurrent(Adc, channel):
-        #        current = abs(Adc.val[channel] * 1000 / 6.9) + 0.424 - 0.125
-        current = abs(Adc.get(channel) * 1000 / 6.89) + 0.507 #inc divisor to lower error slope
+        current = abs(Adc.get(channel) * 1000 / 6.89) + 0.507
         if current < 0.475: current = 0  # Account for opamp validity        return current
-        return current # 6.92 pos diverge +0.557
+        return current
 
     # Get Voltage (internal)
     @staticmethod
     def _getVoltage(Adc, channel):
-        #        voltage = abs(Adc.val[channel] * 1000 / 60.9559671563) + 0.029
-        voltage = abs(Adc.get(channel) * 1000 / 44) - 7.620 #inc divisor to lower error slope
-        return voltage  # 47.5.......48.5 + 0.526 blue below red
+        voltage = abs(Adc.get(channel) * 1000 / 62.5) + 0.23 #inc divisor to lower error slope
+        return voltage
 
     # Get Temperature (internal)
     @staticmethod
