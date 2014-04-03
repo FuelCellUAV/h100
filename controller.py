@@ -104,8 +104,8 @@ def _print_temperature(h100, *destination):
 
 def _print_purge(h100, *destination):
     purge = [
-        h100.purgefrequency,
-        h100.purgetime,
+        h100.purge_frequency,
+        h100.purge_time,
     ]
 
     for write in destination:
@@ -191,7 +191,7 @@ if __name__ == "__main__":
 
     ## Initialise classes
     # Initialise controller class
-    h100 = H100(purgeControl=purge, purgeFreq=args.purgeFreq, purgeTime=args.purgeTime)
+    h100 = H100(purge_control=purge, purge_frequency=args.purgeFreq, purge_time=args.purgeTime)
     # Initialise display class
     display = h100Display.FuelCellDisplay()
     display.on = True
@@ -256,7 +256,7 @@ if __name__ == "__main__":
                 elif req_len is 2:
                     if request[0].startswith("fc"):
                         _new_state = request[1]
-                        print('Changing state to', _new_state, '...', end='')
+                        print('Changing state to', _new_state)
                         h100.state = _new_state
                     elif request[0].startswith("fly"):
                         profile.running = request[1]

@@ -52,7 +52,7 @@ class H100():
 
         # Delays
         self.__start_time = 3  # Seconds
-        self.__stop_time = 3  # Seconds
+        self.__stop_time = 10  # Seconds
         self.__cutoff_temperature = 30  # Celsius
         self.__minimum_voltage = 10  # Volts
         self.__maximum_voltage = 30  # Volts
@@ -118,8 +118,10 @@ class H100():
     def shutdown(self):
         # When the programme exits, call this shutdown routine
         print('\n\nFuel Cell shutting down...', end='')
-        self.state = "off"
+        counter = 0
         while self.__state is not self.STATE.off:
+            print(time() - self.__time_change, self.state)
+            self.state = "off"
             self._check_timers()
             self._check_switches()
             self._check_errors()
@@ -319,6 +321,7 @@ class H100():
                 self._state_change(True)
         elif self.__off:
             if (self.__state is not self.STATE.off) or (self.__state is not self.STATE.error):
+                print("Switch")
                 self.__state = self.STATE.shutdown
                 self._state_change(True)
         elif self.__reset:
