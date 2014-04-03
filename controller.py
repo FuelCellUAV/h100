@@ -220,7 +220,7 @@ if __name__ == "__main__":
     _display_header(print)
     display.name = "H100"
 
-    print("Type command: [time, stat, elec, temp, purg, fly] ")
+    print("Type command: [time, fc, elec, temp, purg, fly] ")
 
     try:
         while True:
@@ -233,12 +233,13 @@ if __name__ == "__main__":
             if request:
                 request = request.split(' ')
                 req_len = len(request)
-                for x in range(req_len): request[x] = request[x].strip()
+                for x in range(req_len):
+                    request[x] = request[x].strip()
 
                 if req_len is 1:
                     if request[0].startswith("time?"):
                         _print_time(timeStart, print)
-                    elif request[0].startswith("stat?"):
+                    elif request[0].startswith("fc?"):
                         _print_state(h100, print)
                     elif request[0].startswith("elec?"):
                         _print_electric(h100, load, print)
@@ -253,19 +254,14 @@ if __name__ == "__main__":
                             print("In the hangar")
 
                 elif req_len is 2:
-                    if request[0].startswith("stat"):
+                    if request[0].startswith("fc"):
                         _new_state = request[1]
                         print('Changing state to', _new_state, '...', end='')
                         h100.state = _new_state
-                        if h100.state is _new_state:
-                            print("done!")
-                        else:
-                            print("failed")
                     elif request[0].startswith("fly"):
                         profile.running = request[1]
 
                 print()
-
 
             # LOG TIME
             _print_time(timeStart, log.write)
@@ -287,7 +283,8 @@ if __name__ == "__main__":
             _print_purge(h100, log.write)
 
             # PRINT NEW LINE
-            if log: log.write("\n")
+            if log:
+                log.write("\n")
 
     # Programme Exit Code
     finally:

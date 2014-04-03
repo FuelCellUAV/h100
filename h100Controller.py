@@ -18,6 +18,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Includes
+import sys
 from time import time
 
 import pifacedigitalio
@@ -25,7 +26,7 @@ from adc import adcpi
 from temperature import tmp102
 from switch import switch
 
-# Function to mimic an 'enum'. Won't be needed in Python3.4
+# Function to mimic an 'enum'. Won't be needed after Python3.4 update
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     reverse = dict((value, key) for key, value in list(enums.items()))
@@ -40,30 +41,29 @@ class H100():
     ##############
     # INITIALISE #
     ##############
-    def __init__(self, purgeControl=0, purgeFreq=30, purgeTime=0.5):
-
-        # Actions
-        self.__on = 0
-        self.__off = 1
-        self.__reset = 2
+    def __init__(self, purge_control=0, purge_frequency=30, purge_time=0.5):
 
         # Adc
-        self.__Adc = adcpi.AdcPi2(18)
+        self.__Adc = adcpi.AdcPi2(18)  # Start adc's
+        # Temperature
+        self.__Temperature = tmp102.Tmp102()  # Start temperature sensors
+        # PiFace Interface
+        self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface switch
 
         # Delays
-        self.__startTime = 3  # Seconds
-        self.__stopTime = 10  # Seconds
-        self.__cutoffTemp = 30  # Celsius
-
-        # PiFace Interface
-        self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface
+        self.__start_time = 3  # Seconds
+        self.__stop_time = 10  # Seconds
+        self.__cutoff_temperature = 30  # Celsius
+        self.__minimum_voltage = 10  # Volts
+        self.__maximum_voltage = 30  # Volts
 
         # Purge settings
-        self.__purgeCtrl = purgeControl
-        self.__purgeFreq = purgeFreq
-        self.__purgeTime = purgeTime
-        self.__timeChange = time()
+        self.__purge_control = purge_control
+        self.__purge_frequency = purge_frequency
+        self.__purge_time = purge_time
+        self.__time_change = time()
         self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface
+        self._switch_interrupt = self._switch_handler(self.__pfio, self.switch_on, self.switch_off, self.switch_reset)
 
         # State
         self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
@@ -74,123 +74,58 @@ class H100():
         self.__h2 = switch.Switch(1)
         self.__purge = switch.Switch(2)
 
-        # Temperature
-        self.__Temp = tmp102.Tmp102()
-
         # Variables
-        self.__amps = [0.0] * 8
-        self.__volts = [0.0] * 8
+        self.__current = [0.0] * 8
+        self.__voltage = [0.0] * 8
         self.__power = [0.0] * 4
-        self.__temp = [0.0] * 4
+        self.__temperature = [0.0] * 4
 
         self.__timeChange = time()
+
+        # Button flags
+        self.__on = 0
+        self.__off = 0
+        self.__reset = 0
+
+        self.__state_change = 0
 
     ##############
     #    MAIN    #
     ##############
     def run(self):
+        self._update_sensors()
 
-        # BUTTONS
-        if self._getButton(self.__off):  # Turn off
-            if self.__state == self.STATE.startup or self.__state == self.STATE.on:
-                self.__state = self.STATE.shutdown
-                self.__timeChange = time()
-
-        elif self._getButton(self.__on):  # Turn on
-            if self.__state == self.STATE.off:
-                self.__state = self.STATE.startup
-                self.timeChange = time()
-
-        elif self._getButton(self.__reset):  # Reset error
-            if self.__state == self.STATE.error:
-                self.__state = self.STATE.off
-                self.__timeChange = time()
-
-        # OVER TEMPERATURE
-        if max(self.__temp) > self.__cutoffTemp:
-            self.__state = self.STATE.error
-
-            # OVER/UNDER VOLTAGE
-            # todo, not important
-
-        # SENSORS
-        self.__amps[0] = self._getCurrent(self.__Adc, 0)
-        self.__volts[0] = self._getVoltage(self.__Adc, 4)
-        self.__power[0] = self.__volts[0] * self.__amps[0]
-        self.__temp = self._getTemperature(self.__Temp)
-
-        # PURGE CONTROL
-        if self.__purgeCtrl != 0:
-            vTarget = -1.2 * self.__amps[0] + 21  # From polarisation curve
-            vError = self.__volts[0] - vTarget
-            self.purgeFreq = self.__purgeCtrl(vError)
+        self._check_timers()
+        self._check_switches()
+        self._check_errors()
 
         # STATE MACHINE
-        if self.__state == self.STATE.off:
-            self._stateOff()
-        if self.__state == self.STATE.startup:
-            self._stateStartup()
-            if (time() - self.__timeChange) > self.__startTime:
-                self.__state = self.STATE.on
-        if self.__state == self.STATE.on:
-            self._stateOn()
-        if self.__state == self.STATE.shutdown:
-            self._stateShutdown()
-            if (time() - self.__timeChange) > self.__stopTime:
-                self.__state = self.STATE.off
-        if self.__state == self.STATE.error:
-            self._stateError()
+        if self.__state is self.STATE.off:
+            self._state_off()
+        elif self.__state is self.STATE.on:
+            self._state_on()
+        elif self.__state is self.STATE.startup:
+            self._state_startup()
+        elif self.__state is self.STATE.shutdown:
+            self._state_shutdown()
+        elif self.__state is self.STATE.error:
+            self._state_error()
+
+        self.__state_change = 0  # Ignore property handler to force reset
+
+        return
 
     def shutdown(self):
-        # When the programme exits, put through the shutdown routine
-        if self.__state != self.STATE.off:
-            self.__timeChange = time()
-            while (time() - self.__timeChange) < self.__stopTime:
-                self._stateShutdown()
-            self._stateOff()
-            self.__state = self.STATE.off
-            print('Fuel Cell Off')
-        print('\n\n\nFuel Cell Shut Down\n\n')
+        # When the programme exits, call this shutdown routine
+        print('\n\nFuel Cell shutting down...', end='')
+        self._switch_interrupt.deactivate()
+        while self.__state is not self.STATE.off:
+            self._switch_off()
+            self.run()
+        print('...Fuel Cell successfully shut down\n\n')
 
-    ##############
-    #  ROUTINES  #
-    ##############
-    # State Off Routine
-    def _stateOff(self):
-        self.__h2.write(False)
-        self.__fan.write(False)
-        self.__purge.write(False)
+        return
 
-    # State Startup Routine
-    def _stateStartup(self):
-        self.__h2.timed(0, self.__startTime)
-        self.__fan.timed(0, self.__startTime)
-        self.__purge.timed(0, self.__startTime)
-
-    # State On Routine
-    def _stateOn(self):
-        self.__h2.write(True)
-        self.__fan.write(True)
-        self.__purge.timed(self.__purgeFreq, self.__purgeTime)
-
-    # State Shutdown Routine
-    def _stateShutdown(self):
-        self.__h2.write(False)
-        self.__fan.timed(0, self.__stopTime)
-        self.__purge.timed(0, self.__stopTime)
-
-    # State Error Routine
-    def _stateError(self):
-        self.__h2.write(False)
-        self.__purge.write(False)
-        if max(self.__temp) > self.__cutoffTemp:
-            self.__fan.write(True)
-        else:
-            self.__fan.write(False)
-
-    ##############
-    #EXT. GETTERS#
-    ##############
     # Get State String
     @property
     def state(self):
@@ -198,20 +133,27 @@ class H100():
 
     @state.setter
     def state(self, state):
-        if state.strip() in list(self.STATE.reverse_mapping):
-            self.__state = state
+        if "on" in state:
+            self._switch_on()
+        elif "off" in state:
+            self._switch_off()
+        elif "reset" in state:
+            self._switch_reset()
         else:
-            print("State not found in ", list(self.STATE.reverse_mapping))
+            print("Invalid command [on, off, reset]")
+            #            if state.strip() in list(self.STATE.reverse_mapping):
+            #                    self.__state = stat                else:
+            #                    print("State not found in ", list(self.STATE.reverse_mapping))
 
     # Get Current
     @property
     def current(self):
-        return self.__amps
+        return self.__current
 
     # Get Voltage
     @property
     def voltage(self):
-        return self.__volts
+        return self.__voltage
 
     # Get Power
     @property
@@ -221,45 +163,187 @@ class H100():
     # Get Temperature
     @property
     def temperature(self):
-        return self.__temp
+        return self.__temperature
 
     # Get Purge Frequency
     @property
-    def purgefrequency(self):
-        return self.__purgeFreq
+    def purge_frequency(self):
+        return self.__purge_frequency
+
+    @purge_frequency.setter
+    def purge_frequency(self, purge_frequency):
+        if 0 < purge_frequency < 600:  # TODO max purge frequency
+            self.__purge_frequency = purge_frequency
 
     # Get Purge Time
     @property
-    def purgetime(self):
-        return self.__purgeTime
+    def purge_time(self):
+        return self.__purge_time
+
+    @purge_time.setter
+    def purge_time(self, purge_time):
+        if 0 < purge_time < 10:  # TODO max purge time
+            self.__purge_time = purge_time
+
+    def _state_change(self, state):
+        if state and not self.__state_change:
+            self.__time_change = time()  # Update timer
+            self.__state_change = 1
+
+    def _switch_on(self):
+        self.__on = True
+        self.__off = False
+        self.__reset = False
+        return
+
+    def _switch_off(self):
+        self.__on = False
+        self.__off = True
+        self.__reset = False
+
+    def _switch_reset(self):
+        self.__on = False
+        self.__off = False
+        self.__reset = True
+
+    ##############
+    #  ROUTINES  #
+    ##############
+    # State Off Routine
+    def _state_off(self):
+        self.__h2.write(False)
+        self.__fan.write(False)
+        self.__purge.write(False)
+
+    # State Startup Routine
+    def _state_startup(self):
+        self.__h2.timed(0, self.__start_time)
+        self.__fan.timed(0, self.__start_time)
+        self.__purge.timed(0, self.__start_time)
+
+    # State On Routine
+    def _state_on(self):
+        self.__h2.write(True)
+        self.__fan.write(True)
+        self.__purge.timed(self.__purge_frequency, self.__purge_time)
+
+    # State Shutdown Routine
+    def _state_shutdown(self):
+        self.__h2.write(False)
+        self.__fan.timed(0, self.__stop_time)
+        self.__purge.timed(0, self.__stop_time)
+
+    # State Error Routine
+    def _state_error(self):
+        self.__h2.write(False)
+        self.__purge.write(False)
+        if max(self.__temperature) > self.__cutoff_temperature:
+            self.__fan.write(True)
+        else:
+            self.__fan.write(False)
 
     ##############
     #INT. GETTERS#
     ##############
-    # Get Current (internal)
+    # Get Current
     @staticmethod
-    def _getCurrent(Adc, channel):
-        current = abs(Adc.get(channel) * 1000 / 6.89) + 0.507
-        if current < 0.475: current = 0  # Account for opamp validity        return current
+    def _get_current(adc, channel):
+        current = abs(adc.get(channel) * 1000 / 6.89) + 0.507
+        if current < 0.475:  # TODO can this be improved?
+            current = 0  # Account for opamp validity
         return current
 
-    # Get Voltage (internal)
+    # Get Voltage
     @staticmethod
-    def _getVoltage(Adc, channel):
-        voltage = abs(Adc.get(channel) * 1000 / 62.5) + 0.23 #inc divisor to lower error slope
+    def _get_voltage(adc, channel):
+        voltage = abs(adc.get(channel) * 1000 / 62.5) + 0.23
         return voltage
 
-    # Get Temperature (internal)
+    # Get Temperature
     @staticmethod
-    def _getTemperature(Temp):
+    def _get_temperature(temperature):
         t = [0.0] * 4
-        t[0] = Temp.get(0x48)
-        t[1] = Temp.get(0x49)
-        t[2] = Temp.get(0x4a)
-        t[3] = Temp.get(0x4b)
+        t[0] = temperature.get(0x48)
+        t[1] = temperature.get(0x49)
+        t[2] = temperature.get(0x4a)
+        t[3] = temperature.get(0x4b)
         return t
 
-    # Get Button (internal)
-    def _getButton(self, button):
-        return self.__pfio.input_pins[button].value
+    @staticmethod
+    def _switch_handler(pifacedigital, switch_on, switch_off, switch_reset):
+        handler = pifacedigitalio.InputEventListener(chip=pifacedigital)
+        handler.register(0, pifacedigitalio.IODIR_FALLING_EDGE, switch_on)
+        handler.register(1, pifacedigitalio.IODIR_FALLING_EDGE, switch_off)
+        handler.register(2, pifacedigitalio.IODIR_FALLING_EDGE, switch_reset)
+        handler.activate()
+        return handler
 
+    #   # Get Button (internal)
+    #    def _getButton(self, button):
+    #        return self.__pfio.input_pins[button].value
+
+    # See if any timers have expired
+    def _check_timers(self):
+        delta = time() - self.__time_change
+        if self.__state is self.STATE.startup:
+            if delta >= self.__start_time:
+                self.__state = self.STATE.on
+                self._state_change(True)
+        elif self.__state is self.STATE.shutdown:
+            if delta >= self.__stop_time:
+                self.__state = self.STATE.off
+                self._state_change(True)
+        return
+
+    # See if any flags have been activated
+    def _check_switches(self):
+        if self.on:
+            if self.__state is self.STATE.off:
+                self.__state = self.STATE.startup
+                self._state_change(True)
+        elif self.off:
+            if self.__state is not self.STATE.off or self.__state is not self.STATE.error:
+                self.__state = self.STATE.shutdown
+                self._state_change(True)
+        elif self.reset:
+            if self.__state is self.STATE.error:
+                self.__state = self.STATE.off
+                self._state_change(True)
+        self.__on = 0  # Force clear the flag
+        self.__off = 0  # Force clear the flag
+        self.__reset = 0  # Force clear the flag
+        return
+
+    # See if the fuel cell has an error
+    def _check_errors(self):
+        # OVER TEMPERATURE
+        if max(self.__temp) > self.__cutoff_temperature:
+            self.__state = self.STATE.error
+            self._state_change(True)
+            sys.stderr.write("TEMPERATURE CUTOFF")
+        # OVER/UNDER VOLTAGE
+        if self.__volts[0] > self.__maximum_voltage:
+            self.__state = self.STATE.error
+            self._state_change(True)
+            sys.stderr.write("VOLTAGE MAXIMUM CUTOFF")
+        if self.__volts[0] < self.__minimum_voltage:
+            self.__state = self.STATE.error
+            self._state_change(True)
+            sys.stderr.write("VOLTAGE MINIMUM CUTOFF")
+        return
+
+    # Update sensors
+    def _update_sensors(self):
+        # SENSORS
+        self.__current[0] = self._get_current(self.__Adc, 0)
+        self.__voltage[0] = self._get_voltage(self.__Adc, 4)
+        self.__power[0] = self.__voltage[0] * self.__current[0]
+        self.__temperature = self._get_temperature(self.__Temperature)
+        return
+
+    def _purge_controller(self):
+        # PURGE CONTROL TODO
+        if self.__purge_control != 0:
+            vTarget = -1.2 * self.__current[0] + 21  # From polarisation curve
+            vError = self.__voltage[0] - vTarget
+            self.purge_frequency = self.__purge_control(vError)
