@@ -63,7 +63,8 @@ class H100():
         self.__purge_time = purge_time
         self.__time_change = time()
         self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface
-        self._switch_interrupt = self._switch_handler(self.__pfio, self._switch_on, self._switch_off, self._switch_reset)
+        self._switch_interrupt = self._switch_handler(self.__pfio, self._switch_on, self._switch_off,
+                                                      self._switch_reset)
 
         # State
         self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
@@ -123,7 +124,7 @@ class H100():
             self._check_timers()
             self._check_switches()
             self._check_errors()
-    
+
             # STATE MACHINE
             if self.__state is self.STATE.off:
                 self._state_off()
@@ -150,7 +151,7 @@ class H100():
     def state(self, state):
         if "on" in state:
             self._switch_on()
-            
+
         elif "off" in state:
             self._switch_off()
         elif "reset" in state:

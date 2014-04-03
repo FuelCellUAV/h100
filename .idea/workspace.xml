@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="38c56368-0fed-4d59-a918-033bf4beb2ac" name="Default" comment="user interface initial commit">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/controller.py" afterPath="$PROJECT_DIR$/controller.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/h100.iml" afterPath="$PROJECT_DIR$/.idea/h100.iml" />
+    <list default="true" id="38c56368-0fed-4d59-a918-033bf4beb2ac" name="Default" comment="h100 controller rewrite - ui compatibility">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/quick2wire/quick2wire/asm_generic_ioctl.py" afterPath="$PROJECT_DIR$/quick2wire/quick2wire/asm_generic_ioctl.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/h100Controller.py" afterPath="$PROJECT_DIR$/h100Controller.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/quick2wire/quick2wire/test_gpio_loopback.py" afterPath="$PROJECT_DIR$/quick2wire/quick2wire/test_gpio_loopback.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/quick2wire/quick2wire/parts/test_mcp23x17.py" afterPath="$PROJECT_DIR$/quick2wire/quick2wire/parts/test_mcp23x17.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/quick2wire/quick2wire/parts/test_pcf8591.py" afterPath="$PROJECT_DIR$/quick2wire/quick2wire/parts/test_pcf8591.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/quick2wire/tools/virtualenv" afterPath="$PROJECT_DIR$/quick2wire/tools/virtualenv" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="h100.iws" />
@@ -32,7 +34,7 @@
       <file leaf-file-name="controller.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/controller.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="236" column="20" selection-start="6339" selection-end="6339" vertical-scroll-proportion="1.9024919" vertical-offset="2154" max-vertical-offset="5083">
+            <state line="151" column="0" selection-start="4259" selection-end="4259" vertical-scroll-proportion="0.6998917" vertical-offset="1819" max-vertical-offset="5083">
               <folding />
             </state>
           </provider>
@@ -41,7 +43,7 @@
       <file leaf-file-name="h100Controller.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/h100Controller.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="142" column="53" selection-start="4401" selection-end="4401" vertical-scroll-proportion="0.0" vertical-offset="1695" max-vertical-offset="6018">
+            <state line="49" column="26" selection-start="1629" selection-end="1629" vertical-scroll-proportion="0.0" vertical-offset="2856" max-vertical-offset="6324">
               <folding>
                 <element signature="e#793#803#0" expanded="true" />
               </folding>
@@ -86,8 +88,8 @@
         <option value="$PROJECT_DIR$/ui.py" />
         <option value="$PROJECT_DIR$/userinterface.py" />
         <option value="$PROJECT_DIR$/tdiLoadbank/scheduler.py" />
-        <option value="$PROJECT_DIR$/h100Controller.py" />
         <option value="$PROJECT_DIR$/controller.py" />
+        <option value="$PROJECT_DIR$/h100Controller.py" />
       </list>
     </option>
   </component>
@@ -213,6 +215,122 @@
       <recent name="C:\Users\Simon\Documents\pyCharm\h100" />
       <recent name="C:\Users\Rob\Documents\GitHub\h100" />
     </key>
+  </component>
+  <component name="RestoreUpdateTree">
+    <UpdateInfo date="Moments ago" ActionInfo="_Update">
+      <UpdatedFiles>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Updated from server" />
+          <option name="myStatusName" value="Changed on server" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="CHANGED_ON_SERVER" />
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Updated" />
+            <option name="myStatusName" value="Changed" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="UPDATED" />
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/__pycache__/h100Controller.cpython-32.pyc</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/controller.py</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/h100Controller.py</PATH>
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Created" />
+            <option name="myStatusName" value="Created" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="CREATED" />
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/FC1.txt</PATH>
+            <PATH vcs="Git" revision="">$PROJECT_DIR$/h100Controller.py.save</PATH>
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Deleted" />
+            <option name="myStatusName" value="Deleted" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="true" />
+            <option name="myId" value="REMOVED_FROM_REPOSITORY" />
+          </FILE-GROUP>
+          <FILE-GROUP>
+            <option name="myUpdateName" value="Restored" />
+            <option name="myStatusName" value="Will be restored" />
+            <option name="mySupportsDeletion" value="false" />
+            <option name="myCanBeAbsent" value="false" />
+            <option name="myId" value="RESTORED" />
+          </FILE-GROUP>
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Modified" />
+          <option name="myStatusName" value="Modified" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MODIFIED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Skipped" />
+          <option name="myStatusName" value="Skipped" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="SKIPPED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with conflicts" />
+          <option name="myStatusName" value="Will be merged with conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_CONFLICTS" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with tree conflicts" />
+          <option name="myStatusName" value="Merged with tree conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_TREE_CONFLICT" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged with property conflicts" />
+          <option name="myStatusName" value="Will be merged with property conflicts" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED_WITH_PROPERTY_CONFLICT" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Merged" />
+          <option name="myStatusName" value="Will be merged" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="MERGED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Not in repository" />
+          <option name="myStatusName" value="Not in repository" />
+          <option name="mySupportsDeletion" value="true" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="UNKNOWN" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally added" />
+          <option name="myStatusName" value="Locally added" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_ADDED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Locally removed" />
+          <option name="myStatusName" value="Locally removed" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="LOCALLY_REMOVED" />
+        </FILE-GROUP>
+        <FILE-GROUP>
+          <option name="myUpdateName" value="Switched" />
+          <option name="myStatusName" value="Switched" />
+          <option name="mySupportsDeletion" value="false" />
+          <option name="myCanBeAbsent" value="false" />
+          <option name="myId" value="SWITCHED" />
+        </FILE-GROUP>
+      </UpdatedFiles>
+    </UpdateInfo>
   </component>
   <component name="RunManager">
     <configuration default="true" type="tests" factoryName="py.test">
@@ -394,7 +512,11 @@
       <created>1396273051517</created>
       <updated>1396273051517</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="h100 controller rewrite - ui compatibility">
+      <created>1396543361836</created>
+      <updated>1396543361836</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -410,15 +532,15 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3271028" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32665965" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32990655" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32990655" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3271028" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -440,7 +562,8 @@
     <MESSAGE value="typo fix" />
     <MESSAGE value="h100controller property rewrite" />
     <MESSAGE value="user interface initial commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="user interface initial commit" />
+    <MESSAGE value="h100 controller rewrite - ui compatibility" />
+    <option name="LAST_COMMIT_MESSAGE" value="h100 controller rewrite - ui compatibility" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -449,6 +572,22 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/controller.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="161" column="18" selection-start="4548" selection-end="4548" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="5185">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/h100Controller.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="149" column="22" selection-start="4706" selection-end="4706" vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="6018">
+          <folding>
+            <element signature="e#793#803#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/controller.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="300" column="12" selection-start="8617" selection-end="8617" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="5236">
@@ -737,7 +876,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/h100Controller.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="142" column="53" selection-start="4401" selection-end="4401" vertical-scroll-proportion="0.0" vertical-offset="1695" max-vertical-offset="6018">
+        <state line="49" column="26" selection-start="1629" selection-end="1629" vertical-scroll-proportion="0.0" vertical-offset="2856" max-vertical-offset="6307">
           <folding>
             <element signature="e#793#803#0" expanded="true" />
           </folding>
@@ -746,7 +885,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/controller.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="236" column="20" selection-start="6339" selection-end="6339" vertical-scroll-proportion="1.9024919" vertical-offset="2154" max-vertical-offset="5083">
+        <state line="151" column="0" selection-start="4259" selection-end="4259" vertical-scroll-proportion="0.6998917" vertical-offset="1819" max-vertical-offset="5083">
           <folding />
         </state>
       </provider>
