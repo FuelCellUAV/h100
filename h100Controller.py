@@ -262,7 +262,8 @@ class H100():
     # Get Current
     @staticmethod
     def _get_current(adc, channel):
-        current = abs(adc.get(channel) * 1000 / 6.89) + 0.507
+#        current = abs(adc.get(channel) * 1000 / 6.89) + 0.507
+        current = abs(adc.get(channel) * 1000 / 6.89) + 0.374
         if current < 0.475:  # TODO can this be improved?
             current = 0  # Account for opamp validity
         return current
@@ -270,7 +271,8 @@ class H100():
     # Get Voltage
     @staticmethod
     def _get_voltage(adc, channel):
-        voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.05
+#        voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.05
+        voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.096
         return voltage
 
     # Get Temperature
@@ -283,12 +285,12 @@ class H100():
         t[3] = temperature.get(0x4b)
         return t
 
-    @staticmethod
-    def _switch_handler(pifacedigital, switch_on, switch_off, switch_reset):
+    
+    def _switch_handler(self, pifacedigital, switch_on, switch_off, switch_reset):
         handler = pifacedigitalio.InputEventListener(chip=pifacedigital)
-        handler.register(0, pifacedigitalio.IODIR_FALLING_EDGE, switch_on)
-        handler.register(1, pifacedigitalio.IODIR_FALLING_EDGE, switch_off)
-        handler.register(2, pifacedigitalio.IODIR_FALLING_EDGE, switch_reset)
+        handler.register(0, pifacedigitalio.IODIR_FALLING_EDGE, switch_on, self)
+        handler.register(1, pifacedigitalio.IODIR_FALLING_EDGE, switch_off, self)
+        handler.register(2, pifacedigitalio.IODIR_FALLING_EDGE, switch_reset, self)
         handler.activate()
         return handler
 
@@ -340,9 +342,9 @@ class H100():
             self.__state = self.STATE.error
             self._state_change(True)
 #            sys.stderr.write(time.asctime() + ' ' + "VOLTAGE MAXIMUM CUTOFF")
-        if self.__voltage[0] < self.__minimum_voltage:
-            self.__state = self.STATE.error
-            self._state_change(True)
+#        if self.__voltage[0] < self.__minimum_voltage:
+#            self.__state = self.STATE.error
+#            self._state_change(True)
 #            sys.stderr.write(time.asctime() + ' ' + "VOLTAGE MINIMUM CUTOFF")
         return
 
