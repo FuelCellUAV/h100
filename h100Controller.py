@@ -18,8 +18,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Includes
-import sys
-from time import time
+import sys, time
 
 import pifacedigitalio
 from adc import adcpi
@@ -61,7 +60,7 @@ class H100():
         self.__purge_control = purge_control
         self.__purge_frequency = purge_frequency
         self.__purge_time = purge_time
-        self.__time_change = time()
+        self.__time_change = time.time()
         self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface
         self._switch_interrupt = self._switch_handler(self.__pfio, self._switch_on, self._switch_off,
                                                       self._switch_reset)
@@ -80,8 +79,6 @@ class H100():
         self.__voltage = [0.0] * 8
         self.__power = [0.0] * 4
         self.__temperature = [0.0] * 4
-
-        self.__timeChange = time()
 
         # Button flags
         self.__on = 0
@@ -204,7 +201,7 @@ class H100():
 
     def _state_change(self, state):
         if state and not self.__state_change:
-            self.__time_change = time()  # Update timer
+            self.__time_change = time.time()  # Update timer
             self.__state_change = 1
 
     def _switch_on(self):
@@ -273,7 +270,7 @@ class H100():
     # Get Voltage
     @staticmethod
     def _get_voltage(adc, channel):
-        voltage = abs(adc.get(channel) * 1000 / 62.5) + 0.23
+        voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.05
         return voltage
 
     # Get Temperature
@@ -301,7 +298,7 @@ class H100():
 
     # See if any timers have expired
     def _check_timers(self):
-        delta = time() - self.__time_change
+        delta = time.time() - self.__time_change
         if self.__state is self.STATE.startup:
             if delta >= self.__start_time:
                 self.__state = self.STATE.on
@@ -337,16 +334,16 @@ class H100():
         if max(self.__temperature) > self.__cutoff_temperature:
             self.__state = self.STATE.error
             self._state_change(True)
-            sys.stderr.write("TEMPERATURE CUTOFF")
+#            sys.stderr.write(time.asctime() + ' ' + "TEMPERATURE CUTOFF")
         # OVER/UNDER VOLTAGE
         if self.__voltage[0] > self.__maximum_voltage:
             self.__state = self.STATE.error
             self._state_change(True)
-            sys.stderr.write("VOLTAGE MAXIMUM CUTOFF")
+#            sys.stderr.write(time.asctime() + ' ' + "VOLTAGE MAXIMUM CUTOFF")
         if self.__voltage[0] < self.__minimum_voltage:
             self.__state = self.STATE.error
             self._state_change(True)
-            sys.stderr.write("VOLTAGE MINIMUM CUTOFF")
+#            sys.stderr.write(time.asctime() + ' ' + "VOLTAGE MINIMUM CUTOFF")
         return
 
     # Update sensors
