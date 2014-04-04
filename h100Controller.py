@@ -50,8 +50,8 @@ class H100():
         self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface switch
 
         # Delays
-        self.__start_time = 3  # Seconds
-        self.__stop_time = 3  # Seconds
+        self.__start_time = 5  # Seconds
+        self.__stop_time = 10  # Seconds
         self.__cutoff_temperature = 30  # Celsius
         self.__minimum_voltage = 10  # Volts
         self.__maximum_voltage = 30  # Volts
