@@ -24,6 +24,8 @@ import pifacedigitalio
 from adc import adcpi
 from temperature import tmp102
 from switch import switch
+from timer import timer
+
 
 # Function to mimic an 'enum'. Won't be needed after Python3.4 update
 def enum(*sequential, **named):
@@ -48,6 +50,8 @@ class H100():
         self.__Temperature = tmp102.Tmp102()  # Start temperature sensors
         # PiFace Interface
         self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface switch
+        # Timer
+        self.__timer = timer.Timer()
 
         # Delays
         self.__start_time = 5  # Seconds
@@ -78,6 +82,7 @@ class H100():
         self.__current = [0.0] * 8
         self.__voltage = [0.0] * 8
         self.__power = [0.0] * 4
+        self.__energy = [0.0] * 2
         self.__temperature = [0.0] * 4
 
         # Button flags
@@ -91,6 +96,7 @@ class H100():
     #    MAIN    #
     ##############
     def run(self):
+        self.__timer.run()
         self._update_sensors()
 
         self._check_timers()
@@ -173,6 +179,11 @@ class H100():
     @property
     def power(self):
         return self.__power
+
+    # Get Energy
+    @property
+    def energy(self):
+        return self.__energy
 
     # Get Temperature
     @property
@@ -275,6 +286,12 @@ class H100():
         voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.096
         return voltage
 
+    # Get Energy
+    @staticmethod
+    def _get_energy(my_timer, power):
+        energy = my_timer.delta * power
+        return energy
+
     # Get Temperature
     @staticmethod
     def _get_temperature(temperature):
@@ -354,6 +371,8 @@ class H100():
         self.__current[0] = self._get_current(self.__Adc, 0)
         self.__voltage[0] = self._get_voltage(self.__Adc, 4)
         self.__power[0] = self.__voltage[0] * self.__current[0]
+        self.__energy[0] = self._get_energy(self.__timer, self.__power[0])
+        self.__energy[1] += self.__energy[0] # Cumulative
         self.__temperature = self._get_temperature(self.__Temperature)
         return
 

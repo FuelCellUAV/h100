@@ -25,7 +25,7 @@ from purge import pid
 from h100Controller import H100
 from switch import switch
 from tdiLoadbank import loadbank, scheduler
-
+from timer import timer
 
 def _parse_commandline():
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2013')
@@ -115,10 +115,10 @@ def _print_purge(h100, *destination):
     return purge
 
 
-def _print_time(timeStart, *destination):
+def _print_time(my_timer, *destination):
     delta = [
         time.time(),
-        time.time() - timeStart,
+        my_timer.delta,
     ]
 
     for write in destination:
@@ -126,6 +126,13 @@ def _print_time(timeStart, *destination):
             _writer(write, cell)
 
     return delta
+
+
+def _print_energy(h100, *destination):
+    for write in destination:
+        for cell in h100.energy:
+            _writer(write, cell)
+    return h100.energy
 
 
 def _writer(function, data):
@@ -208,9 +215,10 @@ if __name__ == "__main__":
     else:
         load = ''
 
-        # Record start time
-    timeStart = time.time()
+#        # Record start time
+#    timeStart = time.time()
 
+    my_timer = timer.Timer()
     #    _isRunning = 0
 
     ########
@@ -220,11 +228,12 @@ if __name__ == "__main__":
     _display_header(print)
     display.name = "H100"
 
-    print("Type command: [time, fc, elec, temp, purg, fly] ")
+    print("Type command: [time, fc, elec, energy, temp, purg, fly] ")
 
     try:
         while True:
             h100.run()
+            my_timer.run()
             if profile:
                 profile.run()
 
@@ -238,11 +247,13 @@ if __name__ == "__main__":
 
                 if req_len is 1:
                     if request[0].startswith("time?"):
-                        _print_time(timeStart, print)
+                        _print_time(my_timer, print)
                     elif request[0].startswith("fc?"):
                         _print_state(h100, print)
                     elif request[0].startswith("elec?"):
                         _print_electric(h100, load, print)
+                    elif request[0].startswith("energy?"):
+                        _print_energy(h100, print)
                     elif request[0].startswith("temp?"):
                         _print_temperature(h100, print)
                     elif request[0].startswith("purg?"):
@@ -264,7 +275,7 @@ if __name__ == "__main__":
                 print()
 
             # LOG TIME
-            _print_time(timeStart, log.write)
+            _print_time(my_timer, log.write)
 
             # LOG STATE
             display.state = _print_state(h100, log.write)
@@ -274,6 +285,9 @@ if __name__ == "__main__":
             display.voltage = electric[0]
             display.current = electric[1]
             display.power = electric[2]
+
+            # LOG ENERGY
+            _print_energy(h100, log.write)
 
             # LOG TEMPERATURE
             temp = _print_temperature(h100, log.write)
