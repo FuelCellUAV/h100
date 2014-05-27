@@ -51,7 +51,7 @@ class H100():
         # PiFace Interface
         self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface switch
         # Timer
-        self.__timer = timer.Timer()
+        self.__timer = timer.My_Time()
 
         # Delays
         self.__start_time = 5  # Seconds

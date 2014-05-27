@@ -115,10 +115,10 @@ def _print_purge(h100, *destination):
     return purge
 
 
-def _print_time(my_timer, *destination):
+def _print_time(my_time, *destination):
     delta = [
         time.time(),
-        my_timer.delta,
+        my_time.delta,
     ]
 
     for write in destination:
@@ -218,7 +218,7 @@ if __name__ == "__main__":
 #        # Record start time
 #    timeStart = time.time()
 
-    my_timer = timer.Timer()
+    my_time = timer.My_Time()
     #    _isRunning = 0
 
     ########
@@ -233,7 +233,7 @@ if __name__ == "__main__":
     try:
         while True:
             h100.run()
-            my_timer.run()
+            my_time.run()
             if profile:
                 profile.run()
 
@@ -247,7 +247,7 @@ if __name__ == "__main__":
 
                 if req_len is 1:
                     if request[0].startswith("time?"):
-                        _print_time(my_timer, print)
+                        _print_time(my_time, print)
                     elif request[0].startswith("fc?"):
                         _print_state(h100, print)
                     elif request[0].startswith("elec?"):
@@ -275,7 +275,7 @@ if __name__ == "__main__":
                 print()
 
             # LOG TIME
-            _print_time(my_timer, log.write)
+            _print_time(my_time, log.write)
 
             # LOG STATE
             display.state = _print_state(h100, log.write)
