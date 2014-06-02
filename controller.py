@@ -60,6 +60,19 @@ def _display_header(*destination):
 def _print_state(h100, *destination):
     state = h100.state
 
+    if "off" in state:
+        state = 1
+    elif "startup" in state: 
+        state = 2
+    elif "on" in state:
+        state = 3
+    elif "shutdown" in state:
+        state = 4
+    elif "error" in state:
+        state = -1
+    else:
+        state = 999
+
     for write in destination: _writer(write, state),
 
     return state
@@ -73,13 +86,22 @@ def _print_electric(h100, load='', *destination):
     ]
 
     if load:
+        if "CURRENT" in load.mode:
+            mode_code = "1 " + load.mode.split()[1]
+        elif "VOLTAGE" in load.mode:
+            mode_code = "2 " + load.mode.split()[1]
+        elif "POWER" in load.mode:
+            mode_code = "3 " + load.mode.split()[1]
+        else:
+            mode_code = 999
+
         electric = electric + [
-            load.mode,
+            mode_code,
             load.voltage,
             load.current,
             load.power,
         ]
-
+    
     for write in destination:
         for cell in electric:
             _writer(write, cell)
@@ -129,9 +151,9 @@ def _print_time(my_time, *destination):
 
 
 def _print_energy(h100, *destination):
-    for write in destination:
-        for cell in h100.energy:
-            _writer(write, cell)
+#    for write in destination:
+#        for cell in h100.energy:
+#            _writer(write, cell)
     return h100.energy
 
 
@@ -215,11 +237,9 @@ if __name__ == "__main__":
     else:
         load = ''
 
-#        # Record start time
-#    timeStart = time.time()
-
+    # Start timers
     my_time = timer.My_Time()
-    #    _isRunning = 0
+
 
     ########
     # Main #
@@ -230,12 +250,32 @@ if __name__ == "__main__":
 
     print("Type command: [time, fc, elec, energy, temp, purg, fly] ")
 
+    timer = time.time()
+
     try:
         while True:
             h100.run()
+
+#            print(time.time()-timer)
+#            timer=time.time()
+
             my_time.run()
+
+#            print(time.time()-timer)
+#            timer=time.time()
+
             if profile:
                 profile.run()
+
+#            print(time.time()-timer)
+#            timer=time.time()
+
+            if load:
+                load.update() # Slow 0.37
+
+#            print(time.time()-timer)
+#            timer=time.time()
+
 
             # HANDLE USER REQUESTED DATA
             request = _reader()
@@ -274,31 +314,55 @@ if __name__ == "__main__":
 
                 print()
 
+#            print(time.time()-timer)
+#            timer=time.time()
+
             # LOG TIME
             _print_time(my_time, log.write)
 
-            # LOG STATE
-            display.state = _print_state(h100, log.write)
+#            print(time.time()-timer)
+#            timer=time.time()
 
-            # LOG ELECTRIC
+            # LOG STATE
+            state = _print_state(h100, log.write)
+            display.state = state
+
+#            print(time.time()-timer)
+#            timer=time.time()
+
+
+            # LOG ELECTRIC - Slow 0.27
             electric = _print_electric(h100, load, log.write)
             display.voltage = electric[0]
             display.current = electric[1]
             display.power = electric[2]
 
+#            print(time.time()-timer)
+#            timer=time.time()
+
             # LOG ENERGY
             _print_energy(h100, log.write)
 
-            # LOG TEMPERATURE
+#            print(time.time()-timer)
+#            timer=time.time()
+
+            # LOG TEMPERATURE - Slow 0.12
             temp = _print_temperature(h100, log.write)
             display.temperature = max(temp)
+
+#            print(time.time()-timer)
+#            timer=time.time()
 
             # LOG PURGE
             _print_purge(h100, log.write)
 
+#            print(time.time()-timer)
+#            timer=time.time()
+#            print()
             # PRINT NEW LINE
             if log:
                 log.write("\n")
+                
 
     # Programme Exit Code
     finally:
