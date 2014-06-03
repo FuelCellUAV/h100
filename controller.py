@@ -35,6 +35,8 @@ def _parse_commandline():
     parser.add_argument('--purgeFreq', type=float, default=30, help='Time between purges in seconds')
     parser.add_argument('--display', type=int, default=1, help='Piface CAD (1 is on, 0 is off)')
     parser.add_argument('--load', type=int, default=0, help='Load (1 is on, 0 is off)')
+    parser.add_argument('--verbose', type=int, default=0, help='Print log to screen')
+    parser.add_argument('--timer', type=int, default=0, help='Print the time for each part of the iteration')
     parser.add_argument('--profile', type=str, default='', help='Name of flight profile file')
 
     return parser.parse_args()
@@ -256,25 +258,29 @@ if __name__ == "__main__":
         while True:
             h100.run()
 
-#            print(time.time()-timer)
-#            timer=time.time()
+            if args.timer:
+                print('h100.run():\t'),print(time.time()-timer)
+                timer=time.time()
 
             my_time.run()
 
-#            print(time.time()-timer)
-#            timer=time.time()
+            if args.timer:
+                print('my_time.run():\t'),print(time.time()-timer)
+                timer=time.time()
 
             if profile:
                 profile.run()
 
-#            print(time.time()-timer)
-#            timer=time.time()
+            if args.timer:
+                print('profile.run():\t'),print(time.time()-timer)
+                timer=time.time()
 
             if load:
-                load.update() # Slow 0.37
+                load.update()
 
-#            print(time.time()-timer)
-#            timer=time.time()
+            if args.timer:
+                print('load.update():\t'),print(time.time()-timer)
+                timer=time.time()
 
 
             # HANDLE USER REQUESTED DATA
@@ -314,21 +320,24 @@ if __name__ == "__main__":
 
                 print()
 
-#            print(time.time()-timer)
-#            timer=time.time()
+            if args.timer:
+                print('request:\t'),print(time.time()-timer)
+                timer=time.time()
 
             # LOG TIME
             _print_time(my_time, log.write)
 
-#            print(time.time()-timer)
-#            timer=time.time()
+            if args.timer:
+                print('print_time:\t'),print(time.time()-timer)
+                timer=time.time()
 
             # LOG STATE
             state = _print_state(h100, log.write)
             display.state = state
 
-#            print(time.time()-timer)
-#            timer=time.time()
+            if args.timer:
+                print('print_state:\t'),print(time.time()-timer)
+                timer=time.time()
 
 
             # LOG ELECTRIC - Slow 0.27
@@ -337,36 +346,53 @@ if __name__ == "__main__":
             display.current = electric[1]
             display.power = electric[2]
 
-#            print(time.time()-timer)
-#            timer=time.time()
+            if args.timer:
+                print('print_elec:\t'),print(time.time()-timer)
+                timer=time.time()
 
             # LOG ENERGY
             _print_energy(h100, log.write)
 
-#            print(time.time()-timer)
-#            timer=time.time()
+            if args.timer:
+                print('print_energy:\t'),print(time.time()-timer)
+                timer=time.time()
 
             # LOG TEMPERATURE - Slow 0.12
             temp = _print_temperature(h100, log.write)
             display.temperature = max(temp)
 
-#            print(time.time()-timer)
-#            timer=time.time()
+            if args.timer:
+                print('print_temp:\t'),print(time.time()-timer)
+                timer=time.time()
 
             # LOG PURGE
             _print_purge(h100, log.write)
 
-#            print(time.time()-timer)
-#            timer=time.time()
-#            print()
+            if args.timer:
+                print('print_purge:\t'),print(time.time()-timer)
+                timer=time.time()
+                print()
+
             # PRINT NEW LINE
             if log:
                 log.write("\n")
+
+
+            if args.verbose:
+                _print_time(my_time, print)
+                _print_state(h100, print)
+                _print_electric(h100, load, print)
+                _print_energy(h100, print)
+                _print_temperature(h100, print)
+                _print_purge(h100, print)
+                print()
                 
 
     # Programme Exit Code
     finally:
         h100.shutdown()
+        if profile:
+            profile.shutdown()
         if log:
             log.close()
         display.on = False
