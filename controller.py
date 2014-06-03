@@ -159,6 +159,7 @@ def _print_energy(h100, *destination):
     return h100.energy
 
 
+# Function to write list data
 def _writer(function, data):
     try:
         function(str(data) + '\t', end='')
@@ -167,7 +168,7 @@ def _writer(function, data):
 
     return data
 
-
+# Function to read stdin
 def _reader():
     __inputlist = [sys.stdin]
 
@@ -176,27 +177,17 @@ def _reader():
 
         if not __ready:
             return ''  # No user input received
-
         else:
             for __file in __ready:
                 __line = __file.readline()
 
             if not __line:  # EOF, remove file from input list
-                __inputlist.remove(__file)
+               __inputlist.remove(__file)
             elif __line.rstrip():  # optional: skipping empty lines
                 return __line.lower().strip()
-
     return ''
 
 
-#def _profile(profile, isRunning):
-#    if isRunning:
-#        # Do running
-#        isRunning = profile.main(isRunning)
-#    else:
-#        pass
-#
-#    return isRunning
 
 
 if __name__ == "__main__":
