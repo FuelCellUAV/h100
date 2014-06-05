@@ -220,6 +220,10 @@ if __name__ == "__main__":
     # Initialise loadbank class
     if args.profile:
         profile = scheduler.PowerScheduler(args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
+
+        profile.range = '4'
+        profile.current_limit = '15.0'
+        profile.voltage_limit = '35.0'
     else:
         profile = ''
     if args.load:
@@ -383,9 +387,14 @@ if __name__ == "__main__":
     finally:
         h100.shutdown()
         if profile:
-            profile.shutdown()
+            print('\nShutting down profile class')
+            if profile.shutdown(): print('Done\n')
+        elif load:
+            print('\nShutting down load class')
+            if load.shutdown(): print('Done\n')
         if log:
-            log.close()
+            print('\nShutting down log')
+            if log.close(): print('Done\n')
         display.on = False
         print('\n\n\nProgramme successfully exited and closed down\n\n')
 
