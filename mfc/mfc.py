@@ -16,7 +16,6 @@ class mfc:
     # Method to read adc
     @staticmethod
     def __get(address):
-        print("getting data from 0x%X" % address)
         with i2c.I2CMaster() as bus:
             mfcreading = bus.transaction(
                 i2c.reading(address, 2))[0]

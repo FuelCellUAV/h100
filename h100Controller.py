@@ -24,6 +24,7 @@ import pifacedigitalio
 from adc import adcpi
 from temperature import tmp102
 from switch import switch
+from mfc import mfc
 
 # Function to mimic an 'enum'. Won't be needed in Python3.4
 def enum(*sequential, **named):
@@ -64,6 +65,8 @@ class H100():
         self.__purgeTime = purgeTime
         self.__timeChange = time()
         self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface
+        self.__Mfc = mfc.mfc()
+        self.__flowRate = 0.0
 
         # State
         self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
@@ -124,6 +127,7 @@ class H100():
             vTarget = -1.2 * self.__amps[0] + 21  # From polarisation curve
             vError = self.__volts[0] - vTarget
             self.purgeFreq = self.__purgeCtrl(vError)
+        self.__flowRate = self._getFlowRate(self.__Mfc)
 
         # STATE MACHINE
         if self.__state == self.STATE.off:
@@ -233,6 +237,11 @@ class H100():
     def purgetime(self):
         return self.__purgeTime
 
+    # Get Flow Rate
+    @property
+    def flowrate(self):
+        return self.__flowRate
+
     ##############
     #INT. GETTERS#
     ##############
@@ -263,3 +272,11 @@ class H100():
     def _getButton(self, button):
         return self.__pfio.input_pins[button].value
 
+    # Get Hydrogen Flow Rate
+    @staticmethod
+    def _getFlowRate(mfc):
+       try:
+          return mfc.get()
+       except IOError as e:
+          # No device connected
+          return 0.0
