@@ -207,7 +207,7 @@ if __name__ == "__main__":
         log = open("/dev/null", 'w')
     # Purge Controller
     if args.purgeController:
-        purge = pid.Pid(10, 1, 1)
+        purge = pid.Pid(10, 5, 1, adjustment=30)
     else:
         purge = False
 
@@ -222,8 +222,12 @@ if __name__ == "__main__":
         profile = scheduler.PowerScheduler(args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
 
         profile.range = '4'
-        profile.current_limit = '15.0'
+        time.sleep(0.1)
+        profile.current_limit = '9.0'
+        time.sleep(0.1)
         profile.voltage_limit = '35.0'
+        time.sleep(0.1)
+        profile.voltage_minimum = '9.0'
     else:
         profile = ''
     if args.load:

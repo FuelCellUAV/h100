@@ -248,6 +248,7 @@ class H100():
 
     # State On Routine
     def _state_on(self):
+        self._purge_controller()
         self.__h2.write(True)
         self.__fan.write(True)
         self.__purge.timed(self.__purge_frequency, self.__purge_time)
@@ -322,10 +323,12 @@ class H100():
             if delta >= self.__start_time:
                 self.__state = self.STATE.on
                 self._state_change(True)
+                print('FC On\n')
         elif self.__state is self.STATE.shutdown:
             if delta >= self.__stop_time:
                 self.__state = self.STATE.off
                 self._state_change(True)
+                print('FC Off\n')
         return
 
     # See if any flags have been activated
@@ -379,6 +382,10 @@ class H100():
     def _purge_controller(self):
         # PURGE CONTROL TODO
         if self.__purge_control != 0:
-            vTarget = -1.2 * self.__current[0] + 21  # From polarisation curve
-            vError = self.__voltage[0] - vTarget
-            self.purge_frequency = self.__purge_control(vError)
+            self.purge_frequency = 30 - (self.__power[0] * 0.25)
+
+
+#            vTarget = -1.2 * self.__current[0] + 21  # From polarisation curve
+#            vError = self.__voltage[0] - vTarget
+#            self.purge_frequency = self.__purge_control(vError)
+            print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)
