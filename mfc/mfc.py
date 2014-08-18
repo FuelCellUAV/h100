@@ -27,7 +27,7 @@ class mfc:
                     i2c.reading(address, 2))[0]
 
             # Return result
-            return t * multiplier
+            return mfcreading
 
     # External getter
     def get(self):
