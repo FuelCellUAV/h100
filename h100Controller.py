@@ -25,6 +25,7 @@ from adc import adcpi
 from temperature import tmp102
 from switch import switch
 from timer import timer
+from mfc import mfc
 
 
 # Function to mimic an 'enum'. Won't be needed after Python3.4 update
@@ -68,6 +69,8 @@ class H100():
         self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface
         self._switch_interrupt = self._switch_handler(self.__pfio, self._switch_on, self._switch_off,
                                                       self._switch_reset)
+        self.__Mfc = mfc.mfc()
+        self.__flowRate = 0.0
 
         # State
         self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
@@ -268,6 +271,11 @@ class H100():
         else:
             self.__fan.write(False)
 
+    # Get Flow Rate
+    @property
+    def flowrate(self):
+        return self.__flowRate
+
     ##############
     #INT. GETTERS#
     ##############
@@ -303,6 +311,7 @@ class H100():
         t[3] = temperature.get(0x4b)
         return t
 
+<<<<<<< HEAD
     
     def _switch_handler(self, pifacedigital, switch_on, switch_off, switch_reset):
         handler = pifacedigitalio.InputEventListener(chip=pifacedigital)
@@ -389,3 +398,12 @@ class H100():
 #            vError = self.__voltage[0] - vTarget
 #            self.purge_frequency = self.__purge_control(vError)
             print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)
+
+    # Get Hydrogen Flow Rate
+    @staticmethod
+    def _getFlowRate(mfc):
+       try:
+          return mfc.get()
+       except IOError as e:
+          # No device connected
+          return 0.0
