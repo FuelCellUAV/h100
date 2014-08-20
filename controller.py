@@ -143,6 +143,7 @@ def _print_purge(h100, *destination):
 def _print_time(my_time, *destination):
     delta = [
         time.time(),
+        time.time() - timeStart,
         my_time.delta,
     ]
 
@@ -206,6 +207,7 @@ if __name__ == "__main__":
         log = open(("/media/usb0/" + time.strftime("%y%m%d-%H%M%S") + "-controller-" + args.out + ".tsv"), 'w')
     else:
         log = open("/dev/null", 'w')
+
     # Purge Controller
     if args.purgeController:
         purge = pid.Pid(10, 5, 1, adjustment=30)
@@ -241,7 +243,7 @@ if __name__ == "__main__":
 
     # Start timers
     my_time = timer.My_Time()
-
+    timeStart = time.time() # todo
 
     ########
     # Main #

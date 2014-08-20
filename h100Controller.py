@@ -363,12 +363,12 @@ class H100():
         if max(self.__temperature) > self.__cutoff_temperature:
             self.__state = self.STATE.error
             self._state_change(True)
-#            sys.stderr.write(time.asctime() + ' ' + "TEMPERATURE CUTOFF")
+            print(time.asctime() + ' ' + "TEMPERATURE CUTOFF")
         # OVER/UNDER VOLTAGE
         if self.__voltage[0] > self.__maximum_voltage:
             self.__state = self.STATE.error
             self._state_change(True)
-#            sys.stderr.write(time.asctime() + ' ' + "VOLTAGE MAXIMUM CUTOFF")
+            print(time.asctime() + ' ' + "VOLTAGE MAXIMUM CUTOFF")
 #        if self.__voltage[0] < self.__minimum_voltage:
 #            self.__state = self.STATE.error
 #            self._state_change(True)
@@ -384,6 +384,7 @@ class H100():
         self.__energy[0] = self._get_energy(self.__timer, self.__power[0])
         self.__energy[1] += self.__energy[0] # Cumulative
         self.__temperature = self._get_temperature(self.__Temperature)
+        self.__flow_rate = self._getFlowRate(self.__Mfc)
         return
 
     def _purge_controller(self):
@@ -395,7 +396,7 @@ class H100():
 #            vTarget = -1.2 * self.__current[0] + 21  # From polarisation curve
 #            vError = self.__voltage[0] - vTarget
 #            self.purge_frequency = self.__purge_control(vError)
-            print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)
+#            print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)
 
     # Get Hydrogen Flow Rate
     @staticmethod
