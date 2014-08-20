@@ -124,9 +124,10 @@ class H100():
 
         # PURGE CONTROL
         if self.__purgeCtrl != 0:
-            vTarget = -1.2 * self.__amps[0] + 21  # From polarisation curve
-            vError = self.__volts[0] - vTarget
-            self.purgeFreq = self.__purgeCtrl(vError)
+#            vTarget = -1.2 * self.__amps[0] + 21  # From polarisation curve
+#            vError = self.__volts[0] - vTarget
+#            self.purgeFreq = self.__purgeCtrl(vError)
+             self.purgeFreq = 30 - (self.__power[0] * 0.25)
         self.__flowRate = self._getFlowRate(self.__Mfc)
 
         # STATE MACHINE
