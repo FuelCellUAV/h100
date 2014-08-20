@@ -70,7 +70,7 @@ class H100():
         self._switch_interrupt = self._switch_handler(self.__pfio, self._switch_on, self._switch_off,
                                                       self._switch_reset)
         self.__Mfc = mfc.mfc()
-        self.__flowRate = 0.0
+        self.__flow_rate = 0.0
 
         # State
         self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
@@ -273,8 +273,8 @@ class H100():
 
     # Get Flow Rate
     @property
-    def flowrate(self):
-        return self.__flowRate
+    def flow_rate(self):
+        return self.__flow_rate
 
     ##############
     #INT. GETTERS#
@@ -311,8 +311,6 @@ class H100():
         t[3] = temperature.get(0x4b)
         return t
 
-<<<<<<< HEAD
-    
     def _switch_handler(self, pifacedigital, switch_on, switch_off, switch_reset):
         handler = pifacedigitalio.InputEventListener(chip=pifacedigital)
         handler.register(0, pifacedigitalio.IODIR_FALLING_EDGE, switch_on, self)

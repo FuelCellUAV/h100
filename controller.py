@@ -128,9 +128,9 @@ def _print_temperature(h100, *destination):
 
 def _print_purge(h100, *destination):
     purge = [
-        h100.flowrate,
-        h100.purgefrequency,
-        h100.purgetime,
+        h100.flow_rate,
+        h100.purge_frequency,
+        h100.purge_time,
     ]
 
     for write in destination:
