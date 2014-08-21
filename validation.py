@@ -94,5 +94,3 @@ finally:
     load.constantCurrent('0')
     load.load('off')
     print('End of test.')
-
-

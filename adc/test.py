@@ -18,7 +18,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Import libraries
-from   time import sleep
+from   time import sleep, time
 
 from   adcpi import *
 
@@ -36,4 +36,6 @@ print("Loughborough University\n")
 ########
 while True:
     sleep(1)
+    timeStart = time()
     adc.printall()
+    print('Loop time was %8.2fms' % ((time() - timeStart)*1000.0))

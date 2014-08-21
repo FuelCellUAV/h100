@@ -37,9 +37,8 @@ class Switch:
         # Deactivate if time is up
         if (time() - self.lastTime) >= duration and self.state == True:
             return self.write(False)
-
         # Activate
-        if (time() - self.lastTime) >= freq and self.state == False:
+        elif (time() - self.lastTime) >= freq and self.state == False:
             return self.write(True)
 
     def write(self, state):
