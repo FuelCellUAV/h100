@@ -290,8 +290,6 @@ if __name__ == "__main__":
                 print('load.update():\t'),print(time.time()-timer)
                 timer=time.time()
 
-            _isRunning = _profile(_isRunning)
-
             # HANDLE USER REQUESTED DATA
             request = _reader()
             if request:
