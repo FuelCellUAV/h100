@@ -164,9 +164,6 @@ class H100():
             self._switch_reset()
         else:
             print("Invalid command [on, off, reset]")
-            #            if state.strip() in list(self.STATE.reverse_mapping):
-            #                    self.__state = stat                else:
-            #                    print("State not found in ", list(self.STATE.reverse_mapping))
 
     # Get Current
     @property
@@ -319,10 +316,6 @@ class H100():
         handler.activate()
         return handler
 
-    #   # Get Button (internal)
-    #    def _getButton(self, button):
-    #        return self.__pfio.input_pins[button].value
-
     # See if any timers have expired
     def _check_timers(self):
         delta = time.time() - self.__time_change
@@ -390,13 +383,14 @@ class H100():
     def _purge_controller(self):
         # PURGE CONTROL TODO
         if self.__purge_control != 0:
+            # Basic controller:
             self.purge_frequency = 30 - (self.__power[0] * 0.25)
-
-
-#            vTarget = -1.2 * self.__current[0] + 21  # From polarisation curve
-#            vError = self.__voltage[0] - vTarget
-#            self.purge_frequency = self.__purge_control(vError)
-#            print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)
+            # PID controller:
+            #vTarget = -1.2 * self.__current[0] + 21  # From polarisation curve
+            #vError = self.__voltage[0] - vTarget
+            #self.purge_frequency = self.__purge_control(vError)
+            # Print results
+            #print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)
 
     # Get Hydrogen Flow Rate
     @staticmethod

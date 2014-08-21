@@ -94,21 +94,3 @@ class AdcPi2:
         for x in range(8):
             print("%d: %02f" % (x + 1, self.get(x)), end='\t')
         print()
-
-
-# Implement the class as a seperate thread
-class AdcPi2Daemon(AdcPi2, multiprocessing.Process):
-    val = multiprocessing.Array('d', range(8))
-
-    def __init__(self, res=12):
-        super().__init__(res)
-        multiprocessing.Process.__init__(self)
-        self.threadId = 1
-        self.Name = 'AdcPi2Daemon'
-
-    def run(self):
-        try:
-            while True:
-                for x in range(8): self.val[x] = self.get(x)
-        finally:
-            print('\nADC Shut Down\n')

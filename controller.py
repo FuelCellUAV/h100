@@ -21,7 +21,6 @@
 import argparse, sys, time, select
 
 from display import h100Display
-from purge import pid
 from h100Controller import H100
 from switch import switch
 from tdiLoadbank import loadbank, scheduler
@@ -210,7 +209,8 @@ if __name__ == "__main__":
 
     # Purge Controller
     if args.purgeController:
-        purge = pid.Pid(10, 5, 1, adjustment=30)
+        purge = 1
+        #purge = pid.Pid(10, 5, 1, adjustment=30)
     else:
         purge = False
 
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     display.on = True
     # Initialise loadbank class
     if args.profile:
-        profile = scheduler.PowerScheduler(args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
+        profile = scheduler.PowerScheduler('POWER', args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
 
         profile.range = '4'
         time.sleep(0.1)
