@@ -34,6 +34,7 @@ def _parse_commandline():
     parser.add_argument('--purgeFreq', type=float, default=30, help='Time between purges in seconds')
     parser.add_argument('--display', type=int, default=1, help='Piface CAD (1 is on, 0 is off)')
     parser.add_argument('--load', type=int, default=0, help='Load (1 is on, 0 is off)')
+    parser.add_argument('--cad', type=int, default=1, help='PiFace Display (1 is on, 0 is off)')
     parser.add_argument('--verbose', type=int, default=0, help='Print log to screen')
     parser.add_argument('--timer', type=int, default=0, help='Print the time for each part of the iteration')
     parser.add_argument('--profile', type=str, default='', help='Name of flight profile file')
@@ -213,19 +214,16 @@ if __name__ == "__main__":
     else:
         log = open("/dev/null", 'w')
 
-    # Purge Controller
-    if args.purgeController:
-        purge = 1
-        #purge = pid.Pid(10, 5, 1, adjustment=30)
-    else:
-        purge = False
 
     ## Initialise classes
     # Initialise controller class
-    h100 = H100(purge_control=purge, purge_frequency=args.purgeFreq, purge_time=args.purgeTime)
+    h100 = H100(purge_frequency=args.purgeFreq, purge_time=args.purgeTime)
     # Initialise display class
     display = h100Display.FuelCellDisplay()
-    display.on = True
+    if args.cad:
+        display.on = True
+    else:
+        display.on = False
     # Initialise loadbank class
     if args.profile:
         profile = scheduler.PowerScheduler('POWER', args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')

@@ -119,8 +119,9 @@ class FuelCellDisplay():
         self._update(self.__cad, 'A', [10, 1], 1)
         self.__amps = self._update(self.__cad, number, [6, 1], 4)
 
-    @staticmethod
-    def _update(cad, data, ptr, precision=1, index=-1):
+#    @staticmethod
+    def _update(self, cad, data, ptr, precision=1, index=-1):
+        if self.__on is False: return
 
         # Move cursor to correct place (col, row)
         cad.lcd.set_cursor(ptr[0], ptr[1])

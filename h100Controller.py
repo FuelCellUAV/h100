@@ -36,6 +36,42 @@ def enum(*sequential, **named):
     return type('Enum', (), enums)
 
 
+class PurgeControl():
+    def __init__(self):
+        self.v = 0.0
+        self.i = 0.0
+        self.p = 0.0
+        self.vLast = 0.0
+        self.iLast = 0.0
+        self.pLast = 0.0
+        return
+
+    def updateNow(self, v, i, p):
+        self.v = v
+        self.i = i
+        self.p = p        
+
+    def updateLast(self):
+        self.vLast = self.v
+        self.iLast = self.i
+        self.pLast = self.p        
+
+    def horizon(self):
+        return 30.0
+
+    def derivative(self):
+        return (self.v - self.vLast) \
+                / (-0.03*self.v**4 + 1.94*self.v**3 - 46.5*self.v**2 + 421.2*self.v - 1489)
+
+    def power(self):
+        return (30.0 - (self.p * 0.25))
+
+    def polar(self):
+        vTarget = -1.2 * self.i + 21  # From polarisation curve
+        vError = self.v - vTarget
+        return 10*vError
+
+
 ##############
 # CONTROLLER #
 ##############
@@ -43,7 +79,7 @@ class H100():
     ##############
     # INITIALISE #
     ##############
-    def __init__(self, purge_control=0, purge_frequency=30, purge_time=0.5):
+    def __init__(self, purge_frequency=30, purge_time=0.5):
 
         # Adc
         self.__Adc = adcpi.AdcPi2(18)  # Start adc's
@@ -62,7 +98,7 @@ class H100():
         self.__maximum_voltage = 30  # Volts
 
         # Purge settings
-        self.__purge_control = purge_control
+        self.__Purge_Controller = PurgeControl()
         self.__purge_frequency = purge_frequency
         self.__purge_time = purge_time
         self.__time_change = time.time()
@@ -197,8 +233,13 @@ class H100():
 
     @purge_frequency.setter
     def purge_frequency(self, purge_frequency):
-        if 0 < purge_frequency < 600:  # TODO max purge frequency
-            self.__purge_frequency = purge_frequency
+        if purge_frequency < 5:
+            print('Purge frequency too low: ', purge_frequency)
+            purge_frequency = 5
+        elif purge_frequency > 50:
+            print('Purge frequency too high: ', purge_frequency)
+            purge_frequency = 50
+        self.__purge_frequency = purge_frequency
 
     # Get Purge Time
     @property
@@ -236,6 +277,7 @@ class H100():
     ##############
     # State Off Routine
     def _state_off(self):
+        self._purge_controller() # not needed #
         self.__h2.write(False)
         self.__fan.write(False)
         self.__purge.write(False)
@@ -381,17 +423,16 @@ class H100():
         return
 
     def _purge_controller(self):
-        # PURGE CONTROL TODO
-        if self.__purge_control != 0:
-            # Basic controller:
-            self.purge_frequency = (30 - (self.__power[0] * 0.25))
-            # PID controller:
-            #vTarget = -1.2 * self.__current[0] + 21  # From polarisation curve
-            #vError = self.__voltage[0] - vTarget
-            #self.purge_frequency = self.__purge_control(vError)
-            # Print results
-            #print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)
-        return self.__purge_frequency
+        # Basic controller:
+        self.__Purge_Controller.updateNow(self.__voltage[0], self.__current[0], self.__power[0])
+        self.purge_frequency = self.__Purge_Controller.horizon()
+#        self.purge_frequency = self.__Purge_Controller.derivative()
+#        self.purge_frequency = self.__Purge_Controller.power()
+#        self.purge_frequency = self.__Purge_Controller.polar()
+
+        # Print results
+#        print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)
+        return self.purge_frequency
 
     # Get Hydrogen Flow Rate
     @staticmethod
