@@ -16,27 +16,28 @@
 #
 # address = adc_address1 or adc_address2 - Hex address of I2C chips as configured by board header pins.
 
-import multiprocessing
 import quick2wire.i2c as i2c
 
-
-class AdcPi2:
-    def __init__(self, res=12):
-        # Check if user inputted a valid resolution
-        if res != 12 and res != 14 and res != 16 and res != 18:
+class MCP3424:
+        # Hybrid
+        # Address 1 0xD0
+        # Address 2 0xD8
+        
+        # AdcPi2
+        # Address 1 0x68
+        # Address 2 0x69
+    def __init__(self, address, resolution):
+        # Check if user inputed a valid resolution
+        if resolution != 12 and resolution != 14 and resolution != 16 and resolution != 18:
             raise IndexError('Incorrect ADC Resolution')
         else:
-            self.__res = res
-
+            self.__res = resolution
+            
         # Build default address and configuration register
-        self.__config = [[0x68, 0x90],
-                         [0x68, 0xB0],
-                         [0x68, 0xD0],
-                         [0x68, 0xF0],
-                         [0x69, 0x90],
-                         [0x69, 0xB0],
-                         [0x69, 0xD0],
-                         [0x69, 0xF0]]
+        self.__config = [[address, 0x90],
+                         [address, 0xB0],
+                         [address, 0xD0],
+                         [address, 0xF0]]
 
         # Set resolution in configuration register
         for x in range(len(self.__config)):
@@ -88,9 +89,18 @@ class AdcPi2:
     def get(self, channel):
         self.__changechannel(self.__config[channel])
         return self.__getadcreading(self.__config[channel], self.__varMultiplier, self.__res)
+        
+        
 
-    # Print all channels to screen
-    def printall(self):
-        for x in range(8):
-            print("%d: %02f" % (x + 1, self.get(x)), end='\t')
-        print()
+class AdcPi2:
+    def __init__(self, res=12):
+        self.__adc1 = MCP3424(0x68, res)
+        self.__adc2 = MCP3424(0x69, res)
+        
+    def get(self, channel):
+        if channel in range(0,4):
+            return self.__adc1.get(channel)
+        elif channel in range(4,8):
+            return self.__adc2.get(channel)
+        else:
+            return -1 # Error in channel
