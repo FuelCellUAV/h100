@@ -19,17 +19,14 @@
 
 from time import time
 
-import pifacedigitalio
-
-
 # Class to enable controlled switching
 class Switch:
-    def __init__(self, pin):
-        self.pin = pin
+    def __init__(self, function_on, function_off):
+        self.on  = function_on
+        self.off = function_off
         self.state = False
         self.lastTime = 0
         self.lastOff = 0
-        self.pfio = pifacedigitalio.PiFaceDigital()
         self.state = False
         self.lastTime = time()
 
@@ -43,11 +40,11 @@ class Switch:
 
     def write(self, state):
         if state:
-            self.pfio.output_pins[self.pin].turn_on()
+            self.on()
         else:
-            self.pfio.output_pins[self.pin].turn_off()
+            self.off()
         self.lastTime = time()
-        self.state = self.pfio.output_pins[self.pin].value
+        self.state = state
         return self.state
 
     def __del__(self):

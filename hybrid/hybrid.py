@@ -197,6 +197,13 @@ class Hybrid:
         # ADCs
         self.__adc.update()
         
+    def h2_on(self):     self.__io.power1 = 1
+    def h2_off(self):    self.__io.power1 = 0
+    def fan_on(self):    self.__io.power2 = 1
+    def fan_off(self):   self.__io.power2 = 0
+    def purge_on(self):  self.__io.power3 = 1
+    def purge_off(self): self.__io.power3 = 0
+        
     @property
     def charger_info(self):
         return [self.__io.LOBAT,

@@ -21,7 +21,8 @@
 import sys, time
 
 import pifacedigitalio
-from adc import adcpi
+import hybrid.Hybrid as Hybrid
+#from adc import adcpi
 from temperature import tmp102
 from switch import switch
 from timer import timer
@@ -81,8 +82,10 @@ class H100():
     ##############
     def __init__(self, purge_frequency=30, purge_time=0.5):
 
+        # Hybrid
+        self.__Hybrid = Hybrid()
         # Adc
-        self.__Adc = adcpi.AdcPi2(18)  # Start adc's
+        #self.__Adc = adcpi.AdcPi2(18)  # Start adc's
         # Temperature
         self.__Temperature = tmp102.Tmp102()  # Start temperature sensors
         # PiFace Interface
@@ -113,15 +116,15 @@ class H100():
         self.__state = self.STATE.off
 
         # Switches
-        self.__fan = switch.Switch(0)
-        self.__h2 = switch.Switch(1)
-        self.__purge = switch.Switch(2)
+        self.__fan   = switch.Switch(self.__Hybrid.fan_on, self.__Hybrid.fan_off)
+        self.__h2    = switch.Switch(self.__Hybrid.h2_on, self.__Hybrid.h2_off)
+        self.__purge = switch.Switch(self.__Hybrid.purge_on, self.__Hybrid.purge_off)
 
         # Variables
-        self.__current = [0.0] * 8
-        self.__voltage = [0.0] * 8
-        self.__power = [0.0] * 4
-        self.__energy = [0.0] * 2
+        self.__current = [0.0] * 5
+        self.__voltage = [0.0] * 3
+        self.__power = [0.0] * 3
+        self.__energy = [0.0] * 3
         self.__temperature = [0.0] * 4
 
         # Button flags
@@ -320,18 +323,29 @@ class H100():
     ##############
     # Get Current
     @staticmethod
-    def _get_current(adc, channel):
+    def _get_current(Hybrid):
+        current = [Hybrid.fc_current_to_motor,
+                    Hybrid.fc_current_total,
+                    Hybrid.battery_current,
+                    Hybrid.charge_current,
+                    Hybrid.output_current]
+        for x in range(5):
+            current[x] = abs(current[x] * 1000 / 6.89) + 0.374
 #        current = abs(adc.get(channel) * 1000 / 6.89) + 0.507
-        current = abs(adc.get(channel) * 1000 / 6.89) + 0.374
+#        current = abs(adc.get(channel) * 1000 / 6.89) + 0.374
         if current < 0.475:  # TODO can this be improved?
             current = 0  # Account for opamp validity
         return current
 
     # Get Voltage
     @staticmethod
-    def _get_voltage(adc, channel):
+    def _get_voltage(Hybrid):
+        voltage = [Hybrid.fc_voltage,
+                Hybrid.battery_voltage,
+                Hybrid.output_voltage]
+        for x in range(3):
 #        voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.05
-        voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.096
+            voltage[x] = abs(voltage[x] * 1000 / 60.7) - 0.096
         return voltage
 
     # Get Energy
@@ -413,18 +427,21 @@ class H100():
     # Update sensors
     def _update_sensors(self):
         # SENSORS
-        self.__current[0] = self._get_current(self.__Adc, 0)
-        self.__voltage[0] = self._get_voltage(self.__Adc, 4)
-        self.__power[0] = self.__voltage[0] * self.__current[0]
-        self.__energy[0] = self._get_energy(self.__timer, self.__power[0])
-        self.__energy[1] += self.__energy[0] # Cumulative
+        self.__current = self._get_current(self.__Hybrid)
+        self.__voltage = self._get_voltage(self.__Hybrid)
+        self.__power   = [self.__voltage[0] * self.__current[1],
+                            self.__voltage[1] * self.__current[2],
+                            self.__voltage[2] * self.__current[4]]
+        for x in range(3):
+            energy = self._get_energy(self.__timer, self.__power[x])
+            self.__energy[x] += energy # Cumulative
         self.__temperature = self._get_temperature(self.__Temperature)
         self.__flow_rate = self._getFlowRate(self.__Mfc)
         return
 
     def _purge_controller(self):
         # Basic controller:
-        self.__Purge_Controller.updateNow(self.__voltage[0], self.__current[0], self.__power[0])
+        self.__Purge_Controller.updateNow(self.__voltage[0], self.__current[1], self.__power[0])
         self.purge_frequency = self.__Purge_Controller.horizon()
 #        self.purge_frequency = self.__Purge_Controller.derivative()
 #        self.purge_frequency = self.__Purge_Controller.power()
