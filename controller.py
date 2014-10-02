@@ -33,7 +33,7 @@ def _parse_commandline():
     parser.add_argument('--purgeTime', type=float, default=0.5, help='How long to purge for in seconds')
     parser.add_argument('--purgeFreq', type=float, default=30, help='Time between purges in seconds')
     parser.add_argument('--display', type=int, default=1, help='Piface CAD (1 is on, 0 is off)')
-    parser.add_argument('--load', type=int, default=0, help='Load (1 is on, 0 is off)')
+#    parser.add_argument('--load', type=int, default=0, help='Load (1 is on, 0 is off)')
     parser.add_argument('--cad', type=int, default=1, help='PiFace Display (1 is on, 0 is off)')
     parser.add_argument('--verbose', type=int, default=0, help='Print log to screen')
     parser.add_argument('--timer', type=int, default=0, help='Print the time for each part of the iteration')
@@ -228,6 +228,9 @@ if __name__ == "__main__":
     if args.profile:
         profile = scheduler.PowerScheduler('POWER', args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
 
+        if profile.connect() == 0:
+            profile = ''
+
         profile.range = '4'
         time.sleep(0.1)
         profile.current_limit = '9.0'
@@ -237,13 +240,13 @@ if __name__ == "__main__":
         profile.voltage_minimum = '9.0'
     else:
         profile = ''
-    if args.load:
-        if profile:
-            load = profile
-        else:
-            load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
+
+    if profile:
+        load = profile
     else:
-        load = ''
+        load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
+        if load.connect() == 0:
+            load = ''
 
     # Start timers
     my_time = timer.My_Time()
