@@ -343,7 +343,10 @@ if __name__ == "__main__":
                     elif request[0].startswith("fly"):
                         profile.running = request[1]
                     elif request[0].startswith("throttle"):
-                        motor.throttle = request[1]
+                        if request[1].startswith("calibration"):
+                            motor.calibration()
+                        else:
+                            motor.throttle = request[1]
 
                 print()
 

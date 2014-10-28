@@ -38,3 +38,28 @@ class esc:
         except Exception as e:
             print('Invalid throttle request')
 
+    def calibration(self):
+        if not input("Are you sure you want to calibrate the esc? [y]").startswith("y"):
+            return
+
+        self.throttle = 0
+
+        input("Disconnect ESC then press enter...")
+        self.__set(self.__address, 100)
+        sleep(1)
+
+        input("Connect ESC then press enter...")
+        sleep(2)
+        self.__set(self.__address, 0)
+        sleep(2)
+        self.__set(self.__address, 100)
+        sleep(2)
+        self.__set(self.__address, 0)
+
+        input("Calibration complete, press enter to continue...")
+
+        self.throttle = 0
+
+        return
+
+
