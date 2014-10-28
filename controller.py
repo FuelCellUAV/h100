@@ -24,6 +24,7 @@ from display import h100Display
 from h100Controller import H100
 from switch import switch
 from tdiLoadbank import loadbank, scheduler
+from esc import esc
 from timer import timer
 
 def _parse_commandline():
@@ -78,6 +79,14 @@ def _print_state(h100, *destination):
     for write in destination: _writer(write, state),
 
     return state
+
+
+def _print_throttle(motor, *destination):
+    throttle = motor.throttle
+
+    for write in destination: _writer(write, throttle)
+
+    return throttle
 
 
 def _print_electric(h100, load='', *destination):
@@ -226,18 +235,20 @@ if __name__ == "__main__":
         display.on = False
     # Initialise loadbank class
     if args.profile:
-        profile = scheduler.PowerScheduler('POWER', args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
+        profile = scheduler.PowerScheduler(args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
 
         if profile.connect() == 0:
             profile = ''
-
-        profile.range = '4'
-        time.sleep(0.1)
-        profile.current_limit = '9.0'
-        time.sleep(0.1)
-        profile.voltage_limit = '35.0'
-        time.sleep(0.1)
-        profile.voltage_minimum = '9.0'
+        else:
+            profile.zero()
+            profile.mode = 'POWER'
+            profile.range = '4'
+            time.sleep(0.1)
+            profile.current_limit = '9.0'
+            time.sleep(0.1)
+            profile.voltage_limit = '35.0'
+            time.sleep(0.1)
+            profile.voltage_minimum = '9.0'
     else:
         profile = ''
 
@@ -247,6 +258,10 @@ if __name__ == "__main__":
         load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
         if load.connect() == 0:
             load = ''
+
+    # Connect esc
+    motor = esc.esc()
+    motor.throttle = 0
 
     # Start timers
     my_time = timer.My_Time()
@@ -259,7 +274,7 @@ if __name__ == "__main__":
     _display_header(print)
     display.name = "H100"
 
-    print("Type command: [time, fc, elec, energy, temp, purg, fly] ")
+    print("Type command: [time, throttle, fc, elec, energy, temp, purg, fly] ")
 
     timer = time.time()
 
@@ -302,6 +317,8 @@ if __name__ == "__main__":
                 if req_len is 1:
                     if request[0].startswith("time?"):
                         _print_time(my_time, print)
+                    elif request[0].startswith("throttle?"):
+                        _print_throttle(motor, print)
                     elif request[0].startswith("fc?"):
                         _print_state(h100, print)
                     elif request[0].startswith("elec?"):
@@ -325,6 +342,8 @@ if __name__ == "__main__":
                         h100.state = _new_state
                     elif request[0].startswith("fly"):
                         profile.running = request[1]
+                    elif request[0].startswith("throttle"):
+                        motor.throttle = request[1]
 
                 print()
 
@@ -398,6 +417,8 @@ if __name__ == "__main__":
 
     # Programme Exit Code
     finally:
+        motor.throttle = 0
+        print('\nThrottle set to {:d}\n\n'.format(motor.throttle))
         h100.shutdown()
         if profile:
             print('\nShutting down profile class')
