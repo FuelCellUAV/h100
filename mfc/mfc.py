@@ -24,7 +24,10 @@ class mfc:
 
     # External getter
     def get(self):
-        data = self.__get(self.__address)
+        try:
+            data = self.__get(self.__address)
+        except Exception as e:
+            return -1
         result = data[1] | (data[0] << 8)
         return result/1000.0  # ml to l
 
