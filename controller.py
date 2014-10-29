@@ -23,7 +23,8 @@ import argparse, sys, time, select
 from display import h100Display
 from h100Controller import H100
 from switch import switch
-from tdiLoadbank import loadbank, scheduler
+from tdiLoadbank import loadbank
+from profiler import profiler
 from esc import esc
 from timer import timer
 
@@ -233,31 +234,33 @@ if __name__ == "__main__":
         display.on = True
     else:
         display.on = False
-    # Initialise loadbank class
-    if args.profile:
-        profile = scheduler.PowerScheduler(args.profile, args.out, '158.125.152.225', 10001, 'fuelcell')
 
-        if profile.connect() == 0:
-            profile = ''
+    # Initialise loadbank class
+    load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
+    if load.connect() == 0:
+        load = ''
+    else:
+        load.zero()
+        time.sleep(0.1)
+        load.mode = 'POWER'
+        time.sleep(0.1)
+        load.range = '4'
+        time.sleep(0.1)
+        load.current_limit = '9.0'
+        time.sleep(0.1)
+        load.voltage_limit = '35.0'
+        time.sleep(0.1)
+        load.voltage_minimum = '9.0'
+
+    # Initialise profile
+    if args.profile:
+        profile = profiler.Profiler(args.profile)
+        if load:
+            output = "loadbank"
         else:
-            profile.zero()
-            profile.mode = 'POWER'
-            profile.range = '4'
-            time.sleep(0.1)
-            profile.current_limit = '9.0'
-            time.sleep(0.1)
-            profile.voltage_limit = '35.0'
-            time.sleep(0.1)
-            profile.voltage_minimum = '9.0'
+            output = "esc"
     else:
         profile = ''
-
-    if profile:
-        load = profile
-    else:
-        load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
-        if load.connect() == 0:
-            load = ''
 
     # Connect esc
     motor = esc.esc()
@@ -293,7 +296,17 @@ if __name__ == "__main__":
                 timer=time.time()
 
             if profile:
-                profile.run()
+                setpoint = profile.run()
+                if "loadbank" in output and load:
+                    mode = load.mode
+                    if "VOLTAGE" in mode:
+                        load.voltage_constant = str(setpoint)
+                    elif "CURRENT" in mode:
+                        load.current_constant = str(setpoint)
+                    elif "POWER" in mode:
+                        load.power_constant = str(setpoint)
+                else:
+                    motor.throttle = setpoint
 
             if args.timer:
                 print('profile.run():\t'),print(time.time()-timer)
@@ -423,9 +436,6 @@ if __name__ == "__main__":
         motor.throttle = 0
         print('\nThrottle set to {:d}\n\n'.format(motor.throttle))
         h100.shutdown()
-        if profile:
-            print('\nShutting down profile class')
-            if profile.shutdown(): print('Done\n')
         elif load:
             print('\nShutting down load class')
             if load.shutdown(): print('Done\n')

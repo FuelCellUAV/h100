@@ -37,7 +37,8 @@ class esc:
                 except Exception as e:
                     print("No I2C bus")
             else:
-                print('Invalid throttle perentage')
+                return
+                #print('Invalid throttle perentage')
         except Exception as e:
             print('Invalid throttle request')
 

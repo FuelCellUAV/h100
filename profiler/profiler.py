@@ -20,13 +20,12 @@
 # Import libraries
 import time
 
-class Profiler(TdiLoadbank):
+class Profiler():
     def __init__(self, filename):
         self.__filename = filename
         self.__last_line = ''
         self.__this_line = ''
         self.__start_time = time.time()
-        self.__out = out
         self.__running = 0
         self.__setpoint = 0
         self.__setpoint_last = -1
@@ -96,8 +95,5 @@ class Profiler(TdiLoadbank):
 
     def run(self):
         # Do more running
-        if self._run() < 0:
-            self.running = False
-        else:
-            self.running = True
+        return self._run()
 
