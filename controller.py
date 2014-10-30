@@ -242,7 +242,7 @@ if __name__ == "__main__":
     else:
         load.zero()
         time.sleep(0.2)
-        load.mode = 'POWER'
+        load.mode = 'CURRENT'
         time.sleep(0.2)
         load.range = '4'
         time.sleep(0.2)
