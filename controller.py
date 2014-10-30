@@ -310,7 +310,8 @@ if __name__ == "__main__":
                     else:
                         load.load = False
                 else:
-                    motor.throttle = setpoint
+                    if setpoint is not -1:
+                        motor.throttle = setpoint
 
             if args.timer:
                 print('profile.run():\t'),print(time.time()-timer)

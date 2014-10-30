@@ -78,6 +78,7 @@ class Profiler():
         # Turn off
         print("Landing...")
         self.__running = 0
+        self.__setpoint = 0
         self.__fid.close()
         print("Back in hangar!\n")
 
@@ -91,7 +92,9 @@ class Profiler():
                         return self.__setpoint
                     return self.__setpoint
                 else:
-                    return -1
+                    # End of test
+                    self._stop()
+                    return 0
             else:
                 print('Error: Loadbank setpoint below zero!')
                 return -1
@@ -100,8 +103,5 @@ class Profiler():
 
     def run(self):
         # Do more running
-        running = self._run()
-        if self.__running and running is -1:
-            self._stop()
-        return running
+        return self._run()
 
