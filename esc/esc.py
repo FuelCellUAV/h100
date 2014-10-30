@@ -31,14 +31,18 @@ class esc:
     def throttle(self, value):
         try:
             request = int(value)
-            if request<=100 and request>=0:
-                try:
-                    self.__throttle = self.__set(self.__address, request)
-                except Exception as e:
-                    print("No I2C bus")
+            if request is -1:
+                setpoint = 0
+            elif request<=100 and request>=0:
+                setpoint = request
             else:
                 return
-                #print('Invalid throttle perentage')
+
+            try:
+                self.__throttle = self.__set(self.__address, setpoint)
+            except Exception as e:
+                print("No I2C bus")
+
         except Exception as e:
             print('Invalid throttle request')
 

@@ -32,8 +32,7 @@ class Profiler():
 
     def _get_line(self, pointer=1):
         if pointer is -1:
-            self.__fid.seek( self.__fid.tell() - len(self.__last_line) - 1)
-            return list( map(float,self.__last_line.split()) )
+            self.__fid.seek( self.__fid.tell() - len(self.__this_line) )
         self.__last_line = self.__this_line
         self.__this_line = self.__fid.readline()
         return list( map(float,self.__this_line.split()) )
@@ -42,7 +41,14 @@ class Profiler():
     def _find_now(self):
         psuedo_time = time.time() - self.__start_time
         try:
-           while self._get_line()[0] < psuedo_time:
+            if list( map(float,self.__this_line.split()) )[0] > psuedo_time:
+                return list( map(float,self.__this_line.split()) )[1]
+        except (IndexError):
+            pass
+        try:
+           x = self._get_line()[0]
+           while float(x) < psuedo_time:
+               x = self._get_line()[0]
                pass  # Check next line
         except (IndexError, ValueError):
             return -1  # End of test
@@ -85,7 +91,6 @@ class Profiler():
                         return self.__setpoint
                     return self.__setpoint
                 else:
-                    print('End of profile')
                     return -1
             else:
                 print('Error: Loadbank setpoint below zero!')
@@ -95,5 +100,8 @@ class Profiler():
 
     def run(self):
         # Do more running
-        return self._run()
+        running = self._run()
+        if self.__running and running is -1:
+            self._stop()
+        return running
 

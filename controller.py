@@ -241,15 +241,15 @@ if __name__ == "__main__":
         load = ''
     else:
         load.zero()
-        time.sleep(0.1)
+        time.sleep(0.2)
         load.mode = 'POWER'
-        time.sleep(0.1)
+        time.sleep(0.2)
         load.range = '4'
-        time.sleep(0.1)
+        time.sleep(0.2)
         load.current_limit = '9.0'
-        time.sleep(0.1)
+        time.sleep(0.2)
         load.voltage_limit = '35.0'
-        time.sleep(0.1)
+        time.sleep(0.2)
         load.voltage_minimum = '9.0'
 
     # Initialise profile
@@ -298,13 +298,17 @@ if __name__ == "__main__":
             if profile:
                 setpoint = profile.run()
                 if "loadbank" in output and load:
-                    mode = load.mode
-                    if "VOLTAGE" in mode:
-                        load.voltage_constant = str(setpoint)
-                    elif "CURRENT" in mode:
-                        load.current_constant = str(setpoint)
-                    elif "POWER" in mode:
-                        load.power_constant = str(setpoint)
+                    if setpoint >= 0:
+                        load.load = True
+                        mode = load.mode
+                        if "VOLTAGE" in mode:
+                            load.voltage_constant = str(setpoint)
+                        elif "CURRENT" in mode:
+                            load.current_constant = str(setpoint)
+                        elif "POWER" in mode:
+                            load.power_constant = str(setpoint)
+                    else:
+                        load.load = False
                 else:
                     motor.throttle = setpoint
 
@@ -436,7 +440,7 @@ if __name__ == "__main__":
         motor.throttle = 0
         print('\nThrottle set to {:d}\n\n'.format(motor.throttle))
         h100.shutdown()
-        elif load:
+        if load:
             print('\nShutting down load class')
             if load.shutdown(): print('Done\n')
         if log:
