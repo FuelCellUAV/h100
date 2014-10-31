@@ -230,10 +230,13 @@ if __name__ == "__main__":
     h100 = H100(purge_frequency=args.purgeFreq, purge_time=args.purgeTime)
     # Initialise display class
     display = h100Display.FuelCellDisplay()
-    if args.cad:
-        display.on = True
+    if display.connect() is -1:
+        display = ''
     else:
-        display.on = False
+        if args.cad:
+            display.on = True
+        else:
+            display.on = False
 
     # Initialise loadbank class
     load = loadbank.TdiLoadbank('158.125.152.225', 10001, 'fuelcell')
@@ -275,7 +278,8 @@ if __name__ == "__main__":
     ########
 
     _display_header(print)
-    display.name = "H100"
+    if display:
+        display.name = "H100"
 
     print("Type command: [time, throttle, fc, elec, energy, temp, purg, fly] ")
 
@@ -381,7 +385,8 @@ if __name__ == "__main__":
 
             # LOG STATE
             state = _print_state(h100, log.write)
-            display.state = state
+            if display:
+                display.state = state
 
             if args.timer:
                 print('print_state:\t'),print(time.time()-timer)
@@ -390,9 +395,10 @@ if __name__ == "__main__":
 
             # LOG ELECTRIC - Slow 0.27
             electric = _print_electric(h100, load, log.write)
-            display.voltage = electric[0]
-            display.current = electric[1]
-            display.power = electric[2]
+            if display:
+                display.voltage = electric[0]
+                display.current = electric[1]
+                display.power = electric[2]
 
             if args.timer:
                 print('print_elec:\t'),print(time.time()-timer)
@@ -407,7 +413,8 @@ if __name__ == "__main__":
 
             # LOG TEMPERATURE - Slow 0.12
             temp = _print_temperature(h100, log.write)
-            display.temperature = max(temp)
+            if display:
+                display.temperature = max(temp)
 
             if args.timer:
                 print('print_temp:\t'),print(time.time()-timer)
@@ -447,7 +454,8 @@ if __name__ == "__main__":
         if log:
             print('\nShutting down log')
             if log.close(): print('Done\n')
-        display.on = False
+        if display:
+            display.on = False
         print('\n\n\nProgramme successfully exited and closed down\n\n')
 
         #######

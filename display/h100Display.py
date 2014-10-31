@@ -22,19 +22,10 @@ import pifacecad
 
 class FuelCellDisplay():
     def __init__(self):
-        # Define the CAD board
-        self.__cad = pifacecad.PiFaceCAD()
-
         # First define some pretty cutstom bitmaps!
         self.__temp_symbol_index = 7
         self.__temperature_symbol = pifacecad.LCDBitmap(
             [0x18, 0x18, 0x3, 0x4, 0x4, 0x4, 0x3, 0x0])
-
-        # Save my pretty custom bitmaps to the memory (max 8 allowed)
-        self.__cad.lcd.store_custom_bitmap(self.__temp_symbol_index, self.__temperature_symbol)
-
-        # Start up the screen
-        self.__on = False
 
         # Screen data
         self.__name = ''
@@ -42,6 +33,22 @@ class FuelCellDisplay():
         self.__temp = ''
         self.__volts = ''
         self.__amps = ''
+
+
+    def connect(self):
+        # Define the CAD board
+        try:
+            self.__cad = pifacecad.PiFaceCAD()
+        except Exception as e:
+            return -1
+
+        # Save my pretty custom bitmaps to the memory (max 8 allowed)
+        self.__cad.lcd.store_custom_bitmap(self.__temp_symbol_index, self.__temperature_symbol)
+
+        # Start up the screen
+        self.__on = False
+
+        return 1
 
 
     @staticmethod

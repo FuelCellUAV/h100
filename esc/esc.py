@@ -41,7 +41,7 @@ class esc:
             try:
                 self.__throttle = self.__set(self.__address, setpoint)
             except Exception as e:
-                print("No I2C bus")
+                pass
 
         except Exception as e:
             print('Invalid throttle request')
