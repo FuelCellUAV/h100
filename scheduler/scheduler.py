@@ -20,7 +20,7 @@
 # Import libraries
 import time
 
-class Profiler():
+class Scheduler():
     def __init__(self, filename):
         self.__filename = filename
         self.__last_line = ''
@@ -35,6 +35,9 @@ class Profiler():
             self.__fid.seek( self.__fid.tell() - len(self.__this_line) )
         self.__last_line = self.__this_line
         self.__this_line = self.__fid.readline()
+#        x = list( map(float,self.__this_line.split()) )
+#        print(x)
+#        return x
         return list( map(float,self.__this_line.split()) )
 
     # Find this time entry
@@ -78,7 +81,6 @@ class Profiler():
         # Turn off
         print("Landing...")
         self.__running = 0
-        self.__setpoint = 0
         self.__fid.close()
         print("Back in hangar!\n")
 
@@ -92,9 +94,7 @@ class Profiler():
                         return self.__setpoint
                     return self.__setpoint
                 else:
-                    # End of test
-                    self._stop()
-                    return 0
+                    return -1
             else:
                 print('Error: Loadbank setpoint below zero!')
                 return -1
@@ -103,5 +103,7 @@ class Profiler():
 
     def run(self):
         # Do more running
-        return self._run()
-
+        running = self._run()
+        if self.__running and running is -1:
+            self._stop()
+        return running

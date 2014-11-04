@@ -24,7 +24,7 @@ from display import h100Display
 from h100Controller import H100
 from switch import switch
 from tdiLoadbank import loadbank
-from profiler import profiler
+from scheduler import scheduler
 from esc import esc
 from timer import timer
 
@@ -257,7 +257,7 @@ if __name__ == "__main__":
 
     # Initialise profile
     if args.profile:
-        profile = profiler.Profiler(args.profile)
+        profile = scheduler.Scheduler(args.profile)
         if load:
             output = "loadbank"
         else:
@@ -314,8 +314,7 @@ if __name__ == "__main__":
                     else:
                         load.load = False
                 else:
-                    if setpoint is not -1:
-                        motor.throttle = setpoint
+                    motor.throttle = setpoint
 
             if args.timer:
                 print('profile.run():\t'),print(time.time()-timer)
