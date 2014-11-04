@@ -101,9 +101,9 @@ class AdcPi2:
                 # Return result
                 return t * multiplier
                 
-            # If I2C error return error code -1
-            except IOError:
-                return -1
+        # If I2C error return error code -1
+        except IOError:
+            return -1
 
     # External getter - call this to receive data
     def get(self, channel):
