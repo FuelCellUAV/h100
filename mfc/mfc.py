@@ -21,7 +21,7 @@
 
 # Import libraries
 from time import sleep
-import quick2wire.i2c as i2c
+from quick2wire.i2c import I2CMaster, reading
 
 # Define class
 class mfc:
@@ -35,9 +35,9 @@ class mfc:
         mfcreading = -1
         
         # Using the I2C databus...
-        with i2c.I2CMaster() as bus:
-            mfcreading = bus.transaction(
-                i2c.reading(address, 2))[0]
+        with I2CMaster(1) as master:
+            mfcreading = master.transaction(
+                reading(address, 2))[0]
             
         # Return result
         return mfcreading
