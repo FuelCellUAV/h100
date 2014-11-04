@@ -2,7 +2,7 @@
 
 # Fuel Cell Controller LCD display driver
 
-# Copyright (C) 2013  Simon Howroyd
+# Copyright (C) 2014  Simon Howroyd
 # 
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -17,24 +17,20 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#############################################################################
+
+# Import libraries
 import pifacecad
 
 
+# Define class
 class FuelCellDisplay():
+    # Code to run when class is created
     def __init__(self):
-        # Define the CAD board
-        self.__cad = pifacecad.PiFaceCAD()
-
         # First define some pretty cutstom bitmaps!
         self.__temp_symbol_index = 7
         self.__temperature_symbol = pifacecad.LCDBitmap(
             [0x18, 0x18, 0x3, 0x4, 0x4, 0x4, 0x3, 0x0])
-
-        # Save my pretty custom bitmaps to the memory (max 8 allowed)
-        self.__cad.lcd.store_custom_bitmap(self.__temp_symbol_index, self.__temperature_symbol)
-
-        # Start up the screen
-        self.__on = False
 
         # Screen data
         self.__name = ''
@@ -43,10 +39,26 @@ class FuelCellDisplay():
         self.__volts = ''
         self.__amps = ''
 
+    # Method to connect to CAD board
+    def connect(self):
+        # Define the CAD board
+        try:
+            self.__cad = pifacecad.PiFaceCAD()
+        except Exception as e:
+            # No CAD board found
+            return -1
 
+        # Save my pretty custom bitmaps to the memory (max 8 allowed)
+        self.__cad.lcd.store_custom_bitmap(self.__temp_symbol_index, self.__temperature_symbol)
+
+        # Start up the screen
+        self.__on = False
+
+        return 1
+
+    # Method to turn the screen on
     @staticmethod
     def turnon(cad):
-
         # Start up the screen
         cad.lcd.blink_off()
         cad.lcd.cursor_off()
@@ -54,9 +66,9 @@ class FuelCellDisplay():
         cad.lcd.clear()
         return True
 
+    # Method to turn the screen off
     @staticmethod
     def turnoff(cad):
-
         # Close down the screen
         cad.lcd.home()
         cad.lcd.backlight_off()
@@ -64,11 +76,12 @@ class FuelCellDisplay():
         print('\n\nDisplay off\n\n')
         return False
 
-
+    # Property - Is it on?
     @property
     def on(self):
         return self.__on
 
+    # Property - Turn on
     @on.setter
     def on(self, switch):
         if self.__on is True and switch is False:
@@ -76,61 +89,75 @@ class FuelCellDisplay():
         elif self.__on is False and switch is True:
             self.__on = self.turnon(self.__cad)
 
+    # Property - What's the name I'm displaying?
     @property
     def name(self):
         return self.__name
 
+    # Property - Define the name
     @name.setter
     def name(self, text):
         self.__name = self._update(self.__cad, text, [0, 0], 4)
 
+    # Property - What's the state I'm displaying?
     @property
     def state(self):
         return self.__state
 
+    # Property - Define the state
     @state.setter
     def state(self, text):
         self.__state = self._update(self.__cad, text, [5, 0], 3)
 
+    # Property - What's the temperature I'm displaying?
     @property
     def temperature(self):
         return self.__temp
 
+    # Property - Define the temperature
     @temperature.setter
     def temperature(self, number):
         self._update(self.__cad, self.__temperature_symbol, [13, 0], index=self.__temp_symbol_index)
         self.__temp = self._update(self.__cad, number, [9, 0], 4)
 
+    # Property - What's the voltage I'm displaying?
     @property
     def voltage(self):
         return self.__volts
 
+    # Property - Define the voltage
     @voltage.setter
     def voltage(self, number):
         self._update(self.__cad, 'V', [4, 1], 1)
         self.__volts = self._update(self.__cad, number, [0, 1], 4)
 
+    # Property - What's the current I'm displaying?
     @property
     def current(self):
         return self.__amps
 
+    # Property - Define the current
     @current.setter
     def current(self, number):
         self._update(self.__cad, 'A', [10, 1], 1)
         self.__amps = self._update(self.__cad, number, [6, 1], 4)
 
-#    @staticmethod
+    # Internal method to update something on the screen
     def _update(self, cad, data, ptr, precision=1, index=-1):
-        if self.__on is False: return
+        # Check if the screen is on, if not quit to save CPU time
+        if self.__on is False:
+            return
 
         # Move cursor to correct place (col, row)
         cad.lcd.set_cursor(ptr[0], ptr[1])
 
+        # If the data we want to display is text then save...
         if type(data) is str:
             data = data[:precision].center(precision)
 
+        # Else, if the data is a number then save...
         elif type(data) is float or int:
-            # Convert number to string
+            # Convert number to string of text
             data = str(data)
             # Truncate
             if len(data.split('.')[0]) > precision:
@@ -140,11 +167,16 @@ class FuelCellDisplay():
                 # Truncate and justify
                 data = data[:precision].rjust(precision)
 
+        # If there is no index (not a symbol) and we have text...
         if index < 0 and type(data) is str:
+            # Write the data to the screen
             cad.lcd.write(data)
             return data
+        # If there is an index then we want to write a symbol...
         elif index >= 0:
+            # Write a symbol to the screen
             cad.lcd.write_custom_bitmap(index)
             return index
 
+        # If we get this far there is an issue with what we are trying to write
         raise AttributeError

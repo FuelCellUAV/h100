@@ -1,18 +1,46 @@
-#!/usr/bin/python3
+##!/usr/bin/env python3
 
-import multiprocessing
-from quick2wire.i2c import I2CMaster, writing_bytes, reading
+# TMP102 Temperature Sensor Driver
 
-# Class to read I2c TMP102 Temperature Sensor
+# Copyright (C) 2014  Simon Howroyd
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#############################################################################
+
+# Import libraries
+from quick2wire.i2c import I2CMaster, reading
+
+
+# Define class
 class Tmp102:
+    # Method to get the current reading
     @staticmethod
     def get(address):
-        with I2CMaster(1) as master:
-            try:
+        try:
+            # Using the I2C databus...
+            with I2CMaster(1) as master:
+                
+                # Read two bytes of data
                 msb, lsb = master.transaction(reading(address, 2))[0]
+                
+                # Assemble the two bytes into a 16bit integer
                 temperature = ((( msb * 256 ) + lsb) >> 4 ) * 0.0625
+                
+                # Return the value
                 return temperature
 
-            except Exception as e:
-                #print ("I2C Temp Error")
-                return -1
+        # If I2C error return -1
+        except IOError:
+            return -1
