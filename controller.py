@@ -35,6 +35,7 @@ def _parse_commandline():
     parser = argparse.ArgumentParser(description='Fuel Cell Controller by Simon Howroyd 2014')
     
     # Define aguments
+    parser.add_argument('--out', type=str, default='', help='Save my data to USB stick')
     parser.add_argument('--verbose', type=int, default=0, help='Print log to screen')
     parser.add_argument('--profile', type=str, default='', help='Name of flight profile file')
     parser.add_argument('--timer', type=int, default=0, help='Performance monitor timer')
