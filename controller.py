@@ -349,13 +349,13 @@ if __name__ == "__main__":
             h100.run()
 
             # Update the performance monitor timer
-            performance_timer = _performance_monitor(args.timer, performance_timer, h100.__name__)
+            performance_timer = _performance_monitor(args.timer, performance_timer, H100.__name__)
             
             # Run the timer TODO
             my_time.run()
 
             # Update the performance monitor timer
-            performance_timer = _performance_monitor(args.timer, performance_timer, my_time.__name__)
+            performance_timer = _performance_monitor(args.timer, performance_timer, timer.My_Time.__name__)
 
             # If we are running a scheduled profile...
             if profile:
@@ -392,14 +392,14 @@ if __name__ == "__main__":
                     motor.throttle = setpoint
 
             # Update the performance monitor timer
-            performance_timer = _performance_monitor(args.timer, performance_timer, profile.__name__)
+            performance_timer = _performance_monitor(args.timer, performance_timer, scheduler.Scheduler.__name__)
 
             # If there is a loadbank connected, update the sensor values
             if load:
                 load.update()
 
             # Update the performance monitor timer
-            performance_timer = _performance_monitor(args.timer, performance_timer, load.__name__)
+            performance_timer = _performance_monitor(args.timer, performance_timer, loadbank.TdiLoadbank.__name__)
 
             ## Handle the user interface
             # Read typed in user data on the screen
