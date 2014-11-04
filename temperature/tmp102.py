@@ -20,8 +20,7 @@
 #############################################################################
 
 # Import libraries
-import multiprocessing
-from quick2wire.i2c import I2CMaster, writing_bytes, reading
+from quick2wire.i2c import I2CMaster, reading
 
 
 # Define class
