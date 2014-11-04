@@ -1,20 +1,23 @@
-#!/usr/bin/env python3
-# Re-written by Simon Howroyd 2014 for python3
-#
-# read abelectronics ADC Pi V2 board inputs with repeating reading from each channel.
-# # Requries Python 2.7
-# Requires SMBus 
-# I2C API depends on I2C support in the kernel
+##!/usr/bin/env python3
 
-# Version 1.0  - 06/02/2013
-# Version History:
-# 1.0 - Initial Release
+# abelectronics ADC Pi V2 driver
 
-#
-# Usage: changechannel(address, hexvalue) to change to new channel on adc chips
-# Usage: getadcreading(address, hexvalue) to return value in volts from selected channel.
-#
-# address = adc_address1 or adc_address2 - Hex address of I2C chips as configured by board header pins.
+# Some code taken and rewritten from the abelectronics Python 2.7 driver
+
+# Copyright (C) 2014  Simon Howroyd
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #############################################################################
 
