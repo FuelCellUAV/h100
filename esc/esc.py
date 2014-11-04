@@ -34,13 +34,18 @@ class esc:
     # Method to send throttle to Arduino
     @staticmethod
     def __set(address, value):
-        # Using the I2C databus...
-        with I2CMaster(1) as master:
-            master.transaction(
-                writing_bytes(address, value))
+        try:
+            # Using the I2C databus...
+            with I2CMaster(1) as master:
+                master.transaction(
+                    writing_bytes(address, value))
+                
+            # Return result
+            return value
             
-        # Return result
-        return value
+        # If I2C error return -1
+        except IOError:
+            return -1
 
     # Property - What is the current throttle setting?
     @property
