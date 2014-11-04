@@ -1,6 +1,6 @@
 ##!/usr/bin/python3
 
-# Fuel Cell Controller for the Horizon H100
+# Fuel Cell Controller for the Horizon H100 PEMFC
 
 # Copyright (C) 2014  Simon Howroyd
 # 
@@ -17,9 +17,10 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Includes
-import sys, time
+#############################################################################
 
+# Import libraries
+import sys, time
 import pifacedigitalio
 from adc import adcpi
 from temperature import tmp102
@@ -35,8 +36,9 @@ def enum(*sequential, **named):
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 
-
+# Define class
 class PurgeControl():
+    # Code to run when class is created
     def __init__(self):
         self.v = 0.0
         self.i = 0.0
@@ -46,227 +48,274 @@ class PurgeControl():
         self.pLast = 0.0
         return
 
+    # Method to update the class data
     def updateNow(self, v, i, p):
         self.v = v
         self.i = i
         self.p = p        
 
+    # Method to update the class' last data
     def updateLast(self):
         self.vLast = self.v
         self.iLast = self.i
         self.pLast = self.p        
 
+    # Method to return the Horizon control strategy
     def horizon(self):
         return 30.0
 
+    # Method to return the derivative control strategy
     def derivative(self):
         return (self.v - self.vLast) \
                 / (-0.03*self.v**4 + 1.94*self.v**3 - 46.5*self.v**2 + 421.2*self.v - 1489)
 
+    # Method to return the power control strategy
     def power(self):
         return (30.0 - (self.p * 0.25))
 
+    # Method to return the polar control strategy
     def polar(self):
         vTarget = -1.2 * self.i + 21  # From polarisation curve
         vError = self.v - vTarget
         return 10*vError
 
 
-##############
-# CONTROLLER #
-##############
-class H100():
-    ##############
-    # INITIALISE #
-    ##############
-    def __init__(self, purge_frequency=30, purge_time=0.5):
+#############################################################################
 
-        # Adc
-        self.__Adc = adcpi.AdcPi2(18)  # Start adc's
-        # Temperature
-        self.__Temperature = tmp102.Tmp102()  # Start temperature sensors
-        # PiFace Interface
-        self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface switch
-        # Timer
+
+# Define class
+class H100():
+    # Code to run when class is created
+    def __init__(self):
+        # Start Adc with resolution of 18bit
+        self.__Adc = adcpi.AdcPi2(18)
+        
+        # Start temperature sensors
+        self.__Temperature = tmp102.Tmp102()
+        
+        # Start switches
+        self.__pfio = pifacedigitalio.PiFaceDigital()
+        
+        # Start the mass flow controller
+        self.__Mfc = mfc.mfc()
+        
+        # Start timers
         self.__timer = timer.My_Time()
 
-        # Delays
+        # Set start and stop duration
         self.__start_time = 5  # Seconds
         self.__stop_time = 10  # Seconds
+        
+        # Set maximum temperature
         self.__cutoff_temperature = 30  # Celsius
+        
+        # Set maximum and minimum voltages
         self.__minimum_voltage = 10  # Volts
         self.__maximum_voltage = 30  # Volts
 
-        # Purge settings
+        # Start the purge controller
         self.__Purge_Controller = PurgeControl()
-        self.__purge_frequency = purge_frequency
-        self.__purge_time = purge_time
+        
+        # Define minimum and maximum purge frequencies
+        self.__purge_frequency_minimum = 5
+        self.__purge_frequency_maximum = 50
+        
+        # Set the default purge settings
+        self.__purge_frequency = 30
+        self.__purge_time = 0.5
+        
+        # Set the current time
         self.__time_change = time.time()
-        self.__pfio = pifacedigitalio.PiFaceDigital()  # Start piface
+        
+        # Start the piface for input switch functionality
+        self.__pfio = pifacedigitalio.PiFaceDigital()
         self._switch_interrupt = self._switch_handler(self.__pfio, self._switch_on, self._switch_off,
                                                       self._switch_reset)
-        self.__Mfc = mfc.mfc()
-        self.__flow_rate = 0.0
-
-        # State
+                                                      
+        # Define state
         self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
-        self.__state = self.STATE.off
 
-        # Switches
+        # Define switches
         self.__fan = switch.Switch(0)
         self.__h2 = switch.Switch(1)
         self.__purge = switch.Switch(2)
 
-        # Variables
+        # Define variables
+        self.__state = self.STATE.off
         self.__current = [0.0] * 8
         self.__voltage = [0.0] * 8
         self.__power = [0.0] * 4
         self.__energy = [0.0] * 2
         self.__temperature = [0.0] * 4
+        self.__flow_rate = 0.0
 
-        # Button flags
+        # Software switches
         self.__on = 0
         self.__off = 0
         self.__reset = 0
 
+        # State change flag
         self.__state_change = 0
 
-    ##############
-    #    MAIN    #
-    ##############
+    # Method to run the controller
     def run(self):
+        # Update the timer
         self.__timer.run()
+        
+        # Update the sensors
         self._update_sensors()
 
+        # Have any timers changed?
         self._check_timers()
+        
+        # Have any switches been pressed?
         self._check_switches()
+        
+        # Have any errors occured?
         self._check_errors()
 
         # STATE MACHINE
         if self.__state is self.STATE.off:
+            # Run the off method
             self._state_off()
         elif self.__state is self.STATE.on:
+            # Run the on method
             self._state_on()
         elif self.__state is self.STATE.startup:
+            # Run the startup method
             self._state_startup()
         elif self.__state is self.STATE.shutdown:
+            # Run the shutdown method
             self._state_shutdown()
         elif self.__state is self.STATE.error:
+            # Run the error method
             self._state_error()
 
-        self.__state_change = 0  # Ignore property handler to force reset
+        # Reset state change flag
+        self.__state_change = 0
 
-        return
-
+    # Method to shutdown
     def shutdown(self):
-        # When the programme exits, call this shutdown routine
+        # Tell the user we are shutting down
         print('\n\nFuel Cell shutting down...', end='')
+        
+        # Set state to off
         self.state = "off"
+        
+        # Wait until turned off **blocking**
         while self.__state is not self.STATE.off:
-            self._check_timers()
-            self._check_switches()
-            self._check_errors()
+            self.run()
 
-            # STATE MACHINE
-            if self.__state is self.STATE.off:
-                self._state_off()
-            elif self.__state is self.STATE.on:
-                self._state_on()
-            elif self.__state is self.STATE.startup:
-                self._state_startup()
-            elif self.__state is self.STATE.shutdown:
-                self._state_shutdown()
-            elif self.__state is self.STATE.error:
-                self._state_error()
-
+        # Deactivate user switches
         self._switch_interrupt.deactivate()
+        
+        # Tell the user we have shut down
         print('...Fuel Cell successfully shut down\n\n')
 
-        return
-
-    # Get State String
+    # Property - What's the current state?
     @property
     def state(self):
         return self.__state
 
+    # Property - Set a new state
     @state.setter
     def state(self, state):
+        # Check the state with reset arguments
         if "on" in state:
+            # Turn on
             self._switch_on()
-
+            
         elif "off" in state:
+            # Turn off
             self._switch_off()
+            
         elif "reset" in state:
+            # Reset
             self._switch_reset()
+            
         else:
+            # Invalid command
             print("Invalid command [on, off, reset]")
 
-    # Get Current
+    # Property - What's the current?
     @property
     def current(self):
         return self.__current
 
-    # Get Voltage
+    # Property - What's the voltage?
     @property
     def voltage(self):
         return self.__voltage
 
-    # Get Power
+    # Property - What's the power?
     @property
     def power(self):
         return self.__power
 
-    # Get Energy
+    # Property - What's the energy consumed?
     @property
     def energy(self):
         return self.__energy
 
-    # Get Temperature
+    # Property - What's the temperature?
     @property
     def temperature(self):
         return self.__temperature
 
-    # Get Purge Frequency
+    # Property - What's the purge frequency?
     @property
     def purge_frequency(self):
         return self.__purge_frequency
 
+    # Property - Set a new purge frequency 
     @purge_frequency.setter
     def purge_frequency(self, purge_frequency):
-        if purge_frequency < 5:
+        # Sanity check the requested purge frequency
+        if purge_frequency < self.__purge_frequency_minimum:
+            # Requested frequency is too short
             print('Purge frequency too low: ', purge_frequency)
-            purge_frequency = 5
-        elif purge_frequency > 50:
+            purge_frequency = self.__purge_frequency_minimum
+            
+        elif purge_frequency > self.__purge_frequency_maximum:
+            # Requested frequency is too long
             print('Purge frequency too high: ', purge_frequency)
-            purge_frequency = 50
+            purge_frequency = self.__purge_frequency_maximum
+            
+        # Set new purge frequency
         self.__purge_frequency = purge_frequency
 
-    # Get Purge Time
+    # Property - What's the purge duration?
     @property
     def purge_time(self):
         return self.__purge_time
 
+    # Property - Set a new purge duration
     @purge_time.setter
     def purge_time(self, purge_time):
         if 0 < purge_time < 10:  # TODO max purge time
             self.__purge_time = purge_time
 
+    # Method to change state
     def _state_change(self, state):
+        # Check if we want to change state and that we haven't already changed
         if state and not self.__state_change:
             self.__time_change = time.time()  # Update timer
             self.__state_change = 1
 
+    # Method to switch on
     def _switch_on(self):
         self.__on = True
         self.__off = False
         self.__reset = False
         return
 
+    # Method to switch off
     def _switch_off(self):
         self.__on = False
         self.__off = True
         self.__reset = False
 
+    # Method to reset
     def _switch_reset(self):
         self.__on = False
         self.__off = False
@@ -305,12 +354,14 @@ class H100():
     def _state_error(self):
         self.__h2.write(False)
         self.__purge.write(False)
+        
+        # Wait for temperature to cool down before turning fan off
         if max(self.__temperature) > self.__cutoff_temperature:
             self.__fan.write(True)
         else:
             self.__fan.write(False)
 
-    # Get Flow Rate
+    # Property - What's the mass flow rate?
     @property
     def flow_rate(self):
         return self.__flow_rate
@@ -318,38 +369,46 @@ class H100():
     ##############
     #INT. GETTERS#
     ##############
-    # Get Current
+    # Method to get Current
     @staticmethod
     def _get_current(adc, channel):
-#        current = abs(adc.get(channel) * 1000 / 6.89) + 0.507
+        # Get current and calibrate
         current = abs(adc.get(channel) * 1000 / 6.89) + 0.374
+        
+        # Sensor only valid above a certain value
         if current < 0.475:  # TODO can this be improved?
             current = 0  # Account for opamp validity
+            
         return current
 
-    # Get Voltage
+    # method to get Voltage
     @staticmethod
     def _get_voltage(adc, channel):
-#        voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.05
         voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.096
         return voltage
 
-    # Get Energy
+    # Method to get Energy
     @staticmethod
     def _get_energy(my_timer, power):
+        # Energy is power x time
         energy = my_timer.delta * power
         return energy
 
-    # Get Temperature
+    # Method to get Temperature
     @staticmethod
     def _get_temperature(temperature):
-        t = [0.0] * 4
-        t[0] = temperature.get(0x48)
-        t[1] = temperature.get(0x49)
-        t[2] = temperature.get(0x4a)
-        t[3] = temperature.get(0x4b)
+        t = [temperature.get(0x48),
+             temperature.get(0x49),
+             temperature.get(0x4a),
+             temperature.get(0x4b)]
         return t
 
+    # Method to get mass flow rate
+    @staticmethod
+    def _getFlowRate(mfc):
+        return mfc.get()
+        
+    # Method to handle a button press on the piface
     def _switch_handler(self, pifacedigital, switch_on, switch_off, switch_reset):
         handler = pifacedigitalio.InputEventListener(chip=pifacedigital)
         handler.register(0, pifacedigitalio.IODIR_FALLING_EDGE, switch_on, self)
@@ -358,61 +417,111 @@ class H100():
         handler.activate()
         return handler
 
-    # See if any timers have expired
+    # Method to check if any timers have expired
     def _check_timers(self):
+        # Calculate time since last state change
         delta = time.time() - self.__time_change
+        
+        # If currently in startup...
         if self.__state is self.STATE.startup:
+            
+            # and we have expired the startup duration...
             if delta >= self.__start_time:
+                # Change state to on
                 self.__state = self.STATE.on
                 self._state_change(True)
+                
+                # Tell the user the fuel cell is now on
                 print('FC On\n')
+                
+        # or if we are in shutdown...
         elif self.__state is self.STATE.shutdown:
+            
+            # and we have expired the shutdown duration...
             if delta >= self.__stop_time:
+                # # Change state to off
                 self.__state = self.STATE.off
                 self._state_change(True)
+                
+                # Tell the user the fuel cell is now off
                 print('FC Off\n')
-        return
 
-    # See if any flags have been activated
+    # Method to check if any software switches have been activated
     def _check_switches(self):
+        # If the on switch has been triggered...
         if self.__on:
+            
+            # and we are currently off...
             if self.__state is self.STATE.off:
+                # Change state to startup
                 self.__state = self.STATE.startup
+                
+                # Flag that there has been a state change
                 self._state_change(True)
+                
+        # or the off switch has been triggered...
         elif self.__off:
+            
+            # and we are currently no off or in error...
             if (self.__state is not self.STATE.off) or (self.__state is not self.STATE.error):
+                
+                # Change state to shutdown
                 self.__state = self.STATE.shutdown
+                
+                # Flag that there has been a state change
                 self._state_change(True)
+                
+        # or the reset switch has been triggered...     
         elif self.__reset:
+            
+            # and we are currently in error...
             if self.__state is self.STATE.error:
+                
+                # Clear the error by setting state to off
                 self.__state = self.STATE.off
+                
+                # Flag that there has been a state change
                 self._state_change(True)
-        self.__on = 0  # Force clear the flag
-        self.__off = 0  # Force clear the flag
-        self.__reset = 0  # Force clear the flag
-        return
+        
+        # Clear all state change request flags
+        self.__on = 0
+        self.__off = 0
+        self.__reset = 0
 
-    # See if the fuel cell has an error
+    # Method to check if the fuel cell has an error
     def _check_errors(self):
-        # OVER TEMPERATURE
+        # If the temperature is above the cutoff...
         if max(self.__temperature) > self.__cutoff_temperature:
+            
+            # Change state to error
             self.__state = self.STATE.error
             self._state_change(True)
+            
+            # Tell user there is a temperature error
             print(time.asctime() + ' ' + "TEMPERATURE CUTOFF")
-        # OVER/UNDER VOLTAGE
+            
+        # If the voltage is too high...
         if self.__voltage[0] > self.__maximum_voltage:
+            
+            # Change state to error
             self.__state = self.STATE.error
             self._state_change(True)
+            
+            # Tell user there is an overvoltage error
             print(time.asctime() + ' ' + "VOLTAGE MAXIMUM CUTOFF")
+        
+#        # If the voltage is too low...
 #        if self.__voltage[0] < self.__minimum_voltage:
+#
+#            # Change state to error
 #            self.__state = self.STATE.error
 #            self._state_change(True)
+#            
+#            # Tell user there is an undervoltage error
 #            sys.stderr.write(time.asctime() + ' ' + "VOLTAGE MINIMUM CUTOFF")
-        return
 
-    # Update sensors
+    # Method to update sensor data
     def _update_sensors(self):
-        # SENSORS
         self.__current[0] = self._get_current(self.__Adc, 0)
         self.__voltage[0] = self._get_voltage(self.__Adc, 4)
         self.__power[0] = self.__voltage[0] * self.__current[0]
@@ -420,11 +529,13 @@ class H100():
         self.__energy[1] += self.__energy[0] # Cumulative
         self.__temperature = self._get_temperature(self.__Temperature)
         self.__flow_rate = self._getFlowRate(self.__Mfc)
-        return
-
+        
+    # Method to run the purge controller
     def _purge_controller(self):
-        # Basic controller:
+        # Update the purge controller sensor data
         self.__Purge_Controller.updateNow(self.__voltage[0], self.__current[0], self.__power[0])
+        
+        # Pick one of these four controllers
         self.purge_frequency = self.__Purge_Controller.horizon()
 #        self.purge_frequency = self.__Purge_Controller.derivative()
 #        self.purge_frequency = self.__Purge_Controller.power()
@@ -432,13 +543,6 @@ class H100():
 
         # Print results
 #        print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)
-        return self.purge_frequency
 
-    # Get Hydrogen Flow Rate
-    @staticmethod
-    def _getFlowRate(mfc):
-       try:
-          return mfc.get()
-       except IOError as e:
-          # No device connected
-          return 0.0
+        # Return the new purge frequency
+        return self.purge_frequency
