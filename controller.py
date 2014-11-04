@@ -165,9 +165,9 @@ def _print_time(my_time, *destination):
 
 
 def _print_energy(h100, *destination):
-#    for write in destination:
-#        for cell in h100.energy:
-#            _writer(write, cell)
+    for write in destination:
+        for cell in h100.energy:
+            _writer(write, cell)
     return h100.energy
 
 

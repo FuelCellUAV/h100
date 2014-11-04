@@ -16,19 +16,25 @@
 #
 # address = adc_address1 or adc_address2 - Hex address of I2C chips as configured by board header pins.
 
-import multiprocessing
+#############################################################################
+
+# Import Libraries
 import quick2wire.i2c as i2c
 
 
+# Define Class
 class AdcPi2:
+    # Code to run when class is created
     def __init__(self, res=12):
-        # Check if user inputted a valid resolution
+        # Check if user inputted a valid resolution in constructor
         if res != 12 and res != 14 and res != 16 and res != 18:
+            # Raise an exception to crash the code
             raise IndexError('Incorrect ADC Resolution')
         else:
+            # Set the resolution to memory
             self.__res = res
 
-        # Build default address and configuration register
+        # Build default address and configuration register of the ADC
         self.__config = [[0x68, 0x90],
                          [0x68, 0xB0],
                          [0x68, 0xD0],
@@ -56,6 +62,7 @@ class AdcPi2:
     # Method to read adc
     @staticmethod
     def __getadcreading(config, multiplier, res):
+        # Using the I2C databus...
         with i2c.I2CMaster() as bus:
             # Calculate how many bytes we will receive for this resolution
             numBytes = int(max(0, res / 2 - 8) + 3)
@@ -84,12 +91,12 @@ class AdcPi2:
             # Return result
             return t * multiplier
 
-    # External getter
+    # External getter - call this to receive data
     def get(self, channel):
         self.__changechannel(self.__config[channel])
         return self.__getadcreading(self.__config[channel], self.__varMultiplier, self.__res)
 
-    # Print all channels to screen
+    # Print all channels to screen for testing
     def printall(self):
         for x in range(8):
             print("%d: %02f" % (x + 1, self.get(x)), end='\t')
