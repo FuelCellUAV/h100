@@ -32,15 +32,15 @@ class mfc:
     # Method to read flow rate from the Arduino
     @staticmethod
     def __get(address):
-        mfcreading = -1
-        
-        # Using the I2C databus...
-        with I2CMaster(1) as master:
-            mfcreading = master.transaction(
-                reading(address, 2))[0]
+        try:
+            # Using the I2C databus...
+            with I2CMaster(1) as master:
+                return master.transaction(
+                    reading(address, 2))[0]
             
-        # Return result
-        return mfcreading
+        # If I2C error return -1
+        except IOError:
+            return -1
 
     # External getter
     def get(self):
