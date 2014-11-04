@@ -86,7 +86,7 @@ class PurgeControl():
 # Define class
 class H100():
     # Code to run when class is created
-    def __init__(self, purge_frequency=30, purge_time=0.5):
+    def __init__(self):
         # Start Adc with resolution of 18bit
         self.__Adc = adcpi.AdcPi2(18)
         
@@ -121,8 +121,8 @@ class H100():
         self.__purge_frequency_maximum = 50
         
         # Set the default purge settings
-        self.__purge_frequency = purge_frequency
-        self.__purge_time = purge_time
+        self.__purge_frequency = 30
+        self.__purge_time = 0.5
         
         # Set the current time
         self.__time_change = time.time()
