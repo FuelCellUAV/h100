@@ -265,7 +265,7 @@ if __name__ == "__main__":
 
     ## Initialise classes
     # Initialise controller
-    h100 = H100(purge_frequency=args.purgeFreq, purge_time=args.purgeTime)
+    h100 = H100()
     
     # Initialise LED display
     display = h100Display.FuelCellDisplay()
