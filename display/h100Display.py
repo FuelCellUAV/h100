@@ -94,7 +94,7 @@ class FuelCellDisplay():
     def name(self):
         return self.__name
 
-    # Property - Define my name
+    # Property - Define the name
     @name.setter
     def name(self, text):
         self.__name = self._update(self.__cad, text, [0, 0], 4)
@@ -104,6 +104,7 @@ class FuelCellDisplay():
     def state(self):
         return self.__state
 
+    # Property - Define the state
     @state.setter
     def state(self, text):
         self.__state = self._update(self.__cad, text, [5, 0], 3)
@@ -113,6 +114,7 @@ class FuelCellDisplay():
     def temperature(self):
         return self.__temp
 
+    # Property - Define the temperature
     @temperature.setter
     def temperature(self, number):
         self._update(self.__cad, self.__temperature_symbol, [13, 0], index=self.__temp_symbol_index)
@@ -123,6 +125,7 @@ class FuelCellDisplay():
     def voltage(self):
         return self.__volts
 
+    # Property - Define the voltage
     @voltage.setter
     def voltage(self, number):
         self._update(self.__cad, 'V', [4, 1], 1)
@@ -133,23 +136,28 @@ class FuelCellDisplay():
     def current(self):
         return self.__amps
 
+    # Property - Define the current
     @current.setter
     def current(self, number):
         self._update(self.__cad, 'A', [10, 1], 1)
         self.__amps = self._update(self.__cad, number, [6, 1], 4)
 
-#    @staticmethod
+    # Internal method to update something on the screen
     def _update(self, cad, data, ptr, precision=1, index=-1):
-        if self.__on is False: return
+        # Check if the screen is on, if not quit to save CPU time
+        if self.__on is False:
+            return
 
         # Move cursor to correct place (col, row)
         cad.lcd.set_cursor(ptr[0], ptr[1])
 
+        # If the data we want to display is text then save...
         if type(data) is str:
             data = data[:precision].center(precision)
 
+        # Else, if the data is a number then save...
         elif type(data) is float or int:
-            # Convert number to string
+            # Convert number to string of text
             data = str(data)
             # Truncate
             if len(data.split('.')[0]) > precision:
@@ -159,11 +167,16 @@ class FuelCellDisplay():
                 # Truncate and justify
                 data = data[:precision].rjust(precision)
 
+        # If there is no index (not a symbol) and we have text...
         if index < 0 and type(data) is str:
+            # Write the data to the screen
             cad.lcd.write(data)
             return data
+        # If there is an index then we want to write a symbol...
         elif index >= 0:
+            # Write a symbol to the screen
             cad.lcd.write_custom_bitmap(index)
             return index
 
+        # If we get this far there is an issue with what we are trying to write
         raise AttributeError
