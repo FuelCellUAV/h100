@@ -240,7 +240,7 @@ def _reader():
 def _performance_monitor(is_active, performance_timer, function_name):
     if is_active:
         # Display the time taken to run the function
-        print(function_name + '\t' + time.time()-performance_timer)
+        print(function_name + '\t' + str(time.time()-performance_timer))
         
         # Update the performance monitor timer
         performance_timer=time.time()
