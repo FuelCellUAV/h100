@@ -315,14 +315,11 @@ if __name__ == "__main__":
     else:
         profile = ''
 
-    # If the output is a motor via ESC...
-    if "esc" in output:
-        
-        # Initiaise the ESC
-        motor = esc.esc()
-        
-        # Zero the throttle for safety
-        motor.throttle = 0
+    # Initiaise the ESC
+    motor = esc.esc()
+    
+    # Zero the throttle for safety
+    motor.throttle = 0
 
     # Start timers
     my_time = timer.My_Time()
