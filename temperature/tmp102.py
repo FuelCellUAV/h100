@@ -29,12 +29,9 @@ class Tmp102:
     # Method to get the current reading
     @staticmethod
     def get(address):
-        
-        # Using the I2C databus...
-        with I2CMaster(1) as master:
-            
-            # Try to read some data
-            try:
+        try:
+            # Using the I2C databus...
+            with I2CMaster(1) as master:
                 
                 # Read two bytes of data
                 msb, lsb = master.transaction(reading(address, 2))[0]
@@ -45,6 +42,6 @@ class Tmp102:
                 # Return the value
                 return temperature
 
-            # If an exception occurs (disconnected) return the error code -1
-            except Exception as e:
-                return -1
+        # If I2C error return -1
+        except IOError:
+            return -1
