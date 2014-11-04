@@ -21,7 +21,7 @@
 
 # Import libraries
 from time import sleep
-import quick2wire.i2c as i2c
+from quick2wire.i2c import I2CMaster, writing_bytes
 
 
 # Define class
@@ -35,9 +35,9 @@ class esc:
     @staticmethod
     def __set(address, value):
         # Using the I2C databus...
-        with i2c.I2CMaster() as bus:
-            bus.transaction(
-                i2c.writing_bytes(address, value))
+        with I2CMaster(1) as master:
+            master.transaction(
+                writing_bytes(address, value))
             
         # Return result
         return value
