@@ -58,6 +58,7 @@ class AdcPi2:
     # Method to change the channel we wish to read from
     @staticmethod
     def __changechannel(config):
+        # Using the I2C databus...
         with i2c.I2CMaster() as bus:
             bus.transaction(
                 i2c.writing_bytes(config[0], config[1]))
@@ -96,11 +97,8 @@ class AdcPi2:
 
     # External getter - call this to receive data
     def get(self, channel):
+        # Change adc setting to the channel we want to read
         self.__changechannel(self.__config[channel])
+        
+        # Read and return the data
         return self.__getadcreading(self.__config[channel], self.__varMultiplier, self.__res)
-
-    # Print all channels to screen for testing
-    def printall(self):
-        for x in range(8):
-            print("%d: %02f" % (x + 1, self.get(x)), end='\t')
-        print()
