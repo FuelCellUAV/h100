@@ -236,11 +236,11 @@ def _reader():
     # If we get here something went wrong so return blank
     return ''
 
-###########################
+# Funtion to moitor performance of individual functions
 def _performance_monitor(is_active, performance_timer, function_name):
     if is_active:
         # Calculate dt
-        dt = (time.time()-performance_timer) / 1000000 # Microseconds
+        dt = int((time.time()-performance_timer) / 1000000) # Microseconds
         
         # Display the time taken to run the function
         print(function_name + '\t' + str(dt)[:4] + 'us')
@@ -249,8 +249,6 @@ def _performance_monitor(is_active, performance_timer, function_name):
         performance_timer=time.time()
                 
         return performance_timer   
-###########################
-
 
 # Main run function
 if __name__ == "__main__":
