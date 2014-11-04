@@ -22,7 +22,7 @@
 #############################################################################
 
 # Import Libraries
-import quick2wire.i2c as i2c
+from quick2wire.i2c import I2CMaster, writing_bytes, reading
 
 
 # Define Class
@@ -59,28 +59,28 @@ class AdcPi2:
     @staticmethod
     def __changechannel(config):
         # Using the I2C databus...
-        with i2c.I2CMaster() as bus:
-            bus.transaction(
-                i2c.writing_bytes(config[0], config[1]))
+        with I2CMaster(1) as master:
+            master.transaction(
+                writing_bytes(config[0], config[1]))
 
     # Method to read adc
     @staticmethod
     def __getadcreading(config, multiplier, res):
         # Using the I2C databus...
-        with i2c.I2CMaster() as bus:
+        with I2CMaster(1) as master:
             # Calculate how many bytes we will receive for this resolution
             numBytes = int(max(0, res / 2 - 8) + 3)
 
             # Initialise the ADC
-            adcreading = bus.transaction(
-                i2c.writing_bytes(config[0], config[1]),
-                i2c.reading(config[0], numBytes))[0]
+            adcreading = master.transaction(
+                writing_bytes(config[0], config[1]),
+                reading(config[0], numBytes))[0]
 
             # Wait for valid data **blocking**
             while (adcreading[-1] & 128):
-                adcreading = bus.transaction(
-                    i2c.writing_bytes(config[0], config[1]),
-                    i2c.reading(config[0], numBytes))[0]
+                adcreading = master.transaction(
+                    writing_bytes(config[0], config[1]),
+                    reading(config[0], numBytes))[0]
 
             # Shift bits to product result
             if numBytes is 4:
