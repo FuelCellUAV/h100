@@ -58,7 +58,7 @@ def _display_header(*destination):
               + "Hybrid Powertrain Controller \n"
               + "with PEMFC Control \n"
               + "for the Horizon H-100 Fuel Cell \n"
-              + "(c) Simon Howroyd 2014 \n"
+              + "(c) Simon Howroyd and Jason James 2014 \n"
               + "Loughborough University \n"
               + "\n"
               + "This program is distributed in the hope that it will be useful, \n"
