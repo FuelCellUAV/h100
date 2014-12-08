@@ -88,15 +88,12 @@ class PurgeControl():
 class H100():
     # Code to run when class is created
     def __init__(self):
-        # Start Adc with resolution of 18bit
-        self.__Adc = adcpi.AdcPi2(18)
-        
+        # Start the hybrid board
+        self.__hybrid = hybrid.Hybrid()
+
         # Start temperature sensors
         self.__Temperature = tmp102.Tmp102()
-        
-        # Start switches
-        self.__pfio = pifacedigitalio.PiFaceDigital()
-        
+
         # Start the mass flow controller
         self.__Mfc = mfc.mfc()
         
@@ -144,15 +141,15 @@ class H100():
         # Define variables
         self.__current = [0.0] * 5
         self.__voltage = [0.0] * 3
-        self.__power = [0.0] * 3
-        self.__energy = [0.0] * 3
-        self.__temperature = [0.0] * 4
-        self.__flow_rate = 0.0
-        self.__state = self.STATE.off
+        self.__power   = [0.0] * 3
+        self.__energy  = [0.0] * 3
+        self.__temperature = [0.0] * 6
+        self.__flow_rate   = 0.0
+        self.__state       = self.STATE.off
 
         # Software switches
-        self.__on = 0
-        self.__off = 0
+        self.__on    = 0
+        self.__off   = 0
         self.__reset = 0
 
         # State change flag
@@ -160,6 +157,9 @@ class H100():
 
     # Method to run the controller
     def run(self):
+        # Update the hybrid
+        self.__hybrid.update()
+
         # Update the timer
         self.__timer.run()
         
@@ -402,8 +402,10 @@ class H100():
 
     # Method to get Temperature
     @staticmethod
-    def _get_temperature(temperature):
-        t = [temperature.get(0x48),
+    def _get_temperature(Hybrid, temperature):
+        t = [Hybrid.t1,
+             Hybrid.t2,
+             temperature.get(0x48),
              temperature.get(0x49),
              temperature.get(0x4a),
              temperature.get(0x4b)]
@@ -414,15 +416,6 @@ class H100():
     def _getFlowRate(mfc):
         return mfc.get()
         
-    # Method to handle a button press on the piface
-    def _switch_handler(self, pifacedigital, switch_on, switch_off, switch_reset):
-        handler = pifacedigitalio.InputEventListener(chip=pifacedigital)
-        handler.register(0, pifacedigitalio.IODIR_FALLING_EDGE, switch_on, self)
-        handler.register(1, pifacedigitalio.IODIR_FALLING_EDGE, switch_off, self)
-        handler.register(2, pifacedigitalio.IODIR_FALLING_EDGE, switch_reset, self)
-        handler.activate()
-        return handler
-
     # Method to check if any timers have expired
     def _check_timers(self):
         # Calculate time since last state change
@@ -538,7 +531,7 @@ class H100():
             energy = self._get_energy(self.__timer, self.__power[x])
             self.__energy[x] += energy # Cumulative
 
-        self.__temperature = self._get_temperature(self.__Temperature)
+        self.__temperature = self._get_temperature(self.__Hybrid, self.__Temperature)
         self.__flow_rate = self._getFlowRate(self.__Mfc)
         
     # Method to run the purge controller

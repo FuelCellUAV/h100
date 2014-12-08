@@ -134,10 +134,44 @@ class HybridIo:
             print("Error in bit register setter")
         self.change_output()
 
+class Charge_Controller:
+    def __init__(self):
+        self.__address = 0x00
+        self.__current = 0.0
+        self.current(0.0)
+
+    @property
+    def current(self)
+        return self.__current
+    @setter.current
+    def current(self, cur):
+        if (cur > 4.0 or cur < 0.0):
+            raise ValueError
+        else:
+            command = cur; # Some scaling here
+            if self.__changecurrent([self.__address command]) >= 0:
+                self.__current = cur
+            
+    # Method to change the channel we wish to read from
+    @staticmethod
+    def __changecurrent(config):
+        try:
+            # Using the I2C databus...
+            with I2CMaster(1) as master:
+                master.transaction(
+                    writing_bytes(config[0], config[1]))
+            return config[1]
+                    
+        # If I2C error return
+        except IOError:
+            return -1
+
 class Adc:
     def __init__(self, res=12):
         self.__adc1 = MCP3424(0xD0, res)
-        self.__adc2 = MCP3424(0xD8, res)
+        self.__adc2 = MCP3424(0xD4, res)
+
+        self.__voltage_scale   = 10.0 / 43.0; # Potential divider circuit
         
         self.__t1              = 0.0
         self.__t2              = 0.0
@@ -151,14 +185,17 @@ class Adc:
         self.update()
         
     def update(self):
-        self.__t1              = self.__adc1.get(3)
-        self.__t2              = self.__adc2.get(3)
-        self.__fc_voltage      = self.__adc2.get(2)
-        self.__battery_voltage = self.__adc2.get(0)
-        self.__output_voltage  = self.__adc2.get(1)
-        self.__fc_current      = self.__adc1.get(2)
+        # ADC 1
         self.__charge_current  = self.__adc1.get(0)
         self.__output_current  = self.__adc1.get(1)
+        self.__fc_current      = self.__adc1.get(2)
+        self.__t1              = self.__adc1.get(3)
+
+        # ADC 2
+        self.__battery_voltage = self.__adc2.get(0) * self.__voltage_scale
+        self.__output_voltage  = self.__adc2.get(1) * self.__voltage_scale
+        self.__fc_voltage      = self.__adc2.get(2) * self.__voltage_scale
+        self.__t2              = self.__adc2.get(3) * self.__voltage_scale
         return
         
     @property # Charging current
@@ -188,14 +225,23 @@ class Adc:
 
 class Hybrid:
     def __init__(self):
-        self.__io  = HybridIo()
-        self.__adc = Adc()
+        self.__io      = HybridIo()
+        self.__adc     = Adc()
+        self.__charger = Charge_Controller()
+        self.__charger_state = False
         
     def update(self):
         # Input/Outputs
         self.__io.update()
         # ADCs
         self.__adc.update()
+        # Charger controller
+        if self.__charger_state:
+            overhead = 8.5 - self.fc_current_total
+            if overhead < 0.0: overhead = 0.0
+            if (overhead >= 4.0 and self.__charger.current < 4.0)
+                self.__charger.current = self.__charger.current + 0.2 # Is this ramp necessary?
+        # TODO: Need checks of charger IO here
         
     def h2_on(self):     self.__io.power1 = 1
     def h2_off(self):    self.__io.power1 = 0
@@ -204,6 +250,15 @@ class Hybrid:
     def purge_on(self):  self.__io.power3 = 1
     def purge_off(self): self.__io.power3 = 0
         
+    # Turn charger on/off
+    @property
+    def charger_state(self):
+        return self.__charger_state
+    @setter.charger_state
+    def charger_state(self, state):
+        if state is True: self.__charger_state = True
+        else: self.__charger_state = False
+
     @property
     def charger_info(self):
         return [self.__io.LOBAT,
