@@ -13,10 +13,15 @@ class HybridIo:
         self.__bit_register       = [0b01000100, 0b00000000]
         self.__direction_register = [0b00111011, 0b00000000] # Output is 0, input is 1
 
-        with i2c.I2CMaster() as bus:
-            bus.transaction(
-                i2c.write_word_data(self.__address, 6, ((self.__direction_register[0] << 8) | self.__direction_register[1]))
-                
+
+        try:
+            with i2c.I2CMaster() as bus:
+                bus.transaction(
+                    i2c.write_word_data(self.__address, 6, ((self.__direction_register[0] << 8) | self.__direction_register[1]))
+        except IOError:
+            print("Err: No hybridIO detected")
+            return
+
         self.change_output()
         
         # IO register. > means output, < means input.
@@ -31,18 +36,27 @@ class HybridIo:
         # 7: <CHG       GND>
         
     def update(self):
-        with i2c.I2CMaster() as bus:
-            data = bus.transaction(
-                    i2c.writing_bytes(config[0], config[1]),
-                    i2c.reading(self.__address, 2))[0]
-        self.__bit_register = data
-        return
+        try:
+            with i2c.I2CMaster() as bus:
+                data = bus.transaction(
+                        i2c.writing_bytes(config[0], config[1]),
+                        i2c.reading(self.__address, 2))[0]
+            self.__bit_register = data
+            return self.__bit_register
+        except IOError:
+            print("Err: No hybridIO detected")
+            return -1
     
     def change_output(self):
-        with i2c.I2CMaster() as bus:
-            bus.transaction(
-                i2c.write_word_data(self.__address, 2, ((self.__bit_register[0] << 8) | self.__bit_register[1]))
-        return
+        try:
+            with i2c.I2CMaster() as bus:
+                bus.transaction(
+                    i2c.write_word_data(self.__address, 2, ((self.__bit_register[0] << 8) | self.__bit_register[1]))
+            return self.__bit_register
+        except IOError:
+            print("Err: No hybridIO detected")
+            return -1
+
         
     @staticmethod
     def _get_bit(register, bit):
@@ -164,6 +178,7 @@ class Charge_Controller:
                     
         # If I2C error return
         except IOError:
+            print("Err: No POT detected")
             return -1
 
 class Adc:
@@ -232,7 +247,7 @@ class Hybrid:
         
     def update(self):
         # Input/Outputs
-        self.__io.update()
+        if not self.__io.update(): return -1
         # ADCs
         self.__adc.update()
         # Charger controller
@@ -242,6 +257,7 @@ class Hybrid:
             if (overhead >= 4.0 and self.__charger.current < 4.0)
                 self.__charger.current = self.__charger.current + 0.2 # Is this ramp necessary?
         # TODO: Need checks of charger IO here
+        return 1
         
     def h2_on(self):     self.__io.power1 = 1
     def h2_off(self):    self.__io.power1 = 0
