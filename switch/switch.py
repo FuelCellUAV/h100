@@ -27,8 +27,9 @@ import pifacedigitalio
 # Define class
 class Switch:
     # Code to run when class is created
-    def __init__(self, pin):
-        self.pin = pin
+    def __init__(self, on, off):
+        self.__on = on
+        self.__off = off
         self.state = False
         self.lastTime = 0
         self.lastOff = 0
@@ -51,15 +52,15 @@ class Switch:
     def write(self, state):
         # If we want to turn on...
         if state:
-            self.pfio.output_pins[self.pin].turn_on()
+            self.__on()
             
         # Otherwise assume turn off
         else:
-            self.pfio.output_pins[self.pin].turn_off()
+            self.__off()
             
         # Save the time and state of this change to memory
         self.lastTime = time()
-        self.state = self.pfio.output_pins[self.pin].value
+        self.state = state
         
         # Return the new state
         return self.state
@@ -67,4 +68,4 @@ class Switch:
     # Method to turn all switches off when code is cancelled
     def __del__(self):
         self.write(False)
-        print('\nSwitch %d off\n' % self.pin)
+        print('\nSwitch off\n')

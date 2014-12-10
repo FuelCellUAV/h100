@@ -41,10 +41,10 @@ class MCP3424:
 
         # Set resolution in configuration register
         for x in range(len(self.__config)):
-            self.__config[x][1] = self.__config[x][1] | int((res - 12) / 2) << 2
+            self.__config[x][1] = self.__config[x][1] | int((resolution - 12) / 2) << 2
 
         # Set the calibration multiplier
-        self.__varDivisor = 0b1 << (res - 12)
+        self.__varDivisor = 0b1 << (resolution - 12)
         self.__varMultiplier = (2.495 / self.__varDivisor) / 1000
 
     # Method to change the channel we wish to read from

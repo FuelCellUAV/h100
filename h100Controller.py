@@ -22,7 +22,7 @@
 # Import libraries
 import sys, time
 import pifacedigitalio
-import hybrid.Hybrid as Hybrid
+from hybrid import hybrid
 #from adc import adcpi
 from temperature import tmp102
 from switch import switch
@@ -126,17 +126,17 @@ class H100():
         self.__time_change = time.time()
         
         # Start the piface for input switch functionality
-        self.__pfio = pifacedigitalio.PiFaceDigital()
-        self._switch_interrupt = self._switch_handler(self.__pfio, self._switch_on, self._switch_off,
-                                                      self._switch_reset)
+#        self.__pfio = pifacedigitalio.PiFaceDigital()
+#        self._switch_interrupt = self._switch_handler(self.__pfio, self._switch_on, self._switch_off,
+#                                                      self._switch_reset)
                                                       
         # Define state
         self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
 
-        # Define switches
-        self.__fan   = switch.Switch(self.__Hybrid.fan_on, self.__Hybrid.fan_off)
-        self.__h2    = switch.Switch(self.__Hybrid.h2_on, self.__Hybrid.h2_off)
-        self.__purge = switch.Switch(self.__Hybrid.purge_on, self.__Hybrid.purge_off)
+        # Define output switches
+        self.__fan   = switch.Switch(self.__hybrid.fan_on,   self.__hybrid.fan_off)
+        self.__h2    = switch.Switch(self.__hybrid.h2_on,    self.__hybrid.h2_off)
+        self.__purge = switch.Switch(self.__hybrid.purge_on, self.__hybrid.purge_off)
 
         # Define variables
         self.__current = [0.0] * 5
@@ -208,7 +208,7 @@ class H100():
             self.run()
 
         # Deactivate user switches
-        self._switch_interrupt.deactivate()
+#        self._switch_interrupt.deactivate()
         
         # Tell the user we have shut down
         print('...Fuel Cell successfully shut down\n\n')
@@ -522,8 +522,8 @@ class H100():
     # Method to update sensor data
     def _update_sensors(self):
         # SENSORS
-        self.__current = self._get_current(self.__Hybrid)
-        self.__voltage = self._get_voltage(self.__Hybrid)
+        self.__current = self._get_current(self.__hybrid)
+        self.__voltage = self._get_voltage(self.__hybrid)
         self.__power   = [self.__voltage[0] * self.__current[1],
                             self.__voltage[1] * self.__current[2],
                             self.__voltage[2] * self.__current[4]]
@@ -531,7 +531,7 @@ class H100():
             energy = self._get_energy(self.__timer, self.__power[x])
             self.__energy[x] += energy # Cumulative
 
-        self.__temperature = self._get_temperature(self.__Hybrid, self.__Temperature)
+        self.__temperature = self._get_temperature(self.__hybrid, self.__Temperature)
         self.__flow_rate = self._getFlowRate(self.__Mfc)
         
     # Method to run the purge controller

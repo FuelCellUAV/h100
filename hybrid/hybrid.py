@@ -4,7 +4,7 @@
 # Must call the update method on each loop of the main code
 
 import quick2wire.i2c as i2c
-import adcpi.MCP3424 as MCP3424
+from adc.adcpi import MCP3424
 
 class HybridIo:
     def __init__(self):
@@ -13,11 +13,10 @@ class HybridIo:
         self.__bit_register       = [0b01000100, 0b00000000]
         self.__direction_register = [0b00111011, 0b00000000] # Output is 0, input is 1
 
-
         try:
-            with i2c.I2CMaster() as bus:
+            with i2c.I2CMaster(1) as bus:
                 bus.transaction(
-                    i2c.write_word_data(self.__address, 6, ((self.__direction_register[0] << 8) | self.__direction_register[1]))
+                    i2c.writing(self.__address, [6, self.__direction_register[0], self.__direction_register[1]]))
         except IOError:
             print("Err: No hybridIO detected")
             return
@@ -37,9 +36,9 @@ class HybridIo:
         
     def update(self):
         try:
-            with i2c.I2CMaster() as bus:
+            with i2c.I2CMaster(1) as bus:
                 data = bus.transaction(
-                        i2c.writing_bytes(config[0], config[1]),
+                        i2c.writing_bytes(self.__address, 0),
                         i2c.reading(self.__address, 2))[0]
             self.__bit_register = data
             return self.__bit_register
@@ -49,9 +48,9 @@ class HybridIo:
     
     def change_output(self):
         try:
-            with i2c.I2CMaster() as bus:
+            with i2c.I2CMaster(1) as bus:
                 bus.transaction(
-                    i2c.write_word_data(self.__address, 2, ((self.__bit_register[0] << 8) | self.__bit_register[1]))
+                    i2c.writing(self.__address, [2, self.__bit_register[0], self.__bit_register]))
             return self.__bit_register
         except IOError:
             print("Err: No hybridIO detected")
@@ -132,38 +131,43 @@ class HybridIo:
     def bit_register(self):
         return self.__bit_register
     @bit_register.setter
-    def bit_register(self, port, bit, state):
-        if state is 1:
-            # Set bit high
-            self.__bit_register[port] = self.__bit_register[port] | (1 << bit)
-        elif state is 0:
-            if bool( (self.__bit_register[port] >> bit) & 0b00000001) is True:
-                # Set bit low
-                self.__bit_register = self.__bit_register[port] ^ (1 << bit)
-            else:
-                # Bit already set
-                return
+    def bit_register(self, data):#port, bit, state):
+        try:
+            port, bit, state = data
+        except ValueError:
+            raise ValueError("Invalid HybridIO register command")
         else:
-            # State must be 1 or 0
-            print("Error in bit register setter")
-        self.change_output()
+            if state is 1:
+                # Set bit high
+                self.__bit_register[port] = self.__bit_register[port] | (1 << bit)
+            elif state is 0:
+                if bool( (self.__bit_register[port] >> bit) & 0b00000001) is True:
+                    # Set bit low
+                    self.__bit_register = self.__bit_register[port] ^ (1 << bit)
+                else:
+                    # Bit already set
+                    return
+            else:
+                # State must be 1 or 0
+                print("Error in bit register setter")
+            self.change_output()
 
 class Charge_Controller:
     def __init__(self):
         self.__address = 0x00
         self.__current = 0.0
-        self.current(0.0)
+        self.current   = 0.0
 
     @property
-    def current(self)
+    def current(self):
         return self.__current
-    @setter.current
+    @current.setter
     def current(self, cur):
         if (cur > 4.0 or cur < 0.0):
             raise ValueError
         else:
-            command = cur; # Some scaling here
-            if self.__changecurrent([self.__address command]) >= 0:
+            command = int(cur); # Some scaling here
+            if self.__changecurrent([self.__address, command]) >= 0:
                 self.__current = cur
             
     # Method to change the channel we wish to read from
@@ -171,9 +175,9 @@ class Charge_Controller:
     def __changecurrent(config):
         try:
             # Using the I2C databus...
-            with I2CMaster(1) as master:
+            with i2c.I2CMaster(1) as master:
                 master.transaction(
-                    writing_bytes(config[0], config[1]))
+                    i2c.writing_bytes(config[0], config[1]))
             return config[1]
                     
         # If I2C error return
@@ -253,8 +257,8 @@ class Hybrid:
         # Charger controller
         if self.__charger_state:
             overhead = 8.5 - self.fc_current_total
-            if overhead < 0.0: overhead = 0.0
-            if (overhead >= 4.0 and self.__charger.current < 4.0)
+            if (overhead < 0.0): overhead = 0.0
+            if (overhead >= 4.0 and self.__charger.current < 4.0):
                 self.__charger.current = self.__charger.current + 0.2 # Is this ramp necessary?
         # TODO: Need checks of charger IO here
         return 1
@@ -270,7 +274,7 @@ class Hybrid:
     @property
     def charger_state(self):
         return self.__charger_state
-    @setter.charger_state
+    @charger_state.setter
     def charger_state(self, state):
         if state is True: self.__charger_state = True
         else: self.__charger_state = False
@@ -335,7 +339,7 @@ class Hybrid:
             return 4.1
         else:
             return 4.2
-    @charged.voltage.setter
+    @charged_voltage.setter
     def charged_voltage(self, voltage):
         if cells is 4.1:
             self.__io.CHEM = False
