@@ -198,7 +198,7 @@ class H100():
     # Method to shutdown
     def shutdown(self):
         # Tell the user we are shutting down
-        print('\n\nFuel Cell shutting down...', end='')
+        print('...Fuel Cell shutting down...', end='')
         
         # Set state to off
         self.state = "off"
@@ -211,7 +211,7 @@ class H100():
 #        self._switch_interrupt.deactivate()
         
         # Tell the user we have shut down
-        print('...Fuel Cell successfully shut down\n\n')
+        print('done')
 
     # Property - What's the current state?
     @property
@@ -379,7 +379,8 @@ class H100():
                     Hybrid.charge_current,
                     Hybrid.output_current]
         for x in range(5):
-            current[x] = abs(current[x] * 1000 / 6.89) + 0.374
+            if current[x] >= 0.0:
+                current[x] = abs(current[x] * 1000 / 6.89) + 0.374
             
         return current
 
@@ -390,7 +391,8 @@ class H100():
                 Hybrid.battery_voltage,
                 Hybrid.output_voltage]
         for x in range(3):
-            voltage[x] = abs(voltage[x] * 1000 / 60.7) - 0.096
+            if voltage[x] >= 0.0:
+                voltage[x] = abs(voltage[x] * 1000 / 60.7) - 0.096
         return voltage
 
     # Method to get Energy
@@ -524,9 +526,25 @@ class H100():
         # SENSORS
         self.__current = self._get_current(self.__hybrid)
         self.__voltage = self._get_voltage(self.__hybrid)
-        self.__power   = [self.__voltage[0] * self.__current[1],
-                            self.__voltage[1] * self.__current[2],
-                            self.__voltage[2] * self.__current[4]]
+
+        # Power FC
+        if self.__voltage[0] >=0.0 and  self.__current[1] >=0.0:
+            self.__power[0] = self.__voltage[0] * self.__current[1]
+        else:
+            self.__power[0] = -1
+
+        # Power Batt
+        if self.__voltage[1] >=0.0 and  self.__current[2] >=0.0:
+            self.__power[1] = self.__voltage[1] * self.__current[2]
+        else:
+            self.__power[1] = -1
+
+        # Power Out
+        if self.__voltage[2] >=0.0 and  self.__current[4] >=0.0:
+            self.__power[2] = self.__voltage[2] * self.__current[4]
+        else:
+            self.__power[2] = -1
+
         for x in range(3):
             energy = self._get_energy(self.__timer, self.__power[x])
             self.__energy[x] += energy # Cumulative

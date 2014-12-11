@@ -211,10 +211,16 @@ class Adc:
         self.__t1              = self.__adc1.get(3)
 
         # ADC 2
-        self.__battery_voltage = self.__adc2.get(0) * self.__voltage_scale
-        self.__output_voltage  = self.__adc2.get(1) * self.__voltage_scale
-        self.__fc_voltage      = self.__adc2.get(2) * self.__voltage_scale
-        self.__t2              = self.__adc2.get(3) * self.__voltage_scale
+        self.__battery_voltage = self.__adc2.get(0)# * self.__voltage_scale
+        self.__output_voltage  = self.__adc2.get(1)# * self.__voltage_scale
+        self.__fc_voltage      = self.__adc2.get(2)# * self.__voltage_scale
+        self.__t2              = self.__adc2.get(3)# * self.__voltage_scale
+
+        if self.__battery_voltage >= 0.0: self.__battery_voltage *= self.__voltage_scale
+        if self.__output_voltage >= 0.0:  self.__output_voltage *= self.__voltage_scale
+        if self.__fc_voltage >= 0.0:      self.__fc_voltage *= self.__voltage_scale
+        if self.__t2 >= 0.0:              self.__t2 *= self.__voltage_scale
+
         return
         
     @property # Charging current
@@ -255,13 +261,15 @@ class Hybrid:
         # ADCs
         self.__adc.update()
         # Charger controller
-        if self.__charger_state:
+        if self.__charger_state and self.fc_current_total>=0.0:
             overhead = 8.5 - self.fc_current_total
             if (overhead < 0.0): overhead = 0.0
             if (overhead >= 4.0 and self.__charger.current < 4.0):
                 self.__charger.current = self.__charger.current + 0.2 # Is this ramp necessary?
-        # TODO: Need checks of charger IO here
-        return 1
+            # TODO: Need checks of charger IO here
+            return 1
+        else:
+            return -1
         
     def h2_on(self):     self.__io.power1 = 1
     def h2_off(self):    self.__io.power1 = 0
@@ -307,10 +315,16 @@ class Hybrid:
         return self.__adc.fc_current
     @property
     def fc_current_total(self):
-        return self.__adc.fc_current + self.__adc.charge_current
+        if (self.__adc.fc_current<0 or self.__adc.charge_current<0):
+            return -1
+        else:
+            return self.__adc.fc_current + self.__adc.charge_current
     @property
     def battery_current(self):
-        return self.__adc.output_current - self.fc_current_total
+        if (self.__adc.output_current<0 or self.fc_current_total<0):
+            return -1
+        else:
+            return self.__adc.output_current - self.fc_current_total
     @property
     def charge_current(self):
         return self.__adc.charge_current

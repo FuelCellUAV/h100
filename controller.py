@@ -257,31 +257,36 @@ def _performance_monitor(is_active, performance_timer, function_name):
         performance_timer=time.time()
                 
         return performance_timer   
-        
+
+# Shutdown routine        
 def _shutdown(motor, h100, load, log, display):
+    print("\nShutting down...")
+
     # Set motor throttle to zero
     motor.throttle = 0
-    print('\nThrottle set to {:d}\n\n'.format(motor.throttle))
+    print('...Throttle set to {:d}'.format(motor.throttle))
     
     # Shutdown fuel cell
     h100.shutdown()
     
     # Shutdown loadbank
     if load:
-        print('\nShutting down load class')
+        print('...Loadbank disconnected')
         if load.shutdown(): print('Done\n')
         
     # Shutdown datalog
     if log:
-        print('\nShutting down log')
+        print('...Datalogger closed')
         if log.close(): print('Done\n')
         
     # Shutdown LED display
     if display:
         display.on = False
+        print('...Display off')
         
     # End
-    print('\n\n\nProgramme successfully exited and closed down\n\n')
+    print('Programme successfully exited and closed down\n\n')
+
 
 # Main run function
 if __name__ == "__main__":
@@ -391,7 +396,7 @@ if __name__ == "__main__":
         
                 # Update the performance monitor timer
                 performance_timer = _performance_monitor(args.timer, performance_timer, timer.My_Time.__name__)
-        
+                
                 # If we are running a scheduled profile...
                 if profile:
                     

@@ -47,6 +47,10 @@ class MCP3424:
         self.__varDivisor = 0b1 << (resolution - 12)
         self.__varMultiplier = (2.495 / self.__varDivisor) / 1000
 
+        if self.__changechannel(self.__config[0])<0:
+            print("Err: No ADC detected")
+
+
     # Method to change the channel we wish to read from
     @staticmethod
     def __changechannel(config):
@@ -58,7 +62,7 @@ class MCP3424:
                     
         # If I2C error return
         except IOError:
-            return
+            return -1
 
     # Method to read adc
     @staticmethod

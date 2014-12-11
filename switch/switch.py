@@ -68,4 +68,3 @@ class Switch:
     # Method to turn all switches off when code is cancelled
     def __del__(self):
         self.write(False)
-        print('\nSwitch off\n')
