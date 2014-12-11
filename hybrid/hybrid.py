@@ -43,7 +43,7 @@ class HybridIo:
             self.__bit_register = data
             return self.__bit_register
         except IOError:
-            print("Err: No hybridIO detected")
+#            print("Err: No hybridIO detected")
             return -1
     
     def change_output(self):
@@ -53,7 +53,7 @@ class HybridIo:
                     i2c.writing(self.__address, [2, self.__bit_register[0], self.__bit_register]))
             return self.__bit_register
         except IOError:
-            print("Err: No hybridIO detected")
+#            print("Err: No hybridIO detected")
             return -1
 
         

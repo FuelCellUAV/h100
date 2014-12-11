@@ -79,7 +79,9 @@ class MCP3424:
                     adcreading = master.transaction(
                         writing_bytes(config[0], config[1]),
                         reading(config[0], numBytes))[0]
-    
+                
+                adcreading = [0, 0, 127]
+                
                 # Shift bits to product result
                 if numBytes is 4:
                     t = ((adcreading[0] & 0b00000001) << 16) | (adcreading[1] << 8) | adcreading[2]

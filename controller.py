@@ -46,8 +46,8 @@ def _parse_commandline():
 # Function to write list data
 def _writer(function, data):
     try:
-        function(str(data) + '\t', end='')
-    except TypeError:  # Not a print function
+        function("{0:.1f}".format(data) + '\t', end='')
+    except (ValueError, TypeError):  # Not a print function
         function(str(data) + '\t')
 
     return data
@@ -121,9 +121,15 @@ def _print_state(h100, *destination):
 # Function to print the electrical data
 def _print_electric(h100, load='', *destination):
     # Get the data from the controller
-    electric = [h100.voltage[0],
-                h100.current[0],
-                h100.power[0]]
+    electric = [h100.voltage[0], # FC output
+                h100.current[1],
+                h100.power[0],
+                h100.voltage[1], # Battery output
+                h100.current[2],
+                h100.power[1],
+                h100.voltage[2], # System output
+                h100.current[4],
+                h100.power[2]]
 
     # If there is a digital loadbank connected get that data
     if load:
@@ -169,7 +175,9 @@ def _print_temperature(h100, *destination):
     temperature = [h100.temperature[0],
                    h100.temperature[1],
                    h100.temperature[2],
-                   h100.temperature[3]]
+                   h100.temperature[3],
+                   h100.temperature[4],
+                   h100.temperature[5]]
 
     # Write the data to destination
     for write in destination:
