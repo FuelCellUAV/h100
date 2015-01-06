@@ -19,6 +19,8 @@ def _parse_commandline():
     parser.add_argument('--h2', action='store_true', help='Turn H2 supply valve on')
     parser.add_argument('--fan', action='store_true', help='Turn fan on')
     parser.add_argument('--purge', action='store_true', help='Turn purge valve on')
+    parser.add_argument('--aux1', action='store_true', help='Turn aux1 on')
+    parser.add_argument('--aux2', action='store_true', help='Turn aux2 on')
     parser.add_argument('--off', action='store_false', default=True, help='Turn charger off')
 
 def _get_elec(source):
@@ -61,7 +63,9 @@ if args.fan: controller.fan_on()
 else:        controller.fan_off()
 if args.purge: controller.purge_on()
 else:          controller.purge_off()
-   
+controller.__io.power4 = args.aux1
+controller.__io.power5 = args.aux2
+
 while True:
     controller.update()
     print(_get_elec(controller))
