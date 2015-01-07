@@ -93,9 +93,6 @@ class H100():
         # Start temperature sensors
         self.__Temperature = tmp102.Tmp102()
         
-        # Start switches
-        self.__pfio = pifacedigitalio.PiFaceDigital()
-        
         # Start the mass flow controller
         self.__Mfc = mfc.mfc()
         
