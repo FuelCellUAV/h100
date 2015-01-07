@@ -59,6 +59,7 @@ class MCP3424:
             with I2CMaster(1) as master:
                 master.transaction(
                     writing_bytes(config[0], config[1]))
+            return 1
                     
         # If I2C error return
         except IOError:

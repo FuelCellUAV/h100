@@ -21,27 +21,30 @@ def _parse_commandline():
     parser.add_argument('--purge', action='store_true', help='Turn purge valve on')
     parser.add_argument('--aux1', action='store_true', help='Turn aux1 on')
     parser.add_argument('--aux2', action='store_true', help='Turn aux2 on')
-    parser.add_argument('--off', action='store_false', default=True, help='Turn charger off')
+    parser.add_argument('--off', action='store_false', help='Turn charger off')
+
+    # Return what was argued
+    return parser.parse_args()
 
 def _get_elec(source):
     return ("Elec: "
-        + 'f' + source.fc_voltage + '/' + source.fc_current_to_motor + ' '
-        + 'b' + source.battery_voltage + '/' + source.battery_current + ' '
-        + 'c' + source.charge_current + ' '
-        + '>' + source.output_voltage + '/' + source.fc_current_to_motor)
+        + 'f' + str(source.fc_voltage) + '/' + str(source.fc_current_to_motor) + ' '
+        + 'b' + str(source.battery_voltage) + '/' + str(source.battery_current) + ' '
+        + 'c' + str(source.charge_current) + ' '
+        + '>' + str(source.output_voltage) + '/' + str(source.fc_current_to_motor))
 
 def _get_chg(source):
     return ("Chg: "
-        + source.charger_state + ' '
-        + source.shutdown + ' '
-        + 'i' + source.charger_info + ' '
-        + 's' + source.cells + ' '
-        + 'v' + source.charged_voltage + ' ')
+        + str(source.charger_state) + ' '
+        + str(source.shutdown) + ' '
+        + 'i' + str(source.charger_info) + ' '
+        + 's' + str(source.cells) + ' '
+        + 'v' + str(source.charged_voltage) + ' ')
         
 def _get_temp(source):
     return ("Tmp: "
-        + source.t1 + ' '
-        + source.t2 + ' ')
+        + str(source.t1) + ' '
+        + str(source.t2) + ' ')
     
     
 controller = Hybrid()
@@ -49,8 +52,8 @@ args = _parse_commandline()
 
 # Charger Setup
 controller.shutdown = args.off
-if args.iLim is not controller.__charger.current:
-    controller.__charger.current = args.iLim
+#if args.iLim is not controller.__charger.current:
+#    controller.__charger.current = args.iLim
     
 # Battery Setup
 controller.cells = args.cells
@@ -63,13 +66,13 @@ if args.fan: controller.fan_on()
 else:        controller.fan_off()
 if args.purge: controller.purge_on()
 else:          controller.purge_off()
-controller.__io.power4 = args.aux1
-controller.__io.power5 = args.aux2
+#controller.__io.power4 = args.aux1
+#controller.__io.power5 = args.aux2
 
 while True:
     controller.update()
     print(_get_elec(controller))
     print(_get_chg(controller))
-    print(_get_tmp(controller))
+    print(_get_temp(controller))
     sleep(1)
     

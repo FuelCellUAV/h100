@@ -3,6 +3,8 @@
 
 # Must call the update method on each loop of the main code
 
+import sys
+sys.path.append("..") # Adds higher directory to python modules path.
 import quick2wire.i2c as i2c
 from adc.adcpi import MCP3424
 
@@ -22,7 +24,8 @@ class HybridIo:
             return
 
         self.change_output()
-        
+
+
         # IO register. > means output, < means input.
         # Port 0:       Port 1:
         # 0: 3C4C>      12V>
@@ -50,7 +53,7 @@ class HybridIo:
         try:
             with i2c.I2CMaster(1) as bus:
                 bus.transaction(
-                    i2c.writing(self.__address, [2, self.__bit_register[0], self.__bit_register]))
+                    i2c.writing(self.__address, bytearray([2, self.__bit_register[0], self.__bit_register[1]])))
             return self.__bit_register
         except IOError:
 #            print("Err: No hybridIO detected")
@@ -154,7 +157,7 @@ class HybridIo:
 
 class Charge_Controller:
     def __init__(self):
-        self.__address = 0x00
+        self.__address = 0x2F
         self.__current = 0.0
         self.current   = 0.0
 
@@ -187,8 +190,8 @@ class Charge_Controller:
 
 class Adc:
     def __init__(self, res=12):
-        self.__adc1 = MCP3424(0xD0, res)
-        self.__adc2 = MCP3424(0xD4, res)
+        self.__adc1 = MCP3424(0x68, res)
+        self.__adc2 = MCP3424(0x6C, res)
 
         self.__voltage_scale   = 10.0 / 43.0; # Potential divider circuit
         
@@ -355,9 +358,9 @@ class Hybrid:
             return 4.2
     @charged_voltage.setter
     def charged_voltage(self, voltage):
-        if cells is 4.1:
+        if voltage is 4.1:
             self.__io.CHEM = False
-        elif cells is 4.2:
+        elif voltage is 4.2:
             self.__io.CHEM = True
         else:
             print("Wrong cell chemistry selected")
