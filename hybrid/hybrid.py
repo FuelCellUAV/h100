@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Re-written by Simon Howroyd 2014 for Loughborough University
+# Re-written by Simon Howroyd 2015 for Loughborough University
 
 # Must call the update method on each loop of the main code
 
@@ -13,7 +13,7 @@ class HybridIo:
         self.__address = 0x20
         
         self.__bit_register       = [0b01000100, 0b00000000]
-        self.__direction_register = [0b00111011, 0b00000000] # Output is 0, input is 1
+        self.__direction_register = [0b00011100, 0b00000000] # Output is 0, input is 1
 
         try:
             with i2c.I2CMaster(1) as bus:
@@ -46,7 +46,7 @@ class HybridIo:
             self.__bit_register = data
             return self.__bit_register
         except IOError:
-#            print("Err: No hybridIO detected")
+            print("Err: No hybridIO detected")
             return -1
     
     def change_output(self):
@@ -56,7 +56,7 @@ class HybridIo:
                     i2c.writing(self.__address, bytearray([2, self.__bit_register[0], self.__bit_register[1]])))
             return self.__bit_register
         except IOError:
-#            print("Err: No hybridIO detected")
+            print("Err: No hybridIO detected")
             return -1
 
         
@@ -69,31 +69,31 @@ class HybridIo:
         return self._get_bit(self.bit_register[1], 0)
     @power1.setter
     def power1(self, state):
-        self.bit_register = ( 1, 0, state)
+        self.bit_register = [1, 0, state]
     @property
     def power2(self):
         return self._get_bit(self.bit_register[1], 1)
     @power2.setter
     def power2(self, state):
-        self.bit_register = ( 1, 1, state)
+        self.bit_register = [1, 1, state]
     @property
     def power3(self):
         return self._get_bit(self.bit_register[1], 2)
     @power3.setter
     def power3(self, state):
-        self.bit_register = ( 1, 2, state)
+        self.bit_register = [1, 2, state]
     @property
     def power4(self):
         return self._get_bit(self.bit_register[1], 3)
     @power4.setter
     def power4(self, state):
-        self.bit_register = ( 1, 3, state)
+        self.bit_register = [1, 3, state]
     @property
     def power5(self):
         return self._get_bit(self.bit_register[1], 4)
     @power5.setter
     def power5(self, state):
-        self.bit_register = ( 1, 4, state)
+        self.bit_register = [1, 4, state]
         
         
     @property
@@ -101,13 +101,13 @@ class HybridIo:
         return self._get_bit(self.bit_register[0], 0)
     @CELLS.setter
     def CELLS(self, state):
-        self.bit_register = (0, 0, state)
+        self.bit_register = [0, 0, state]
     @property
     def CHEM(self):
         return self._get_bit(self.bit_register[0], 1)
     @CHEM.setter
     def CHEM(self, state):
-        self.bit_register = (0, 1, state)
+        self.bit_register = [0, 1, state]
     @property
     def LOBAT(self):
         return self._get_bit(self.bit_register[0], 2)
@@ -122,7 +122,7 @@ class HybridIo:
         return self._get_bit(self.bit_register[0], 5)
     @SHDN.setter
     def SHDN(self, state):
-        self.bit_register = (0, 5, state)
+        self.bit_register = [0, 5, state]
     @property
     def FAULT(self):
         return self._get_bit(self.bit_register[0], 6)
@@ -142,11 +142,21 @@ class HybridIo:
         else:
             if state is 1:
                 # Set bit high
-                self.__bit_register[port] = self.__bit_register[port] | (1 << bit)
+                if port is 0:
+                    self.__bit_register = [self.__bit_register[0] | (1 << bit), self.__bit_register[1]]
+                elif port is 1:
+                    self.__bit_register = [self.__bit_register[0], self.__bit_register[1] | (1 << bit)]
+                else:
+                    print("Bad port request")
             elif state is 0:
                 if bool( (self.__bit_register[port] >> bit) & 0b00000001) is True:
                     # Set bit low
-                    self.__bit_register = self.__bit_register[port] ^ (1 << bit)
+                    if port is 0:
+                        self.__bit_register = [self.__bit_register[0] ^ (1 << bit), self.__bit_register[1]]
+                    elif port is 1:
+                        self.__bit_register = [self.__bit_register[0], self.__bit_register[1] ^ (1 << bit)]
+                    else:
+                        print("Bad port request")
                 else:
                     # Bit already set
                     return
@@ -170,6 +180,7 @@ class Charge_Controller:
             raise ValueError
         else:
             command = int(cur); # Some scaling here
+            command *= 30
             if self.__changecurrent([self.__address, command]) >= 0:
                 self.__current = cur
             
@@ -191,9 +202,10 @@ class Charge_Controller:
 class Adc:
     def __init__(self, res=12):
         self.__adc1 = MCP3424(0x68, res)
-        self.__adc2 = MCP3424(0x6C, res)
+        self.__adc2 = MCP3424(0x6B, res)
 
-        self.__voltage_scale   = 10.0 / 43.0; # Potential divider circuit
+        self.__voltage_scale   = 406.0 / 232.558; # Potential divider circuit * 406??
+        self.__voltage_scale_fc= 406.0 / 90.909; # Potential divider circuit * 406??
         
         self.__t1              = 0.0
         self.__t2              = 0.0
@@ -209,20 +221,20 @@ class Adc:
     def update(self):
         # ADC 1
         self.__charge_current  = self.__adc1.get(0)
-        self.__output_current  = self.__adc1.get(1)
+        self.__output_current  = self.__adc1.get(1) - 5.1 # * 0.0267 # Must subtract Vcc/2 scaled
         self.__fc_current      = self.__adc1.get(2)
         self.__t1              = self.__adc1.get(3)
 
         # ADC 2
-        self.__battery_voltage = self.__adc2.get(0)# * self.__voltage_scale
-        self.__output_voltage  = self.__adc2.get(1)# * self.__voltage_scale
-        self.__fc_voltage      = self.__adc2.get(2)# * self.__voltage_scale
-        self.__t2              = self.__adc2.get(3)# * self.__voltage_scale
+        self.__battery_voltage = self.__adc2.get(0) * self.__voltage_scale
+        self.__output_voltage  = self.__adc2.get(1) * self.__voltage_scale
+        self.__fc_voltage      = self.__adc2.get(2) * self.__voltage_scale_fc
+        self.__t2              = self.__adc2.get(3) * self.__voltage_scale
 
-        if self.__battery_voltage >= 0.0: self.__battery_voltage *= self.__voltage_scale
-        if self.__output_voltage >= 0.0:  self.__output_voltage *= self.__voltage_scale
-        if self.__fc_voltage >= 0.0:      self.__fc_voltage *= self.__voltage_scale
-        if self.__t2 >= 0.0:              self.__t2 *= self.__voltage_scale
+#        if self.__battery_voltage >= 0.0: self.__battery_voltage *= self.__voltage_scale
+#        if self.__output_voltage >= 0.0:  self.__output_voltage  *= self.__voltage_scale
+#        if self.__fc_voltage >= 0.0:      self.__fc_voltage      *= self.__voltage_scale_fc
+#        if self.__t2 >= 0.0:              self.__t2              *= self.__voltage_scale
 
         return
         
@@ -257,6 +269,7 @@ class Hybrid:
         self.__adc     = Adc()
         self.__charger = Charge_Controller()
         self.__charger_state = False
+        self.__charger.current = 0.0 # Probably not needed
         
     def update(self):
         # Input/Outputs
@@ -272,6 +285,7 @@ class Hybrid:
             # TODO: Need checks of charger IO here
             return 1
         else:
+            
             return -1
         
     def h2_on(self):     self.__io.power1 = 1
@@ -337,18 +351,19 @@ class Hybrid:
     
     @property
     def cells(self):
+        return self.__io.CELLS
         if self.__io.CELLS is False:
             return 3
         else:
             return 4
     @cells.setter
     def cells(self, cells):
-        if cells is 3:
-            self.__io.CELLS = False
-        elif cells is 4:
-            self.__io.CELLS = True
+        if int(cells) is 3:
+            self.__io.CELLS = 0
+        elif int(cells) is 4:
+            self.__io.CELLS = 1
         else:
-            print("Wrong cell count selected")
+            print("Wrong cell count selected: " + str(cells))
     
     @property
     def charged_voltage(self):
@@ -358,23 +373,23 @@ class Hybrid:
             return 4.2
     @charged_voltage.setter
     def charged_voltage(self, voltage):
-        if voltage is 4.1:
-            self.__io.CHEM = False
-        elif voltage is 4.2:
-            self.__io.CHEM = True
+        if abs(voltage-4.1)<0.01: # Comparing floats
+            self.__io.CHEM = 0
+        elif abs(voltage-4.2)<0.01:
+            self.__io.CHEM = 1
         else:
-            print("Wrong cell chemistry selected")
+            print("Wrong cell chemistry selected: " + str(voltage))
     
     @property
     def shutdown(self):
-        if self.__io.SHDN is False:
+        if self.__io.SHDN is 0:
             return True
         else:
             return False
     @shutdown.setter
     def shutdown(self, state):
-        if state is False:
-            self.__io.SHDN = True
-        elif state is True:
-            self.__io.SHDN = False
+        if state is True:
+            self.__io.SHDN = 1
+        elif state is False:
+            self.__io.SHDN = 0
     

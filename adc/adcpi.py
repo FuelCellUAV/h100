@@ -85,7 +85,7 @@ class MCP3424:
                         writing_bytes(config[0], config[1]),
                         reading(config[0], numBytes))[0]
                 
-                adcreading = [0, 0, 127]
+#                adcreading = [0, 0, 127]
                 
                 # Shift bits to product result
                 if numBytes is 4:

@@ -3,7 +3,7 @@
 
 # Test programme for the hybrid board
 
-from hybrid import Hybrid
+from hybrid import Hybrid, Charge_Controller
 from time import sleep
 import argparse
 
@@ -21,19 +21,35 @@ def _parse_commandline():
     parser.add_argument('--purge', action='store_true', help='Turn purge valve on')
     parser.add_argument('--aux1', action='store_true', help='Turn aux1 on')
     parser.add_argument('--aux2', action='store_true', help='Turn aux2 on')
-    parser.add_argument('--off', action='store_false', help='Turn charger off')
+    parser.add_argument('--on', action='store_true', help='Turn charger off')
 
     # Return what was argued
     return parser.parse_args()
 
 def _get_elec(source):
     return ("Elec: "
-        + 'f' + str(source.fc_voltage) + '/' + str(source.fc_current_to_motor) + ' '
-        + 'b' + str(source.battery_voltage) + '/' + str(source.battery_current) + ' '
-        + 'c' + str(source.charge_current) + ' '
-        + '>' + str(source.output_voltage) + '/' + str(source.fc_current_to_motor))
+        + 'f' + str(source.fc_voltage)[:7] + '/' + str(source.fc_current_to_motor)[:4] + ' '
+        + 'b' + str(source.battery_voltage)[:4] + '/' + str(source.battery_current)[:4] + ' '
+        + 'c' + str(source.charge_current)[:4] + ' '
+        + '>' + str(source.output_voltage)[:7] + '/' + str(source.output_current)[:4])
 
 def _get_chg(source):
+    x = "Chg: "
+    if source.charger_state: x += "ON! "
+    else : x += "OFF! "
+    if source.shutdown: x += "SHDN ("
+    else : x += "( "
+    if source.charger_info[0]: x += "LOBAT "
+    if source.charger_info[1]: x += "ICL "
+    if source.charger_info[2]: x += "ACP "
+    if source.charger_info[3]: x += "FAULT "
+    if source.charger_info[4]: x += "CHG "
+    x += ") "
+    if source.cells: x += "4cell "
+    else: x += "3cell "
+    x += (str(source.charged_voltage) + ' ')
+    return x
+
     return ("Chg: "
         + str(source.charger_state) + ' '
         + str(source.shutdown) + ' '
@@ -43,15 +59,16 @@ def _get_chg(source):
         
 def _get_temp(source):
     return ("Tmp: "
-        + str(source.t1) + ' '
-        + str(source.t2) + ' ')
+        + str(source.t1)[:4] + ' '
+        + str(source.t2)[:4] + ' ')
     
     
 controller = Hybrid()
 args = _parse_commandline()
+pot = Charge_Controller()
 
 # Charger Setup
-controller.shutdown = args.off
+controller.shutdown = args.on
 #if args.iLim is not controller.__charger.current:
 #    controller.__charger.current = args.iLim
     
@@ -73,6 +90,16 @@ while True:
     controller.update()
     print(_get_elec(controller))
     print(_get_chg(controller))
-    print(_get_temp(controller))
+#    pot.current = 0.0
+#    print(_get_temp(controller))
+#    controller.h2_on()
+#    controller.fan_on()
+#    controller.purge_on()
+#    sleep(1)
+    pot.current = 2.0
+#    controller.h2_off()
+#    controller.fan_off()
+#    controller.purge_off()
+    print('')
     sleep(1)
-    
+
