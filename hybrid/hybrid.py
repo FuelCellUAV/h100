@@ -202,11 +202,12 @@ class Charge_Controller:
 class Adc:
     def __init__(self, res=12):
         self.__adc1 = MCP3424(0x68, res)
-        self.__adc2 = MCP3424(0x6B, res)
+        self.__adc2 = MCP3424(0x6C, res)
 
-        self.__voltage_scale   = 406.0 / 232.558; # Potential divider circuit * 406??
-        self.__voltage_scale_fc= 406.0 / 90.909; # Potential divider circuit * 406??
-        
+        self.__voltage_scale   = 5.458;
+        self.__charge_i_scale  = 1 / 33.36 / 0.025
+        self.__fc_i_scale      = -220.0 / 40.21 / 0.01
+
         self.__t1              = 0.0
         self.__t2              = 0.0
         self.__fc_voltage      = 0.0
@@ -220,15 +221,17 @@ class Adc:
         
     def update(self):
         # ADC 1
-        self.__charge_current  = self.__adc1.get(0)
-        self.__output_current  = self.__adc1.get(1) - 5.1 # * 0.0267 # Must subtract Vcc/2 scaled
-        self.__fc_current      = self.__adc1.get(2)
+        self.__charge_current  = self.__adc1.get(0) #* self.__charge_i_scale
+        self.__output_current  = self.__adc1.get(1,8)# - 5.1 # * 0.0267 # Must subtract Vcc/2 scaled
+        self.__fc_current      = (self.__adc1.get(2) * 3.817)# - 2.04) / -0.0157
         self.__t1              = self.__adc1.get(3)
+
+        print(str(self.__fc_current)[:5] + ' ' + str(self.__charge_current)[:5] + ' ' + str(self.__output_current)[:5])
 
         # ADC 2
         self.__battery_voltage = self.__adc2.get(0) * self.__voltage_scale
         self.__output_voltage  = self.__adc2.get(1) * self.__voltage_scale
-        self.__fc_voltage      = self.__adc2.get(2) * self.__voltage_scale_fc
+        self.__fc_voltage      = self.__adc2.get(2) * self.__voltage_scale
         self.__t2              = self.__adc2.get(3) * self.__voltage_scale
 
 #        if self.__battery_voltage >= 0.0: self.__battery_voltage *= self.__voltage_scale

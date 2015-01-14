@@ -32,7 +32,7 @@ class MCP3424:
             raise ValueError('Incorrect ADC Resolution')
         else:
             self.__res = resolution
-            
+
         # Build default address and configuration register
         self.__config = [[address, 0x90],
                          [address, 0xB0],
@@ -105,12 +105,17 @@ class MCP3424:
             return -1
 
     # External getter - call this to receive data
-    def get(self, channel):
+    def get(self, channel, gain=1):
+        config = self.__config[channel]
+
+        if gain is 8:
+            config[1]  = config[1] | 0b11
+
         # Change adc setting to the channel we want to read
-        self.__changechannel(self.__config[channel])
+        self.__changechannel(config)
         
         # Read and return the data
-        return self.__getadcreading(self.__config[channel], self.__varMultiplier, self.__res)
+        return self.__getadcreading(config, self.__varMultiplier, self.__res)
         
         
 

@@ -91,12 +91,12 @@ while True:
     print(_get_elec(controller))
     print(_get_chg(controller))
 #    pot.current = 0.0
-#    print(_get_temp(controller))
+    print(_get_temp(controller))
 #    controller.h2_on()
 #    controller.fan_on()
 #    controller.purge_on()
 #    sleep(1)
-    pot.current = 2.0
+#    pot.current = 2.0
 #    controller.h2_off()
 #    controller.fan_off()
 #    controller.purge_off()
