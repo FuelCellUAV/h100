@@ -29,6 +29,7 @@ from scheduler import scheduler
 from esc import esc
 from timer import timer
 
+
 # Inspect user input arguments
 def _parse_commandline():
     # Define the parser
@@ -123,11 +124,16 @@ def _print_electric(h100, load='', *destination):
     # Get the data from the controller
     electric = [h100.voltage[0],
                 h100.current[0],
-                h100.power[0]]
+                h100.power[0],
+                h100.voltage[1],
+                h100.current[1],
+                h100.power[1],
+                h100.voltage[2],
+                h100.current[2],
+                h100.power[2]]
 
     # If there is a digital loadbank connected get that data
     if load:
-        
         # Convert mode to a code for Matlab compatibility
         if "CURRENT" in load.mode:
             mode_code = "1 " + load.mode.split()[1]
@@ -294,7 +300,7 @@ if __name__ == "__main__":
         time.sleep(0.2)
         load.range = '4'
         time.sleep(0.2)
-        load.current_limit = '9.0'
+        load.current_limit = '20.0'
         time.sleep(0.2)
         load.voltage_limit = '35.0'
         time.sleep(0.2)

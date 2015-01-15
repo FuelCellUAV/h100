@@ -125,24 +125,24 @@ class H100():
         self.__time_change = time.time()
         
         # Start the piface for input switch functionality
-        self.__pfio = pifacedigitalio.PiFaceDigital()
-        self._switch_interrupt = self._switch_handler(self.__pfio, self._switch_on, self._switch_off,
-                                                      self._switch_reset)
+#        self.__pfio = pifacedigitalio.PiFaceDigital()
+#        self._switch_interrupt = self._switch_handler(self.__pfio, self._switch_on, self._switch_off,
+#                                                      self._switch_reset)
                                                       
         # Define state
         self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
 
         # Define switches
-        self.__fan = switch.Switch(0)
-        self.__h2 = switch.Switch(1)
-        self.__purge = switch.Switch(2)
+#        self.__fan = switch.Switch(0)
+#        self.__h2 = switch.Switch(1)
+#        self.__purge = switch.Switch(2)
 
         # Define variables
         self.__state = self.STATE.off
-        self.__current = [0.0] * 8
-        self.__voltage = [0.0] * 8
-        self.__power = [0.0] * 4
-        self.__energy = [0.0] * 2
+        self.__current = [0.0] * 3
+        self.__voltage = [0.0] * 3
+        self.__power = [0.0] * 3
+        self.__energy = [0.0] * 6
         self.__temperature = [0.0] * 4
         self.__flow_rate = 0.0
 
@@ -323,34 +323,39 @@ class H100():
     ##############
     # State Off Routine
     def _state_off(self):
-        self._purge_controller() # not needed #
-        self.__h2.write(False)
-        self.__fan.write(False)
-        self.__purge.write(False)
+        return
+#       self._purge_controller() # not needed #
+#       self.__h2.write(False)
+#       self.__fan.write(False)
+#       self.__purge.write(False)
 
     # State Startup Routine
     def _state_startup(self):
-        self.__h2.timed(0, self.__start_time)
-        self.__fan.timed(0, self.__start_time)
-        self.__purge.timed(0, self.__start_time)
+        return
+#        self.__h2.timed(0, self.__start_time)
+#        self.__fan.timed(0, self.__start_time)
+#        self.__purge.timed(0, self.__start_time)
 
     # State On Routine
     def _state_on(self):
-        self._purge_controller()
-        self.__h2.write(True)
-        self.__fan.write(True)
-        self.__purge.timed(self.purge_frequency, self.__purge_time)
+        return
+#        self._purge_controller()
+#        self.__h2.write(True)
+#        self.__fan.write(True)
+#        self.__purge.timed(self.purge_frequency, self.__purge_time)
 
     # State Shutdown Routine
     def _state_shutdown(self):
-        self.__h2.write(False)
-        self.__fan.timed(0, self.__stop_time)
-        self.__purge.timed(0, self.__stop_time)
+        return
+#        self.__h2.write(False)
+#        self.__fan.timed(0, self.__stop_time)
+#        self.__purge.timed(0, self.__stop_time)
 
     # State Error Routine
     def _state_error(self):
-        self.__h2.write(False)
-        self.__purge.write(False)
+        return
+#        self.__h2.write(False)
+#        self.__purge.write(False)
         
         # Wait for temperature to cool down before turning fan off
         if max(self.__temperature) > self.__cutoff_temperature:
@@ -519,13 +524,20 @@ class H100():
 
     # Method to update sensor data
     def _update_sensors(self):
-        self.__current[0] = self._get_current(self.__Adc, 0)
-        self.__voltage[0] = self._get_voltage(self.__Adc, 4)
-        self.__power[0] = self.__voltage[0] * self.__current[0]
-        self.__energy[0] = self._get_energy(self.__timer, self.__power[0])
-        self.__energy[1] += self.__energy[0] # Cumulative
+        self.__voltage[0] = self._get_voltage(self.__Adc, 0)
+        self.__voltage[1] = self._get_voltage(self.__Adc, 2)
+        self.__voltage[2] = self._get_voltage(self.__Adc, 4)
+
+        self.__current[0] = self._get_current(self.__Adc, 1)
+        self.__current[1] = self._get_current(self.__Adc, 3)
+        self.__current[2] = self._get_current(self.__Adc, 5)
+
+        for x in range(3):
+            self.__power[x] = self.__voltage[x] * self.__current[x]
+            self.__energy[x] = self._get_energy(self.__timer, self.__power[x])
+            self.__energy[2*x+1] += self.__energy[x] # Cumulative
         self.__temperature = self._get_temperature(self.__Temperature)
-        self.__flow_rate = self._getFlowRate(self.__Mfc)
+#        self.__flow_rate = self._getFlowRate(self.__Mfc)
         
     # Method to run the purge controller
     def _purge_controller(self):

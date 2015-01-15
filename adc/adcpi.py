@@ -38,14 +38,14 @@ class AdcPi2:
             self.__res = res
 
         # Build default address and configuration register of the ADC
-        self.__config = [[0x68, 0x90],
-                         [0x68, 0xB0],
-                         [0x68, 0xD0],
-                         [0x68, 0xF0],
-                         [0x69, 0x90],
-                         [0x69, 0xB0],
-                         [0x69, 0xD0],
-                         [0x69, 0xF0]]
+        self.__config = [[0x6C, 0x90],
+                         [0x6C, 0xB0],
+                         [0x6C, 0xD0],
+                         [0x6C, 0xF0],
+                         [0x6D, 0x90],
+                         [0x6D, 0xB0],
+                         [0x6D, 0xD0],
+                         [0x6D, 0xF0]]
 
         # Set resolution in configuration register
         for x in range(len(self.__config)):
