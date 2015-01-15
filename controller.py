@@ -290,54 +290,7 @@ def _shutdown(motor, h100, load, log, display):
         print('...Datalogger closed')
         if log.close(): print('Done\n')
         
-<<<<<<< HEAD
-    # Otherwise zero it and set safety limits
-    else:
-        load.zero()
-        time.sleep(0.2)
-        load.mode = 'CURRENT'
-        time.sleep(0.2)
-        load.range = '4'
-        time.sleep(0.2)
-        load.current_limit = '20.0'
-        time.sleep(0.2)
-        load.voltage_limit = '35.0'
-        time.sleep(0.2)
-        load.voltage_minimum = '9.0'
-
-    # Initialise profile scheduler if argued
-    if args.profile:
-        profile = scheduler.Scheduler(args.profile)
-        
-        # If a loadbank is connected then define this as the output
-        if load:
-            output = "loadbank"
-            
-        # Otherwise assume a motor is connected via an ESC
-        else:
-            output = "esc"
-            
-    # Otherwise make the variable blank
-    else:
-        profile = ''
-
-    # Initiaise the ESC
-    motor = esc.esc()
-    
-    # Zero the throttle for safety
-    motor.throttle = 0
-
-    # Start timers
-    my_time = timer.My_Time()
-    timeStart = time.time() # todo
-
-    # Print the header to the screen
-    _display_header(print)
-    
-    # If there is an LED screen conencted...
-=======
     # Shutdown LED display
->>>>>>> hybrid
     if display:
         display.on = False
         print('...Display off')
