@@ -1,9 +1,3 @@
-##!/usr/bin/env python3
-
-# abelectronics ADC Pi V2 driver
-
-# Some code taken and rewritten from the abelectronics Python 2.7 driver
-
 # Copyright (C) 2014  Simon Howroyd
 # 
 #     This program is free software: you can redistribute it and/or modify
@@ -24,36 +18,38 @@
 # Import Libraries
 from quick2wire.i2c import I2CMaster, writing_bytes, reading
 
-
-# Define Class
-class AdcPi2:
-    # Code to run when class is created
-    def __init__(self, res=12):
-        # Check if user inputted a valid resolution in constructor
-        if res != 12 and res != 14 and res != 16 and res != 18:
-            # Raise an exception to crash the code
-            raise IndexError('Incorrect ADC Resolution')
+class MCP3424:
+        # Hybrid
+        # Address 1 0xD0
+        # Address 2 0xD8
+        
+        # AdcPi2
+        # Address 1 0x68
+        # Address 2 0x69
+    def __init__(self, address, resolution):
+        # Check if user inputed a valid resolution
+        if resolution != 12 and resolution != 14 and resolution != 16 and resolution != 18:
+            raise ValueError('Incorrect ADC Resolution')
         else:
-            # Set the resolution to memory
-            self.__res = res
+            self.__res = resolution
 
-        # Build default address and configuration register of the ADC
-        self.__config = [[0x6C, 0x90],
-                         [0x6C, 0xB0],
-                         [0x6C, 0xD0],
-                         [0x6C, 0xF0],
-                         [0x6D, 0x90],
-                         [0x6D, 0xB0],
-                         [0x6D, 0xD0],
-                         [0x6D, 0xF0]]
+        # Build default address and configuration register
+        self.__config = [[address, 0x90],
+                         [address, 0xB0],
+                         [address, 0xD0],
+                         [address, 0xF0]]
 
         # Set resolution in configuration register
         for x in range(len(self.__config)):
-            self.__config[x][1] = self.__config[x][1] | int((res - 12) / 2) << 2
+            self.__config[x][1] = self.__config[x][1] | int((resolution - 12) / 2) << 2
 
         # Set the calibration multiplier
-        self.__varDivisor = 0b1 << (res - 12)
+        self.__varDivisor = 0b1 << (resolution - 12)
         self.__varMultiplier = (2.495 / self.__varDivisor) / 1000
+
+        if self.__changechannel(self.__config[0])<0:
+            print("Err: No ADC detected")
+
 
     # Method to change the channel we wish to read from
     @staticmethod
@@ -63,10 +59,11 @@ class AdcPi2:
             with I2CMaster(1) as master:
                 master.transaction(
                     writing_bytes(config[0], config[1]))
+            return 1
                     
         # If I2C error return
         except IOError:
-            return
+            return -1
 
     # Method to read adc
     @staticmethod
@@ -87,7 +84,9 @@ class AdcPi2:
                     adcreading = master.transaction(
                         writing_bytes(config[0], config[1]),
                         reading(config[0], numBytes))[0]
-    
+                
+#                adcreading = [0, 0, 127]
+                
                 # Shift bits to product result
                 if numBytes is 4:
                     t = ((adcreading[0] & 0b00000001) << 16) | (adcreading[1] << 8) | adcreading[2]
@@ -106,9 +105,29 @@ class AdcPi2:
             return -1
 
     # External getter - call this to receive data
-    def get(self, channel):
+    def get(self, channel, gain=1):
+        config = self.__config[channel]
+
+        if gain is 8:
+            config[1]  = config[1] | 0b11
+
         # Change adc setting to the channel we want to read
-        self.__changechannel(self.__config[channel])
+        self.__changechannel(config)
         
         # Read and return the data
-        return self.__getadcreading(self.__config[channel], self.__varMultiplier, self.__res)
+        return self.__getadcreading(config, self.__varMultiplier, self.__res)
+        
+        
+
+class AdcPi2:
+    def __init__(self, res=12):
+        self.__adc1 = MCP3424(0x68, res)
+        self.__adc2 = MCP3424(0x69, res)
+        
+    def get(self, channel):
+        if channel in range(0,4):
+            return self.__adc1.get(channel)
+        elif channel in range(4,8):
+            return self.__adc2.get(channel)
+        else:
+            return -1 # Error in channel

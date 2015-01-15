@@ -22,6 +22,7 @@
 # Import libraries
 import sys, time
 import pifacedigitalio
+from hybrid import hybrid
 from adc import adcpi
 from temperature import tmp102
 from switch import switch
@@ -87,12 +88,16 @@ class PurgeControl():
 class H100():
     # Code to run when class is created
     def __init__(self):
-        # Start Adc with resolution of 18bit
-        self.__Adc = adcpi.AdcPi2(18)
-        
+        # Start the ADCPI
+        self.__Adc1 = adc.AdcPi2(0x6C)
+        self.__Adc2 = adc.AdcPi2(0x6D)
+
+        # Start the hybrid board
+        self.__hybrid = hybrid.Hybrid()
+
         # Start temperature sensors
         self.__Temperature = tmp102.Tmp102()
-        
+
         # Start the mass flow controller
         self.__Mfc = mfc.mfc()
         
@@ -132,23 +137,23 @@ class H100():
         # Define state
         self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
 
-        # Define switches
-#        self.__fan = switch.Switch(0)
-#        self.__h2 = switch.Switch(1)
-#        self.__purge = switch.Switch(2)
+        # Define output switches
+#        self.__fan   = switch.Switch(self.__hybrid.fan_on,   self.__hybrid.fan_off)
+#        self.__h2    = switch.Switch(self.__hybrid.h2_on,    self.__hybrid.h2_off)
+#        self.__purge = switch.Switch(self.__hybrid.purge_on, self.__hybrid.purge_off)
 
         # Define variables
-        self.__state = self.STATE.off
-        self.__current = [0.0] * 3
+        self.__current = [0.0] * 5
         self.__voltage = [0.0] * 3
-        self.__power = [0.0] * 3
-        self.__energy = [0.0] * 6
-        self.__temperature = [0.0] * 4
-        self.__flow_rate = 0.0
+        self.__power   = [0.0] * 3
+        self.__energy  = [0.0] * 3
+        self.__temperature = [0.0] * 6
+        self.__flow_rate   = 0.0
+        self.__state       = self.STATE.off
 
         # Software switches
-        self.__on = 0
-        self.__off = 0
+        self.__on    = 0
+        self.__off   = 0
         self.__reset = 0
 
         # State change flag
@@ -156,6 +161,9 @@ class H100():
 
     # Method to run the controller
     def run(self):
+        # Update the hybrid
+        self.__hybrid.update()
+
         # Update the timer
         self.__timer.run()
         
@@ -194,7 +202,7 @@ class H100():
     # Method to shutdown
     def shutdown(self):
         # Tell the user we are shutting down
-        print('\n\nFuel Cell shutting down...', end='')
+        print('...Fuel Cell shutting down...', end='')
         
         # Set state to off
         self.state = "off"
@@ -204,10 +212,10 @@ class H100():
             self.run()
 
         # Deactivate user switches
-        self._switch_interrupt.deactivate()
+#        self._switch_interrupt.deactivate()
         
         # Tell the user we have shut down
-        print('...Fuel Cell successfully shut down\n\n')
+        print('done')
 
     # Property - What's the current state?
     @property
@@ -373,20 +381,27 @@ class H100():
     ##############
     # Method to get Current
     @staticmethod
-    def _get_current(adc, channel):
-        # Get current and calibrate
-        current = abs(adc.get(channel) * 1000 / 6.89) + 0.374
-        
-        # Sensor only valid above a certain value
-        if current < 0.475:  # TODO can this be improved?
-            current = 0  # Account for opamp validity
+    def _get_current(Hybrid):
+        current = [Hybrid.fc_current_to_motor,
+                    Hybrid.fc_current_total,
+                    Hybrid.battery_current,
+                    Hybrid.charge_current,
+                    Hybrid.output_current]
+        for x in range(5):
+            if current[x] >= 0.0:
+                current[x] = abs(current[x] * 1000 / 6.89) + 0.374
             
         return current
 
     # method to get Voltage
     @staticmethod
-    def _get_voltage(adc, channel):
-        voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.096
+    def _get_voltage(Hybrid):
+        voltage = [Hybrid.fc_voltage,
+                Hybrid.battery_voltage,
+                Hybrid.output_voltage]
+        for x in range(3):
+            if voltage[x] >= 0.0:
+                voltage[x] = abs(voltage[x] * 1000 / 60.7) - 0.096
         return voltage
 
     # Method to get Energy
@@ -398,8 +413,10 @@ class H100():
 
     # Method to get Temperature
     @staticmethod
-    def _get_temperature(temperature):
-        t = [temperature.get(0x48),
+    def _get_temperature(Hybrid, temperature):
+        t = [Hybrid.t1,
+             Hybrid.t2,
+             temperature.get(0x48),
              temperature.get(0x49),
              temperature.get(0x4a),
              temperature.get(0x4b)]
@@ -410,15 +427,6 @@ class H100():
     def _getFlowRate(mfc):
         return mfc.get()
         
-    # Method to handle a button press on the piface
-    def _switch_handler(self, pifacedigital, switch_on, switch_off, switch_reset):
-        handler = pifacedigitalio.InputEventListener(chip=pifacedigital)
-        handler.register(0, pifacedigitalio.IODIR_FALLING_EDGE, switch_on, self)
-        handler.register(1, pifacedigitalio.IODIR_FALLING_EDGE, switch_off, self)
-        handler.register(2, pifacedigitalio.IODIR_FALLING_EDGE, switch_reset, self)
-        handler.activate()
-        return handler
-
     # Method to check if any timers have expired
     def _check_timers(self):
         # Calculate time since last state change
@@ -524,19 +532,42 @@ class H100():
 
     # Method to update sensor data
     def _update_sensors(self):
-        self.__voltage[0] = self._get_voltage(self.__Adc, 0)
-        self.__voltage[1] = self._get_voltage(self.__Adc, 2)
-        self.__voltage[2] = self._get_voltage(self.__Adc, 4)
+        # ADC
+        self.__voltage[0] = self._get_voltage(self.__Adc1, 0)
+        self.__voltage[1] = self._get_voltage(self.__Adc1, 2)
+        self.__voltage[2] = self._get_voltage(self.__Adc2, 0)
 
-        self.__current[0] = self._get_current(self.__Adc, 1)
-        self.__current[1] = self._get_current(self.__Adc, 3)
-        self.__current[2] = self._get_current(self.__Adc, 5)
+        self.__current[0] = self._get_current(self.__Adc1, 1)
+        self.__current[1] = self._get_current(self.__Adc1, 3)
+        self.__current[2] = self._get_current(self.__Adc2, 1)
+
+        # HYBRID
+        self.__voltageHybrid = self._get_voltage(self.__hybrid)
+        self.__currentHybrid = self._get_current(self.__hybrid)
+
+        # Power FC
+        if self.__voltage[0] >=0.0 and  self.__current[1] >=0.0:
+            self.__power[0] = self.__voltage[0] * self.__current[1]
+        else:
+            self.__power[0] = -1
+
+        # Power Batt
+        if self.__voltage[1] >=0.0 and  self.__current[2] >=0.0:
+            self.__power[1] = self.__voltage[1] * self.__current[2]
+        else:
+            self.__power[1] = -1
+
+        # Power Out
+        if self.__voltage[2] >=0.0 and  self.__current[4] >=0.0:
+            self.__power[2] = self.__voltage[2] * self.__current[4]
+        else:
+            self.__power[2] = -1
 
         for x in range(3):
-            self.__power[x] = self.__voltage[x] * self.__current[x]
-            self.__energy[x] = self._get_energy(self.__timer, self.__power[x])
-            self.__energy[2*x+1] += self.__energy[x] # Cumulative
-        self.__temperature = self._get_temperature(self.__Temperature)
+            energy = self._get_energy(self.__timer, self.__power[x])
+            self.__energy[x] += energy # Cumulative
+
+        self.__temperature = self._get_temperature(self.__hybrid, self.__Temperature)
 #        self.__flow_rate = self._getFlowRate(self.__Mfc)
         
     # Method to run the purge controller
