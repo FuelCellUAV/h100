@@ -89,8 +89,11 @@ class H100():
     # Code to run when class is created
     def __init__(self):
         # Start the ADCPI
-        self.__Adc1 = adc.AdcPi2(0x6C)
-        self.__Adc2 = adc.AdcPi2(0x6D)
+        self.__Adc1 = adcpi.MCP3424(0x6A)
+        self.__Adc2 = adcpi.MCP3424(0x6B)
+
+        self.__Adc3 = adcpi.MCP3424(0x68)
+        self.__Adc4 = adcpi.MCP3424(0x6C)
 
         # Start the hybrid board
         self.__hybrid = hybrid.Hybrid()
@@ -143,13 +146,15 @@ class H100():
 #        self.__purge = switch.Switch(self.__hybrid.purge_on, self.__hybrid.purge_off)
 
         # Define variables
-        self.__current = [0.0] * 5
-        self.__voltage = [0.0] * 3
-        self.__power   = [0.0] * 3
-        self.__energy  = [0.0] * 3
-        self.__temperature = [0.0] * 6
-        self.__flow_rate   = 0.0
-        self.__state       = self.STATE.off
+        self.__currentHybrid = [0.0] * 3
+        self.__voltageHybrid = [0.0] * 3
+        self.__current       = [0.0] * 3
+        self.__voltage       = [0.0] * 3
+        self.__power         = [0.0] * 3
+        self.__energy        = [0.0] * 3
+        self.__temperature   = [0.0] * 6
+        self.__flow_rate     = 0.0
+        self.__state         = self.STATE.off
 
         # Software switches
         self.__on    = 0
@@ -251,6 +256,16 @@ class H100():
     @property
     def voltage(self):
         return self.__voltage
+
+    # Property - What's the current?
+    @property
+    def currentHybrid(self):
+        return self.__currentHybrid
+
+    # Property - What's the voltage?
+    @property
+    def voltageHybrid(self):
+        return self.__voltageHybrid
 
     # Property - What's the power?
     @property
@@ -381,7 +396,7 @@ class H100():
     ##############
     # Method to get Current
     @staticmethod
-    def _get_current(Hybrid):
+    def _get_currentHybrid(Hybrid):
         current = [Hybrid.fc_current_to_motor,
                     Hybrid.fc_current_total,
                     Hybrid.battery_current,
@@ -395,13 +410,49 @@ class H100():
 
     # method to get Voltage
     @staticmethod
-    def _get_voltage(Hybrid):
+    def _get_voltageHybrid(Hybrid):
         voltage = [Hybrid.fc_voltage,
                 Hybrid.battery_voltage,
                 Hybrid.output_voltage]
         for x in range(3):
             if voltage[x] >= 0.0:
                 voltage[x] = abs(voltage[x] * 1000 / 60.7) - 0.096
+        return voltage
+
+    # Method to get Current
+    @staticmethod
+    def _get_current(adc, channel):
+        # Get current and calibrate
+        current = abs(adc.get(channel) * 1000 / 6.89) + 0.374
+        
+        # Sensor only valid above a certain value
+#        if current < 0.475:  # TODO can this be improved?
+#            current = 0  # Account for opamp validity
+            
+        return current
+
+    # method to get Voltage
+    @staticmethod
+    def _get_voltage(adc, channel):
+        voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.096
+        return voltage
+
+    # Method to get Current
+    @staticmethod
+    def _get_current2(adc, channel):
+        # Get current and calibrate
+        current = abs(adc.get(channel) * 1000 / 1)
+        
+        # Sensor only valid above a certain value
+#        if current < 0.475:  # TODO can this be improved?
+#            current = 0  # Account for opamp validity
+            
+        return current
+
+    # method to get Voltage
+    @staticmethod
+    def _get_voltage2(adc, channel):
+        voltage = abs(adc.get(channel) * 1000.0 / 186.0) - 0.096
         return voltage
 
     # Method to get Energy
@@ -536,14 +587,21 @@ class H100():
         self.__voltage[0] = self._get_voltage(self.__Adc1, 0)
         self.__voltage[1] = self._get_voltage(self.__Adc1, 2)
         self.__voltage[2] = self._get_voltage(self.__Adc2, 0)
-
         self.__current[0] = self._get_current(self.__Adc1, 1)
         self.__current[1] = self._get_current(self.__Adc1, 3)
         self.__current[2] = self._get_current(self.__Adc2, 1)
 
+        self.__voltageHybrid[0] = self._get_voltage2(self.__Adc4, 2)
+        self.__voltageHybrid[1] = self._get_voltage2(self.__Adc4, 0)
+        self.__voltageHybrid[2] = self._get_voltage2(self.__Adc4, 1)
+        self.__currentHybrid[0] = self._get_current2(self.__Adc3, 2)
+        self.__currentHybrid[1] = self._get_current2(self.__Adc3, 0)
+        self.__currentHybrid[2] = self._get_current2(self.__Adc3, 1)
+
+        return
         # HYBRID
-        self.__voltageHybrid = self._get_voltage(self.__hybrid)
-        self.__currentHybrid = self._get_current(self.__hybrid)
+#        self.__voltageHybrid = self._get_voltageHybrid(self.__hybrid)
+#        self.__currentHybrid = self._get_currentHybrid(self.__hybrid)
 
         # Power FC
         if self.__voltage[0] >=0.0 and  self.__current[1] >=0.0:

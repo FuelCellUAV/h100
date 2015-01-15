@@ -122,26 +122,25 @@ def _print_state(h100, *destination):
 # Function to print the electrical data
 def _print_electric(h100, load='', *destination):
     # Get the data from the controller
-<<<<<<< HEAD
-    electric = [h100.voltage[0],
+    electric = [
+#                h100.voltageHybrid[0], # FC output
+#                h100.voltage[0],
+                h100.currentHybrid[0],
                 h100.current[0],
-                h100.power[0],
-                h100.voltage[1],
+#                h100.power[0],
+
+#                h100.voltageHybrid[1], # Battery output
+#                h100.voltage[1],
+                h100.currentHybrid[1],
                 h100.current[1],
-                h100.power[1],
-                h100.voltage[2],
+#                h100.power[1],
+
+#                h100.voltageHybrid[2], # System output
+#                h100.voltage[2],
+                h100.currentHybrid[2],
                 h100.current[2],
-=======
-    electric = [h100.voltage[0], # FC output
-                h100.current[1],
-                h100.power[0],
-                h100.voltage[1], # Battery output
-                h100.current[2],
-                h100.power[1],
-                h100.voltage[2], # System output
-                h100.current[4],
->>>>>>> hybrid
-                h100.power[2]]
+#                h100.power[2]
+                ]
 
     # If there is a digital loadbank connected get that data
     if load:
@@ -156,10 +155,10 @@ def _print_electric(h100, load='', *destination):
             mode_code = 999
 
         # Add the load data to the controller data
-        electric = electric + [mode_code,
-                               load.voltage,
-                               load.current,
-                               load.power]
+        electric = electric# + [mode_code,
+                           #    load.voltage,
+                           #    load.current,
+                           #    load.power]
     
     # Write the data to destination
     for write in destination:

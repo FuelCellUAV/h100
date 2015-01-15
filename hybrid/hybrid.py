@@ -46,7 +46,7 @@ class HybridIo:
             self.__bit_register = data
             return self.__bit_register
         except IOError:
-            print("Err: No hybridIO detected")
+#            print("Err: No hybridIO detected")
             return -1
     
     def change_output(self):
@@ -56,7 +56,7 @@ class HybridIo:
                     i2c.writing(self.__address, bytearray([2, self.__bit_register[0], self.__bit_register[1]])))
             return self.__bit_register
         except IOError:
-            print("Err: No hybridIO detected")
+#            print("Err: No hybridIO detected")
             return -1
 
         
@@ -226,7 +226,7 @@ class Adc:
         self.__fc_current      = (self.__adc1.get(2) * 3.817)# - 2.04) / -0.0157
         self.__t1              = self.__adc1.get(3)
 
-        print(str(self.__fc_current)[:5] + ' ' + str(self.__charge_current)[:5] + ' ' + str(self.__output_current)[:5])
+#        print(str(self.__fc_current)[:5] + ' ' + str(self.__charge_current)[:5] + ' ' + str(self.__output_current)[:5])
 
         # ADC 2
         self.__battery_voltage = self.__adc2.get(0) * self.__voltage_scale

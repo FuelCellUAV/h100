@@ -26,7 +26,7 @@ class MCP3424:
         # AdcPi2
         # Address 1 0x68
         # Address 2 0x69
-    def __init__(self, address, resolution):
+    def __init__(self, address, resolution=12):
         # Check if user inputed a valid resolution
         if resolution != 12 and resolution != 14 and resolution != 16 and resolution != 18:
             raise ValueError('Incorrect ADC Resolution')
@@ -48,7 +48,7 @@ class MCP3424:
         self.__varMultiplier = (2.495 / self.__varDivisor) / 1000
 
         if self.__changechannel(self.__config[0])<0:
-            print("Err: No ADC detected")
+            print("Err: No ADC detected at " + format(address, '02x'))
 
 
     # Method to change the channel we wish to read from
