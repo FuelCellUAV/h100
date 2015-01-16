@@ -123,20 +123,20 @@ def _print_state(h100, *destination):
 def _print_electric(h100, load='', *destination):
     # Get the data from the controller
     electric = [
-#                h100.voltageHybrid[0], # FC output
-#                h100.voltage[0],
+                h100.voltageHybrid[0], # FC output
+                h100.voltage[0],
                 h100.currentHybrid[0],
                 h100.current[0],
 #                h100.power[0],
 
-#                h100.voltageHybrid[1], # Battery output
-#                h100.voltage[1],
+                h100.voltageHybrid[1], # Battery output
+                h100.voltage[1],
                 h100.currentHybrid[1],
                 h100.current[1],
 #                h100.power[1],
 
-#                h100.voltageHybrid[2], # System output
-#                h100.voltage[2],
+                h100.voltageHybrid[2], # System output
+                h100.voltage[2],
                 h100.currentHybrid[2],
                 h100.current[2],
 #                h100.power[2]
@@ -343,7 +343,7 @@ if __name__ == "__main__":
             time.sleep(0.2)
             load.range = '4'
             time.sleep(0.2)
-            load.current_limit = '9.0'
+            load.current_limit = '50.0'
             time.sleep(0.2)
             load.voltage_limit = '35.0'
             time.sleep(0.2)
