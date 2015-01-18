@@ -141,9 +141,9 @@ class H100():
         self.STATE = enum(startup='startup', on='on', shutdown='shutdown', off='off', error='error')
 
         # Define output switches
-#        self.__fan   = switch.Switch(self.__hybrid.fan_on,   self.__hybrid.fan_off)
-#        self.__h2    = switch.Switch(self.__hybrid.h2_on,    self.__hybrid.h2_off)
-#        self.__purge = switch.Switch(self.__hybrid.purge_on, self.__hybrid.purge_off)
+        self.__fan   = switch.Switch(self.__hybrid.fan_on,   self.__hybrid.fan_off)
+        self.__h2    = switch.Switch(self.__hybrid.h2_on,    self.__hybrid.h2_off)
+        self.__purge = switch.Switch(self.__hybrid.purge_on, self.__hybrid.purge_off)
 
         # Define variables
         self.__currentHybrid = [0.0] * 3
@@ -346,39 +346,34 @@ class H100():
     ##############
     # State Off Routine
     def _state_off(self):
-        return
 #       self._purge_controller() # not needed #
-#       self.__h2.write(False)
-#       self.__fan.write(False)
-#       self.__purge.write(False)
+       self.__h2.write(False)
+       self.__fan.write(False)
+       self.__purge.write(False)
 
     # State Startup Routine
     def _state_startup(self):
-        return
-#        self.__h2.timed(0, self.__start_time)
-#        self.__fan.timed(0, self.__start_time)
-#        self.__purge.timed(0, self.__start_time)
+        self.__h2.timed(0, self.__start_time)
+        self.__fan.timed(0, self.__start_time)
+        self.__purge.timed(0, self.__start_time)
 
     # State On Routine
     def _state_on(self):
-        return
-#        self._purge_controller()
-#        self.__h2.write(True)
-#        self.__fan.write(True)
-#        self.__purge.timed(self.purge_frequency, self.__purge_time)
+        self._purge_controller()
+        self.__h2.write(True)
+        self.__fan.write(True)
+        self.__purge.timed(self.purge_frequency, self.__purge_time)
 
     # State Shutdown Routine
     def _state_shutdown(self):
-        return
-#        self.__h2.write(False)
-#        self.__fan.timed(0, self.__stop_time)
-#        self.__purge.timed(0, self.__stop_time)
+        self.__h2.write(False)
+        self.__fan.timed(0, self.__stop_time)
+        self.__purge.timed(0, self.__stop_time)
 
     # State Error Routine
     def _state_error(self):
-        return
-#        self.__h2.write(False)
-#        self.__purge.write(False)
+        self.__h2.write(False)
+        self.__purge.write(False)
         
         # Wait for temperature to cool down before turning fan off
         if max(self.__temperature) > self.__cutoff_temperature:
@@ -441,7 +436,7 @@ class H100():
     @staticmethod
     def _get_current2(adc, channel):
         # Get current and calibrate
-        current = abs(adc.get(channel) * 1000 / 1)
+        current = abs(adc.get(channel))# * 1000 / 1)
         
         # Sensor only valid above a certain value
 #        if current < 0.475:  # TODO can this be improved?

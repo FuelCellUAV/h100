@@ -35,15 +35,17 @@ def _get_elec(source):
 
 def _get_chg(source):
     x = "Chg: "
-    if source.charger_state: x += "ON! "
-    else : x += "OFF! "
+    if source.charger_state: x += "OFF! "
+    else : x += "ON! "
     if source.shutdown: x += "SHDN ("
     else : x += "( "
     if source.charger_info[0]: x += "LOBAT "
     if source.charger_info[1]: x += "ICL "
-    if source.charger_info[2]: x += "ACP "
+    if source.charger_info[2]: x += "ACP-IS-GOOD "
+    else: x += "ACP-IS-BAD "
     if source.charger_info[3]: x += "FAULT "
-    if source.charger_info[4]: x += "CHG "
+    if source.charger_info[4]: x += "NOT-CHARGING "
+    else: x += "CHARGING "
     x += ") "
     if source.cells: x += "4cell "
     else: x += "3cell "
@@ -75,6 +77,7 @@ controller.shutdown = args.on
 # Battery Setup
 controller.cells = args.cells
 controller.charged_voltage = args.chem
+#pot.current = 1.0
     
 # Turn on/off switches
 if args.h2: controller.h2_on()
@@ -86,12 +89,12 @@ else:          controller.purge_off()
 #controller.__io.power4 = args.aux1
 #controller.__io.power5 = args.aux2
 
-while True:
-    controller.update()
-    print(_get_elec(controller))
-    print(_get_chg(controller))
-#    pot.current = 0.0
-    print(_get_temp(controller))
+try:
+    while True:
+        controller.update()
+#    print(_get_elec(controller))
+        print(_get_chg(controller) + str(pot.current))
+#    print(_get_temp(controller))
 #    controller.h2_on()
 #    controller.fan_on()
 #    controller.purge_on()
@@ -100,6 +103,7 @@ while True:
 #    controller.h2_off()
 #    controller.fan_off()
 #    controller.purge_off()
-    print('')
-    sleep(1)
-
+        print('')
+        sleep(1)
+finally:
+    controller.shutdown = False

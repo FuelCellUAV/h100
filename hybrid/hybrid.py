@@ -13,7 +13,7 @@ class HybridIo:
         self.__address = 0x20
         
         self.__bit_register       = [0b01000100, 0b00000000]
-        self.__direction_register = [0b00011100, 0b00000000] # Output is 0, input is 1
+        self.__direction_register = [0b00111100, 0b00000000] # Output is 0, input is 1
 
         try:
             with i2c.I2CMaster(1) as bus:
@@ -110,10 +110,10 @@ class HybridIo:
         self.bit_register = [0, 1, state]
     @property
     def LOBAT(self):
-        return self._get_bit(self.bit_register[0], 2)
+        return ~self._get_bit(self.bit_register[0], 2) & 0b00000001
     @property
     def ICL(self):
-        return self._get_bit(self.bit_register[0], 3)
+        return ~self._get_bit(self.bit_register[0], 3) & 0b00000001
     @property
     def ACP(self):
         return self._get_bit(self.bit_register[0], 4)
@@ -125,10 +125,10 @@ class HybridIo:
         self.bit_register = [0, 5, state]
     @property
     def FAULT(self):
-        return self._get_bit(self.bit_register[0], 6)
+        return ~self._get_bit(self.bit_register[0], 6) & 0b00000001
     @property
     def CHG(self):
-        return self._get_bit(self.bit_register[0], 7)
+        return ~self._get_bit(self.bit_register[0], 7) & 0b00000001
         
     @property
     def bit_register(self):
@@ -191,7 +191,7 @@ class Charge_Controller:
             # Using the I2C databus...
             with i2c.I2CMaster(1) as master:
                 master.transaction(
-                    i2c.writing_bytes(config[0], config[1]))
+                    i2c.writing_bytes(config[0], 0xff))
             return config[1]
                     
         # If I2C error return
@@ -271,14 +271,16 @@ class Hybrid:
         self.__io      = HybridIo()
         self.__adc     = Adc()
         self.__charger = Charge_Controller()
+        self.__charger.current = 1.0 # Probably not needed
         self.__charger_state = False
-        self.__charger.current = 0.0 # Probably not needed
+        self.cells = 3 # TODO
         
     def update(self):
         # Input/Outputs
         if not self.__io.update(): return -1
         # ADCs
         self.__adc.update()
+        return # TODO
         # Charger controller
         if self.__charger_state and self.fc_current_total>=0.0:
             overhead = 8.5 - self.fc_current_total
@@ -291,21 +293,22 @@ class Hybrid:
             
             return -1
         
-    def h2_on(self):     self.__io.power1 = 1
-    def h2_off(self):    self.__io.power1 = 0
-    def fan_on(self):    self.__io.power2 = 1
-    def fan_off(self):   self.__io.power2 = 0
+    def fan_on(self):    self.__io.power1 = 1
+    def fan_off(self):   self.__io.power1 = 0
+    def h2_on(self):     self.__io.power2 = 1
+    def h2_off(self):    self.__io.power2 = 0
     def purge_on(self):  self.__io.power3 = 1
     def purge_off(self): self.__io.power3 = 0
         
     # Turn charger on/off
     @property
     def charger_state(self):
-        return self.__charger_state
+        if self.__charger_state is True: return False
+        else: return True
     @charger_state.setter
     def charger_state(self, state):
-        if state is True: self.__charger_state = True
-        else: self.__charger_state = False
+        if state is True: self.__charger_state = False
+        else: self.__charger_state = True
 
     @property
     def charger_info(self):

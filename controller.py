@@ -168,6 +168,60 @@ def _print_electric(h100, load='', *destination):
     # Return the data
     return electric
 
+# Function to print the electrical data
+def _print_voltage(h100, load='', *destination):
+    # Get the data from the controller
+    voltage = [
+                h100.voltageHybrid[0], # FC output
+                h100.voltage[0],
+
+                h100.voltageHybrid[1], # Battery output
+                h100.voltage[1],
+
+                h100.voltageHybrid[2], # System output
+                h100.voltage[2],
+                ]
+
+    # If there is a digital loadbank connected get that data
+    if load:
+        # Add the load data to the controller data
+        voltage = voltage + [load.voltage]
+    
+    # Write the data to destination
+    for write in destination:
+        for cell in voltage:
+            _writer(write, cell)
+
+    # Return the data
+    return voltage
+
+# Function to print the electrical data
+def _print_current(h100, load='', *destination):
+    # Get the data from the controller
+    current = [
+                h100.currentHybrid[0], # FC output
+                h100.current[0],
+
+                h100.currentHybrid[1], # Battery output
+                h100.current[1],
+
+                h100.currentHybrid[2], # System output
+                h100.current[2],
+                ]
+
+    # If there is a digital loadbank connected get that data
+    if load:
+        # Add the load data to the controller data
+        current = current + [load.current]
+    
+    # Write the data to destination
+    for write in destination:
+        for cell in current:
+            _writer(write, cell)
+
+    # Return the data
+    return current
+
 # Function to print the energy data
 def _print_energy(h100, *destination):
     
@@ -478,6 +532,10 @@ if __name__ == "__main__":
                             _print_state(h100, print)
                         elif request[0].startswith("elec?"):
                             _print_electric(h100, load, print)
+                        elif request[0].startswith("v?"):
+                            _print_voltage(h100, load, print)
+                        elif request[0].startswith("i?"):
+                            _print_current(h100, load, print)
                         elif request[0].startswith("energy?"):
                             _print_energy(h100, print)
                         elif request[0].startswith("temp?"):
