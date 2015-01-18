@@ -216,6 +216,8 @@ class H100():
         while self.__state is not self.STATE.off:
             self.run()
 
+        self.__hybrid.shutdown()
+
         # Deactivate user switches
 #        self._switch_interrupt.deactivate()
         

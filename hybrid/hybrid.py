@@ -48,22 +48,23 @@ class HybridIo:
         except IOError:
 #            print("Err: No hybridIO detected")
             return -1
-    
-    def change_output(self):
-        try:
-            with i2c.I2CMaster(1) as bus:
-                bus.transaction(
-                    i2c.writing(self.__address, bytearray([2, self.__bit_register[0], self.__bit_register[1]])))
-            return self.__bit_register
-        except IOError:
-#            print("Err: No hybridIO detected")
-            return -1
 
-        
-    @staticmethod
-    def _get_bit(register, bit):
-        return bool((register >> bit) & 0b00000001)
-        
+    def get_charger_state_string(self):
+        x = "Chg: "
+        if self.CHG: x += "OFF ["
+        else : x += "CHARGING ["
+        if self.SHDN: x += "SHDN "
+        if not self.LOBAT: x += "LOBAT "
+        if not self.ICL: x += "I-LIMITING "
+        if not self.ACP: x += "DCIN-TOO-LOW "
+        if not self.FAULT: x += "HOT-OR-TOO-LOBAT "
+        x += "] "
+        if self.CELLS: x += "4cell "
+        else: x += "3cell "
+        if self.CHEM: x += "4.2V/cell "
+        else: x += "4.1V/cell "
+        return x
+
     @property
     def power1(self):
         return self._get_bit(self.bit_register[1], 0)
@@ -95,41 +96,51 @@ class HybridIo:
     def power5(self, state):
         self.bit_register = [1, 4, state]
         
-        
-    @property
-    def CELLS(self):
-        return self._get_bit(self.bit_register[0], 0)
-    @CELLS.setter
-    def CELLS(self, state):
-        self.bit_register = [0, 0, state]
-    @property
-    def CHEM(self):
-        return self._get_bit(self.bit_register[0], 1)
-    @CHEM.setter
-    def CHEM(self, state):
-        self.bit_register = [0, 1, state]
-    @property
-    def LOBAT(self):
-        return ~self._get_bit(self.bit_register[0], 2) & 0b00000001
-    @property
-    def ICL(self):
-        return ~self._get_bit(self.bit_register[0], 3) & 0b00000001
-    @property
-    def ACP(self):
-        return self._get_bit(self.bit_register[0], 4)
     @property
     def SHDN(self):
+        # High is shutdown, low is OK to start charging
         return self._get_bit(self.bit_register[0], 5)
     @SHDN.setter
     def SHDN(self, state):
+        # High is shutdown, low is OK to start charging
         self.bit_register = [0, 5, state]
     @property
+    def CELLS(self):
+        # High is 4cell, low is 3cell
+        return self._get_bit(self.bit_register[0], 0)
+    @CELLS.setter
+    def CELLS(self, state):
+        # High is 4cell, low is 3cell
+        self.bit_register = [0, 0, state]
+    @property
+    def CHEM(self):
+        # High is 4.2v/cell, low is 4.1v/cell
+        return self._get_bit(self.bit_register[0], 1)
+    @CHEM.setter
+    def CHEM(self, state):
+        # High is 4.2v/cell, low is 4.1v/cell
+        self.bit_register = [0, 1, state]
+    @property
+    def LOBAT(self):
+        # High is OK, low is very low v/cell
+        return self._get_bit(self.bit_register[0], 2)
+    @property
+    def ICL(self):
+        # High is unlimited, low is internal current limiting
+        return self._get_bit(self.bit_register[0], 3)
+    @property
+    def ACP(self):
+        # High is OK, low is DCIN is too low to charge battery
+        return self._get_bit(self.bit_register[0], 4)
+    @property
     def FAULT(self):
-        return ~self._get_bit(self.bit_register[0], 6) & 0b00000001
+        # High is OK, low is charging stopped (too hot or LOBAT error)
+        return self._get_bit(self.bit_register[0], 6)
     @property
     def CHG(self):
-        return ~self._get_bit(self.bit_register[0], 7) & 0b00000001
-        
+        # High is not charging, low is charging
+        return self._get_bit(self.bit_register[0], 7)
+       
     @property
     def bit_register(self):
         return self.__bit_register
@@ -165,11 +176,34 @@ class HybridIo:
                 print("Error in bit register setter")
             self.change_output()
 
+    def change_output(self):
+        try:
+            with i2c.I2CMaster(1) as bus:
+                bus.transaction(
+                    i2c.writing(self.__address, bytearray([2, self.__bit_register[0], self.__bit_register[1]])))
+            return self.__bit_register
+        except IOError:
+#            print("Err: No hybridIO detected")
+            return -1
+        
+    @staticmethod
+    def _get_bit(register, bit):
+        return bool((register >> bit) & 0b00000001)
+        
+
+
 class Charge_Controller:
     def __init__(self):
         self.__address = 0x2F
         self.__current = 0.0
         self.current   = 0.0
+
+    @staticmethod
+    def current_to_hex(current):
+        return 0xFF # TODO remove this blocker
+        resistance = (1.19 * 3010) / (current*0.025 + 0.035)
+        if resistance > 50000: resistance = 50000
+        return hex(resistance/50000 * 255)
 
     @property
     def current(self):
@@ -179,19 +213,18 @@ class Charge_Controller:
         if (cur > 4.0 or cur < 0.0):
             raise ValueError
         else:
-            command = int(cur); # Some scaling here
-            command *= 30
-            if self.__changecurrent([self.__address, command]) >= 0:
+            if self.__changecurrent([self.__address,
+                                     self.current_to_hex(cur)]) >= 0:
                 self.__current = cur
             
-    # Method to change the channel we wish to read from
+    # Method to change the I2C POT resistance
     @staticmethod
     def __changecurrent(config):
         try:
             # Using the I2C databus...
             with i2c.I2CMaster(1) as master:
                 master.transaction(
-                    i2c.writing_bytes(config[0], 0xff))
+                    i2c.writing_bytes(config[0], config[1]))
             return config[1]
                     
         # If I2C error return
@@ -273,25 +306,28 @@ class Hybrid:
         self.__charger = Charge_Controller()
         self.__charger.current = 1.0 # Probably not needed
         self.__charger_state = False
-        self.cells = 3 # TODO
+        self.cells = 3
+        self.chem  = 4.2
+
+    def shutdown(self):
+        self.__io.SHDN = True
         
     def update(self):
         # Input/Outputs
         if not self.__io.update(): return -1
         # ADCs
         self.__adc.update()
-        return # TODO
+        # Charger
+        if self.__charger_state and self.battery_voltage > 5.0:
+            self.__io.SHDN = False
+        else: self.__io.SHDN = True
         # Charger controller
-        if self.__charger_state and self.fc_current_total>=0.0:
+        if self.fc_current_total>=0.0:
             overhead = 8.5 - self.fc_current_total
             if (overhead < 0.0): overhead = 0.0
             if (overhead >= 4.0 and self.__charger.current < 4.0):
                 self.__charger.current = self.__charger.current + 0.2 # Is this ramp necessary?
             # TODO: Need checks of charger IO here
-            return 1
-        else:
-            
-            return -1
         
     def fan_on(self):    self.__io.power1 = 1
     def fan_off(self):   self.__io.power1 = 0
@@ -303,21 +339,15 @@ class Hybrid:
     # Turn charger on/off
     @property
     def charger_state(self):
-        if self.__charger_state is True: return False
-        else: return True
+        if self.battery_voltage > 5.0:
+            return self.__io.get_charger_state_string()
+        else: return "Chg: BATT NOT PLUGGED IN"
     @charger_state.setter
     def charger_state(self, state):
-        if state is True: self.__charger_state = False
-        else: self.__charger_state = True
+        if state is True:
+            self.__charger_state = True
+        else: self.__charger_state = False
 
-    @property
-    def charger_info(self):
-        return [self.__io.LOBAT,
-                self.__io.ICL,
-                self.__io.ACP,
-                self.__io.FAULT,
-                self.__io.CHG]
-        
     @property
     def t1(self):
         return self.__adc.pcb_temp1
@@ -357,45 +387,30 @@ class Hybrid:
     
     @property
     def cells(self):
-        return self.__io.CELLS
-        if self.__io.CELLS is False:
-            return 3
-        else:
+        if self.__io.CELLS is True:
             return 4
+        else:
+            return 3
     @cells.setter
     def cells(self, cells):
-        if int(cells) is 3:
-            self.__io.CELLS = 0
-        elif int(cells) is 4:
+        if int(cells) is 4:
             self.__io.CELLS = 1
+        elif int(cells) is 3:
+            self.__io.CELLS = 0
         else:
             print("Wrong cell count selected: " + str(cells))
     
     @property
     def charged_voltage(self):
-        if self.__io.CHEM is False:
-            return 4.1
-        else:
+        if self.__io.CHEM is True:
             return 4.2
+        else:
+            return 4.1
     @charged_voltage.setter
     def charged_voltage(self, voltage):
-        if abs(voltage-4.1)<0.01: # Comparing floats
-            self.__io.CHEM = 0
-        elif abs(voltage-4.2)<0.01:
+        if abs(voltage-4.2)<0.01: # Comparing floats
             self.__io.CHEM = 1
+        elif abs(voltage-4.1)<0.01:
+            self.__io.CHEM = 0
         else:
             print("Wrong cell chemistry selected: " + str(voltage))
-    
-    @property
-    def shutdown(self):
-        if self.__io.SHDN is 0:
-            return True
-        else:
-            return False
-    @shutdown.setter
-    def shutdown(self, state):
-        if state is True:
-            self.__io.SHDN = 1
-        elif state is False:
-            self.__io.SHDN = 0
-    
