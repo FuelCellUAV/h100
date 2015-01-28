@@ -439,7 +439,7 @@ if __name__ == "__main__":
             display.name = "H100"
         
         # Display a list of available user commands
-        print("Type command: [time, throttle, fc, elec, energy, temp, purg, fly] ")
+        print("Type command: [time, throttle, fc, elec, v, i, energy, temp, purg, fly] ")
         
         # Start a timer
         performance_timer = time.time()

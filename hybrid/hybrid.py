@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+##!/usr/bin/env python3
 # Re-written by Simon Howroyd 2015 for Loughborough University
 
 # Must call the update method on each loop of the main code
@@ -13,7 +13,7 @@ class HybridIo:
         self.__address = 0x20
         
         self.__bit_register       = [0b01000100, 0b00000000]
-        self.__direction_register = [0b00111100, 0b00000000] # Output is 0, input is 1
+        self.__direction_register = [0b00011100, 0b00000000] # Output is 0, input is 1
 
         try:
             with i2c.I2CMaster(1) as bus:
@@ -46,7 +46,7 @@ class HybridIo:
             self.__bit_register = data
             return self.__bit_register
         except IOError:
-#            print("Err: No hybridIO detected")
+ #           print("Err: No hybridIO detected")
             return -1
 
     def get_charger_state_string(self):
@@ -310,24 +310,41 @@ class Hybrid:
         self.chem  = 4.2
 
     def shutdown(self):
-        self.__io.SHDN = True
+        self.__io.SHDN = 1
         
     def update(self):
         # Input/Outputs
         if not self.__io.update(): return -1
         # ADCs
         self.__adc.update()
+
+#        if self.__charger_state is True:
+#            print("High")
+#            self.__io.SHDN = 1
+#            self.cells = 4
+#            self.__charger_state = False
+#        elif self.__charger_state is False:
+#            print("Low")
+#            self.__io.SHDN = 0
+#            self.cells = 3
+#            self.__charger_state = True
+#        return
+
         # Charger
-        if self.__charger_state and self.battery_voltage > 5.0:
-            self.__io.SHDN = False
-        else: self.__io.SHDN = True
+#        if self.__charger_state and self.battery_voltage > 5.0:
+#            self.__io.SHDN = 0
+#        else: self.__io.SHDN = 1
         # Charger controller
         if self.fc_current_total>=0.0:
             overhead = 8.5 - self.fc_current_total
             if (overhead < 0.0): overhead = 0.0
-            if (overhead >= 4.0 and self.__charger.current < 4.0):
+            if (overhead >= 4.0 and self.__charger.current <= 3.8):
                 self.__charger.current = self.__charger.current + 0.2 # Is this ramp necessary?
             # TODO: Need checks of charger IO here
+
+        self.charger_state = False
+
+        print(self.charger_state)
         
     def fan_on(self):    self.__io.power1 = 1
     def fan_off(self):   self.__io.power1 = 0
@@ -345,8 +362,11 @@ class Hybrid:
     @charger_state.setter
     def charger_state(self, state):
         if state is True:
+            self.__io.SHDN = 1
             self.__charger_state = True
-        else: self.__charger_state = False
+        else:
+            self.__io.SHDN = 0
+            self.__charger_state = False
 
     @property
     def t1(self):
