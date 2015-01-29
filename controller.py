@@ -155,10 +155,10 @@ def _print_electric(h100, load='', *destination):
             mode_code = 999
 
         # Add the load data to the controller data
-        electric = electric# + [mode_code,
-                           #    load.voltage,
-                           #    load.current,
-                           #    load.power]
+        electric = electric + [mode_code,
+                               load.voltage,
+                               load.current,
+                               load.power]
     
     # Write the data to destination
     for write in destination:
@@ -588,7 +588,7 @@ if __name__ == "__main__":
                 # Log electrical data
                 electric = _print_electric(h100, load, log.write)
                 
-                # Send electrical data to LED display fi connected
+                # Send electrical data to LED display if connected
                 if display:
                     display.voltage = electric[0]
                     display.current = electric[1]

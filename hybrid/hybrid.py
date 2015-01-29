@@ -51,9 +51,9 @@ class HybridIo:
 
     def get_charger_state_string(self):
         x = "Chg: "
-        if self.CHG: x += "OFF ["
+        if self.CHG or self.SHDN: x += "OFF ["
         else : x += "CHARGING ["
-        if self.SHDN: x += "SHDN "
+#        if self.SHDN: x += "SHDN "
         if not self.LOBAT: x += "LOBAT "
         if not self.ICL: x += "I-LIMITING "
         if not self.ACP: x += "DCIN-TOO-LOW "
@@ -308,6 +308,8 @@ class Hybrid:
         self.__charger_state = False
         self.cells = 3
         self.chem  = 4.2
+        self.__io.CHEM = 1
+
 
     def shutdown(self):
         self.__io.SHDN = 1
@@ -344,7 +346,7 @@ class Hybrid:
 
         self.charger_state = False
 
-        print(self.charger_state)
+#        print(self.charger_state)
         
     def fan_on(self):    self.__io.power1 = 1
     def fan_off(self):   self.__io.power1 = 0
@@ -362,10 +364,10 @@ class Hybrid:
     @charger_state.setter
     def charger_state(self, state):
         if state is True:
-            self.__io.SHDN = 1
+            self.__io.SHDN = 0
             self.__charger_state = True
         else:
-            self.__io.SHDN = 0
+            self.__io.SHDN = 1
             self.__charger_state = False
 
     @property

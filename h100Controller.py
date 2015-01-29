@@ -411,6 +411,7 @@ class H100():
         voltage = [Hybrid.fc_voltage,
                 Hybrid.battery_voltage,
                 Hybrid.output_voltage]
+        return voltage
         for x in range(3):
             if voltage[x] >= 0.0:
                 voltage[x] = abs(voltage[x] * 1000 / 60.7) - 0.096
@@ -449,7 +450,7 @@ class H100():
     # method to get Voltage
     @staticmethod
     def _get_voltage2(adc, channel):
-        voltage = abs(adc.get(channel) * 1000.0 / 186.0) - 0.096
+        voltage = abs(adc.get(channel))# * 1000.0 / 186.0) - 0.096
         return voltage
 
     # Method to get Energy
