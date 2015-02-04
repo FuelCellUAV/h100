@@ -324,30 +324,38 @@ def _performance_monitor(is_active, performance_timer, function_name):
 
 # Shutdown routine        
 def _shutdown(motor, h100, load, log, display):
-    print("\nShutting down...")
+    try:
+        print("\nShutting down...")
 
-    # Set motor throttle to zero
-    motor.throttle = 0
-    print('...Throttle set to {:d}'.format(motor.throttle))
+        # Set motor throttle to zero
+        motor.throttle = 0
+        print('...Throttle set to {:d}'.format(motor.throttle))
     
-    # Shutdown fuel cell
-    h100.shutdown()
+        # Shutdown fuel cell
+        h100.shutdown()
     
-    # Shutdown loadbank
-    if load:
-        print('...Loadbank disconnected')
-        if load.shutdown(): print('Done\n')
+        # Shutdown loadbank
+        if load:
+            print('...Loadbank disconnected')
+            if load.shutdown(): print('Done\n')
         
-    # Shutdown datalog
-    if log:
-        print('...Datalogger closed')
-        if log.close(): print('Done\n')
+        # Shutdown datalog
+        if log:
+            print('...Datalogger closed')
+            if log.close(): print('Done\n')
         
-    # Shutdown LED display
-    if display:
-        display.on = False
-        print('...Display off')
-        
+        # Shutdown LED display
+        if display:
+            display.on = False
+            print('...Display off')
+
+    except KeyboardInterrupt:        
+        if input("Force close? [y/n]: ") is "y":
+            print("FORCED CLOSE. TURN OFF DEVICES MANUALLY!")
+            return
+        else:
+            shutdown() # RECURSION
+
     # End
     print('Programme successfully exited and closed down\n\n')
 
