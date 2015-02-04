@@ -369,7 +369,7 @@ if __name__ == "__main__":
         
         # If user asked for a logfile then open this
         if args.out:
-            log = open(("/media/usb0/" + time.strftime("%y%m%d-%H%M%S") + "-controller-" + args.out + ".tsv"), 'w')
+            log = open(("/media/usb/" + time.strftime("%y%m%d-%H%M%S") + "-controller-" + args.out + ".tsv"), 'w')
             
         # Otherwise open nothing to prevent errors
         else:
