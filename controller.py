@@ -354,7 +354,7 @@ def _shutdown(motor, h100, load, log, display):
             print("FORCED CLOSE. TURN OFF DEVICES MANUALLY!")
             return
         else:
-            shutdown() # RECURSION
+            _shutdown(motor, h100, load, log, display) # RECURSION
 
     # End
     print('Programme successfully exited and closed down\n\n')
