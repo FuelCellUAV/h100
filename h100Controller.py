@@ -349,32 +349,32 @@ class H100():
     # State Off Routine
     def _state_off(self):
 #       self._purge_controller() # not needed #
-       self.__h2.write(False)
+#       self.__h2.write(False)
        self.__fan.write(False)
        self.__purge.write(False)
 
     # State Startup Routine
     def _state_startup(self):
-        self.__h2.timed(0, self.__start_time)
+#        self.__h2.timed(0, self.__start_time)
         self.__fan.timed(0, self.__start_time)
         self.__purge.timed(0, self.__start_time)
 
     # State On Routine
     def _state_on(self):
         self._purge_controller()
-        self.__h2.write(True)
+#        self.__h2.write(True)
         self.__fan.write(True)
         self.__purge.timed(self.purge_frequency, self.__purge_time)
 
     # State Shutdown Routine
     def _state_shutdown(self):
-        self.__h2.write(False)
+#        self.__h2.write(False)
         self.__fan.timed(0, self.__stop_time)
         self.__purge.timed(0, self.__stop_time)
 
     # State Error Routine
     def _state_error(self):
-        self.__h2.write(False)
+#        self.__h2.write(False)
         self.__purge.write(False)
         
         # Wait for temperature to cool down before turning fan off
