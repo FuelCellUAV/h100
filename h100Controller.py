@@ -433,6 +433,7 @@ class H100():
     @staticmethod
     def _get_voltage(adc, channel):
         voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.096
+        if voltage > 1000.0: voltage = 0.0 #TODO
         return voltage
 
     # Method to get Current
@@ -451,6 +452,7 @@ class H100():
     @staticmethod
     def _get_voltage2(adc, channel):
         voltage = abs(adc.get(channel))# * 1000.0 / 186.0) - 0.096
+        if voltage > 1000.0: voltage = 0.0 #TODO
         return voltage
 
     # Method to get Energy
