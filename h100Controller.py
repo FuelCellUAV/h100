@@ -108,8 +108,8 @@ class H100():
         self.__timer = timer.My_Time()
 
         # Set start and stop duration
-        self.__start_time = 5  # Seconds
-        self.__stop_time = 10  # Seconds
+        self.__start_time = 3  # Seconds
+        self.__stop_time = 3  # Seconds
         
         # Set maximum temperature
         self.__cutoff_temperature = 30  # Celsius
@@ -422,6 +422,7 @@ class H100():
     def _get_current(adc, channel):
         # Get current and calibrate
         current = abs(adc.get(channel) * 1000 / 6.89) + 0.374
+        if current > 1000.0: current = 0.0 #TODO
         
         # Sensor only valid above a certain value
 #        if current < 0.475:  # TODO can this be improved?
@@ -441,6 +442,7 @@ class H100():
     def _get_current2(adc, channel):
         # Get current and calibrate
         current = abs(adc.get(channel))# * 1000 / 1)
+        if current > 1000.0: current = 0.0 #TODO
         
         # Sensor only valid above a certain value
 #        if current < 0.475:  # TODO can this be improved?
