@@ -405,11 +405,11 @@ if __name__ == "__main__":
             time.sleep(0.2)
             load.range = '4'
             time.sleep(0.2)
-            load.current_limit = '50.0'
+            load.current_limit = '60.0'
             time.sleep(0.2)
             load.voltage_limit = '35.0'
             time.sleep(0.2)
-            load.voltage_minimum = '9.0'
+            load.voltage_minimum = '5.0'
         
         # Initialise profile scheduler if argued
         if args.profile:

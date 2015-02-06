@@ -421,7 +421,7 @@ class H100():
     @staticmethod
     def _get_current(adc, channel):
         # Get current and calibrate
-        current = abs(adc.get(channel) * 1000 / 6.89) + 0.374
+        current = abs(adc.get(channel) * 1000 / 6.89) * 1.075
         if current > 1000.0: current = 0.0 #TODO
         
         # Sensor only valid above a certain value
@@ -433,7 +433,7 @@ class H100():
     # method to get Voltage
     @staticmethod
     def _get_voltage(adc, channel):
-        voltage = abs(adc.get(channel) * 1000 / 60.7) - 0.096
+        voltage = abs(adc.get(channel) * 1000 / 60.7)
         if voltage > 1000.0: voltage = 0.0 #TODO
         return voltage
 
