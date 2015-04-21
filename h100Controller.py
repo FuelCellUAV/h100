@@ -102,7 +102,7 @@ class H100():
         self.__Temperature = tmp102.Tmp102()
 
         # Start the mass flow controller
-        self.__Mfc = mfc.mfc()
+        self.__Mfc = mfc.mfc(self.__Adc2, 0)
         
         # Start timers
         self.__timer = timer.My_Time()
@@ -600,6 +600,9 @@ class H100():
         self.__currentHybrid[1] = self._get_current2(self.__Adc3, 0)
         self.__currentHybrid[2] = self._get_current2(self.__Adc3, 1)
 
+        self.__flow_rate = self._getFlowRate(self.__Mfc)
+
+
         return
         # HYBRID
 #        self.__voltageHybrid = self._get_voltageHybrid(self.__hybrid)
@@ -628,7 +631,6 @@ class H100():
             self.__energy[x] += energy # Cumulative
 
         self.__temperature = self._get_temperature(self.__hybrid, self.__Temperature)
-#        self.__flow_rate = self._getFlowRate(self.__Mfc)
         
     # Method to run the purge controller
     def _purge_controller(self):

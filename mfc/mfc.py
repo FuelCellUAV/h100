@@ -21,39 +21,22 @@
 
 # Import libraries
 from time import sleep
-from quick2wire.i2c import I2CMaster, reading
+#from quick2wire.i2c import I2CMaster, reading
 
 # Define class
 class mfc:
     # Code to run when class is created
-    def __init__(self, address=0x2c):
-        self.__address = address
+    def __init__(self, getadc, channel):
+        self.__getadc = getadc
+        self.__channel = channel
 
-    # Method to read flow rate from the Arduino
     @staticmethod
-    def __get(address):
-        try:
-            # Using the I2C databus...
-            with I2CMaster(1) as master:
-                return master.transaction(
-                    reading(address, 2))[0]
-            
-        # If I2C error return -1
-        except IOError:
-            return -1
+    def _getRaw(fun, ch):
+        return fun(ch)
 
     # External getter
     def get(self):
-        # Try and get the flow rate from the Arduino
-        try:
-            data = self.__get(self.__address)
-            
-        # If that fails (disconnected) return -1, the error code
-        except Exception as e:
-            return -1
-            
-        # Assemble the two 8bit words to one 16bit integer
-        result = data[1] | (data[0] << 8)
-        
-        # Return result in litres/min
-        return result/1000.0
+        raw = self.__getadc(self.__channel)
+        print(raw)
+        rate = raw/5.0*1.5
+        return rate
