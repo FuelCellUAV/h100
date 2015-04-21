@@ -102,7 +102,7 @@ class H100():
         self.__Temperature = tmp102.Tmp102()
 
         # Start the mass flow controller
-        self.__Mfc = mfc.mfc(self.__Adc2, 0)
+        self.__Mfc = mfc.mfc()
         
         # Start timers
         self.__timer = timer.My_Time()
@@ -477,8 +477,8 @@ class H100():
 
     # Method to get mass flow rate
     @staticmethod
-    def _getFlowRate(mfc):
-        return mfc.get()
+    def _getFlowRate(mfc, adc, ch):
+        return mfc.get(adc, ch)
         
     # Method to check if any timers have expired
     def _check_timers(self):
@@ -600,7 +600,7 @@ class H100():
         self.__currentHybrid[1] = self._get_current2(self.__Adc3, 0)
         self.__currentHybrid[2] = self._get_current2(self.__Adc3, 1)
 
-        self.__flow_rate = self._getFlowRate(self.__Mfc)
+        self.__flow_rate = self._getFlowRate(self.__Mfc, self.__Adc2, 0)
 
 
         return
