@@ -255,6 +255,7 @@ def _print_temperature(h100, *destination):
 def _print_purge(h100, *destination):
     # Get the data from the controller
     purge = [h100.flow_rate,
+             h100.flow_moles,
              h100.purge_frequency,
              h100.purge_time]
              

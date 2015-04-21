@@ -154,6 +154,7 @@ class H100():
         self.__energy        = [0.0] * 3
         self.__temperature   = [0.0] * 6
         self.__flow_rate     = 0.0
+        self.__flow_moles    = 0.0
         self.__state         = self.STATE.off
 
         # Software switches
@@ -388,6 +389,11 @@ class H100():
     def flow_rate(self):
         return self.__flow_rate
 
+    # Property - What's the mass flow rate?
+    @property
+    def flow_moles(self):
+        return self.__flow_moles
+
     ##############
     #INT. GETTERS#
     ##############
@@ -479,6 +485,11 @@ class H100():
     @staticmethod
     def _getFlowRate(mfc, adc, ch):
         return mfc.get(adc, ch)
+        
+    # Method to get mass flow rate
+    @staticmethod
+    def _getFlowMoles(mfc, adc, ch):
+        return mfc.getMoles(adc, ch)
         
     # Method to check if any timers have expired
     def _check_timers(self):
@@ -600,7 +611,8 @@ class H100():
         self.__currentHybrid[1] = self._get_current2(self.__Adc3, 0)
         self.__currentHybrid[2] = self._get_current2(self.__Adc3, 1)
 
-        self.__flow_rate = self._getFlowRate(self.__Mfc, self.__Adc2, 0)
+        self.__flow_rate  = self._getFlowRate(self.__Mfc, self.__Adc2, 0)
+        self.__flow_moles = self._getFlowMoles(self.__Mfc, self.__Adc2, 0)
 
 
         return

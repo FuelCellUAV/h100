@@ -27,11 +27,16 @@ from time import sleep
 class mfc:
     @staticmethod
     def _getRaw(fun, ch):
-        return fun(ch)
+        return fun.get(ch)
 
     # External getter
     def get(self, fun, ch):
-        raw = self.__getRaw(fun, ch)
-        print(raw)
+        raw = self._getRaw(fun, ch)
         rate = raw/5.0*1.5
+        return rate
+
+    # External getter
+    def getMoles(self, fun, ch):
+        raw = self._getRaw(fun, ch)
+        rate = raw/1.0
         return rate
