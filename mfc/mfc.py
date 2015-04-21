@@ -25,18 +25,13 @@ from time import sleep
 
 # Define class
 class mfc:
-    # Code to run when class is created
-    def __init__(self, getadc, channel):
-        self.__getadc = getadc
-        self.__channel = channel
-
     @staticmethod
     def _getRaw(fun, ch):
         return fun(ch)
 
     # External getter
-    def get(self):
-        raw = self.__getadc(self.__channel)
+    def get(self, fun, ch):
+        raw = self.__getRaw(fun, ch)
         print(raw)
         rate = raw/5.0*1.5
         return rate
