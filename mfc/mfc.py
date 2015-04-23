@@ -37,6 +37,5 @@ class mfc:
 
     # External getter
     def getMoles(self, fun, ch):
-        raw = self._getRaw(fun, ch)
-        rate = raw/1.0
+        rate = self.get(fun,ch)*(7.0/6280.0)
         return rate

@@ -65,11 +65,6 @@ class PurgeControl():
     def horizon(self):
         return 30.0
 
-    # Method to return the derivative control strategy
-    def derivative(self):
-        return (self.v - self.vLast) \
-                / (-0.03*self.v**4 + 1.94*self.v**3 - 46.5*self.v**2 + 421.2*self.v - 1489)
-
     # Method to return the power control strategy
     def power(self):
         return (30.0 - (self.p * 0.25))
@@ -79,6 +74,11 @@ class PurgeControl():
         vTarget = -1.2 * self.i + 21  # From polarisation curve
         vError = self.v - vTarget
         return 10*vError
+
+    # Method to return the derivative control strategy
+    def derivative(self):
+        return (self.v - self.vLast) \
+                / (-0.03*self.v**4 + 1.94*self.v**3 - 46.5*self.v**2 + 421.2*self.v - 1489)
 
 
 #############################################################################
@@ -651,9 +651,9 @@ class H100():
         
         # Pick one of these four controllers
         self.purge_frequency = self.__Purge_Controller.horizon()
-#        self.purge_frequency = self.__Purge_Controller.derivative()
 #        self.purge_frequency = self.__Purge_Controller.power()
 #        self.purge_frequency = self.__Purge_Controller.polar()
+#        self.purge_frequency = self.__Purge_Controller.derivative()
 
         # Print results
 #        print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)
