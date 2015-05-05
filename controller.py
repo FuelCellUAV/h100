@@ -2,7 +2,7 @@
 
 # Hybrid Powertrain Controller
 
-# Copyright (C) 2014  Simon Howroyd
+# Copyright (C) 2015  Simon Howroyd
 # 
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -46,15 +46,21 @@ def _parse_commandline():
 
 # Function to write list data
 def _writer(function, data):
-    try:
-        function("{0:.1f}".format(data) + '\t', end='')
-    except (ValueError, TypeError):  # Not a print function
-        function(str(data) + '\t')
+    if type(data) is float:
+        try:
+            function("{0:.1f}".format(data) + '\t', end='')
+        except (ValueError, TypeError):  # Not a print function
+            function(str(data) + '\t')
+    else: # Assume type(data) is str:
+        try:
+            function(data + '\t', end='')
+        except (ValueError, TypeError):  # Not a print function
+            function(str(data) + '\t')
 
     return data
 
 # Function to print the header
-def _display_header(*destination):
+def _display_header(destination):
     header = ("\n\n\n"
               + "Hybrid Powertrain Controller \n"
               + "with PEMFC Control \n"
@@ -70,108 +76,152 @@ def _display_header(*destination):
               + "\n\n")
     
     # Write the data to destination
-    for write in destination:
-        _writer(write, header),
+    _writer(destination, header),
 
     # Return the data
     return header
 
 # Function to print the time
-def _print_time(my_time, *destination):
+def _print_time(my_time, destination, verbose=False):
     # Get the time data
-    delta = [
-        time.time(),
-        time.time() - timeStart,
-        my_time.delta,
-    ]
+    if verbose:
+        delta = [
+            "Epoch:",    time.time(),
+            "Duration:", time.time() - timeStart,
+            "dt:",       my_time.delta,
+        ]
+    else:
+        delta = [
+            time.time(),
+            time.time() - timeStart,
+            my_time.delta,
+        ]
 
     # Write the data to destination
-    for write in destination:
-        for cell in delta:
-            _writer(write, cell)
+    for cell in delta:
+        _writer(destination, cell)
 
     # Return the data
     return delta
 
 # Function to print the state
-def _print_state(h100, *destination):
+def _print_state(h100, destination, verbose=False):
     # Get the state from the controller
-    state = h100.state
-
-    # Convert state to code for Matlab compatibility
-    if "off" in state:
-        state = 1
-    elif "startup" in state: 
-        state = 2
-    elif "on" in state:
-        state = 3
-    elif "shutdown" in state:
-        state = 4
-    elif "error" in state:
-        state = -1
+    if verbose:
+        state = h100.state
     else:
-        state = 999
+        # Convert state to code for Matlab compatibility
+        if "off" in h100.state:
+            state = 1
+        elif "startup" in h100.state: 
+            state = 2
+        elif "on" in h100.state:
+            state = 3
+        elif "shutdown" in h100.state:
+            state = 4
+        elif "error" in h100.state:
+            state = -1
+        else:
+            state = 999
 
     # Write the data to destination
-    for write in destination:
-        _writer(write, state),
+    _writer(destination, state),
 
     # Return the data
     return state
 
 # Function to print the electrical data
-def _print_electric(h100, load='', *destination):
+def _print_electric(h100, load, destination, verbose=False):
     # Get the data from the controller
-    electric = [
-                h100.voltageHybrid[0], # FC output
-                h100.voltage[0],
-                h100.currentHybrid[0],
-                h100.current[0],
-#                h100.power[0],
+    if verbose:
+        electric = [
+            "V_fc_h:", h100.voltageHybrid[0], # FC output
+            "V_fc:",   h100.voltage[0],
+            "I_fc_h:", h100.currentHybrid[0],
+            "I_fc:",   h100.current[0],
+#            h100.power[0],
 
-                h100.voltageHybrid[1], # Battery output
-                h100.voltage[1],
-                h100.currentHybrid[1],
-                h100.current[1],
-#                h100.power[1],
+            "V_b_h:",  h100.voltageHybrid[1], # Battery output
+            "V_b:",    h100.voltage[1],
+            "I_b_h:",  h100.currentHybrid[1],
+            "I_b:",    h100.current[1],
+#            h100.power[1],
 
-                h100.voltageHybrid[2], # System output
-                h100.voltage[2],
-                h100.currentHybrid[2],
-                h100.current[2],
-#                h100.power[2]
-                ]
+            "V_out_h:",h100.voltageHybrid[2], # System output
+            "V_out:",  h100.voltage[2],
+            "I_out_h:",h100.currentHybrid[2],
+            "I_out:",  h100.current[2],
+#            h100.power[2]
+            ]
+    else:
+        electric = [
+            h100.voltageHybrid[0], # FC output
+            h100.voltage[0],
+            h100.currentHybrid[0],
+            h100.current[0],
+#            h100.power[0],
+
+            h100.voltageHybrid[1], # Battery output
+            h100.voltage[1],
+            h100.currentHybrid[1],
+            h100.current[1],
+#            h100.power[1],
+
+            h100.voltageHybrid[2], # System output
+            h100.voltage[2],
+            h100.currentHybrid[2],
+            h100.current[2],
+#            h100.power[2]
+            ]
 
     # If there is a digital loadbank connected get that data
     if load:
-        # Convert mode to a code for Matlab compatibility
-        if "CURRENT" in load.mode:
-            mode_code = "1 " + load.mode.split()[1]
-        elif "VOLTAGE" in load.mode:
-            mode_code = "2 " + load.mode.split()[1]
-        elif "POWER" in load.mode:
-            mode_code = "3 " + load.mode.split()[1]
-        else:
-            mode_code = 999
+        if verbose:
+            mode_code = load.mode.split()[0] + load.mode.split()[1]
 
-        # Add the load data to the controller data
-        electric = electric + [mode_code,
-                               load.voltage,
-                               load.current,
-                               load.power]
+            # Add the load data to the controller data
+            electric = electric + ["Mode:",  mode_code,
+                                   "V_load:", load.voltage,
+                                   "I_load:", load.current,
+                                   "P_load:", load.power]
+        else:
+            # Convert mode to a code for Matlab compatibility
+            if "CURRENT" in load.mode:
+                mode_code = "1 " + load.mode.split()[1]
+            elif "VOLTAGE" in load.mode:
+                mode_code = "2 " + load.mode.split()[1]
+            elif "POWER" in load.mode:
+                mode_code = "3 " + load.mode.split()[1]
+            else:
+                mode_code = 999
+
+            # Add the load data to the controller data
+            electric = electric + [mode_code,
+                                   load.voltage,
+                                   load.current,
+                                   load.power]
     
     # Write the data to destination
-    for write in destination:
-        for cell in electric:
-            _writer(write, cell)
+    for cell in electric:
+        _writer(destination, cell)
 
     # Return the data
     return electric
 
 # Function to print the electrical data
-def _print_voltage(h100, load='', *destination):
+def _print_voltage(h100, load, destination, verbose=False):
     # Get the data from the controller
-    voltage = [
+    if verbose:
+        voltage = [
+            "V_fc_h:",  h100.voltageHybrid[0], # FC output
+            "V_fc:",    h100.voltage[0],
+            "V_b_h:",   h100.voltageHybrid[1],
+            "V_b:",     h100.voltage[1],
+            "V_out_h:", h100.voltageHybrid[2],
+            "V_out:",   h100.voltage[2],
+            ]
+    else:
+            voltage = [
                 h100.voltageHybrid[0], # FC output
                 h100.voltage[0],
 
@@ -185,20 +235,29 @@ def _print_voltage(h100, load='', *destination):
     # If there is a digital loadbank connected get that data
     if load:
         # Add the load data to the controller data
-        voltage = voltage + [load.voltage]
+        voltage = voltage + ["V_load:", load.voltage]
     
     # Write the data to destination
-    for write in destination:
-        for cell in voltage:
-            _writer(write, cell)
+    for cell in voltage:
+        _writer(destination, cell)
 
     # Return the data
     return voltage
 
 # Function to print the electrical data
-def _print_current(h100, load='', *destination):
+def _print_current(h100, load, destination, verbose=False):
     # Get the data from the controller
-    current = [
+    if verbose:
+        current = [
+            "I_fc_h:",  h100.currentHybrid[0], # FC output
+            "I_fc:",    h100.current[0],
+            "I_b_h:",   h100.currentHybrid[1],
+            "I_b:",     h100.current[1],
+            "I_out_h:", h100.currentHybrid[2],
+            "I_out:",   h100.current[2],
+            ]
+    else:
+        current = [
                 h100.currentHybrid[0], # FC output
                 h100.current[0],
 
@@ -212,69 +271,80 @@ def _print_current(h100, load='', *destination):
     # If there is a digital loadbank connected get that data
     if load:
         # Add the load data to the controller data
-        current = current + [load.current]
+        current = current + ["I_load:", load.current]
     
     # Write the data to destination
-    for write in destination:
-        for cell in current:
-            _writer(write, cell)
+    for cell in current:
+        _writer(destination, cell)
 
     # Return the data
     return current
 
 # Function to print the energy data
-def _print_energy(h100, *destination):
+def _print_energy(h100, destination, verbose=False):
     
+    energy = h100.energy
+
     # Write the data to destination
-    for write in destination:
-        for cell in h100.energy:
-            _writer(write, cell)
+    for cell in energy:
+        _writer(destination, cell)
             
     # Return the data
-    return h100.energy
+    return energy
 
 # Function to print the temperature
-def _print_temperature(h100, *destination):
+def _print_temperature(h100, destination, verbose=False):
     # Get the data from the controller
-    temperature = [h100.temperature[0],
-                   h100.temperature[1],
-                   h100.temperature[2],
-                   h100.temperature[3],
-                   h100.temperature[4],
-                   h100.temperature[5]]
+    if verbose:
+        temperature = ["T_0:", h100.temperature[0],
+                       "T_1:", h100.temperature[1],
+                       "T_2:", h100.temperature[2],
+                       "T_3:", h100.temperature[3],
+                       "T_4:", h100.temperature[4],
+                       "T_5:", h100.temperature[5]]
+    else:
+        temperature = [h100.temperature[0],
+                       h100.temperature[1],
+                       h100.temperature[2],
+                       h100.temperature[3],
+                       h100.temperature[4],
+                       h100.temperature[5]]
 
     # Write the data to destination
-    for write in destination:
-        for cell in temperature:
-            _writer(write, cell)
+    for cell in temperature:
+        _writer(destination, cell)
 
     # Return the data
     return temperature
 
 # Function to print the purge data
-def _print_purge(h100, *destination):
+def _print_purge(h100, destination, verbose=False):
     # Get the data from the controller
-    purge = [h100.flow_rate,
-             h100.flow_moles,
-             h100.purge_frequency,
-             h100.purge_time]
+    if verbose:
+        purge = ["MFC_flow:", h100.flow_rate,
+                 "MFC_mol:",  h100.flow_moles,
+                 "Pg_freq:",  h100.purge_frequency,
+                 "Pg_t:",     h100.purge_time]
+    else:
+        purge = [h100.flow_rate,
+                 h100.flow_moles,
+                 h100.purge_frequency,
+                 h100.purge_time]
              
     # Write the data to destination
-    for write in destination:
-        for cell in purge:
-            _writer(write, cell)
+    for cell in purge:
+        _writer(destination, cell)
 
     # Return the data
     return purge
     
 # Function to print the throttle
-def _print_throttle(motor, *destination):
+def _print_throttle(motor, destination):
     # Get the throttle from the motor controller
     throttle = motor.throttle
 
     # Write the data to destination
-    for write in destination:
-        _writer(write, throttle)
+    _writer(destination, throttle)
 
     # Return the data
     return throttle
@@ -534,23 +604,23 @@ if __name__ == "__main__":
                     # If only one piece of information, it is a request for data
                     if req_len is 1:
                         if request[0].startswith("time?"):
-                            _print_time(my_time, print)
+                            _print_time(my_time, print, True)
                         elif request[0].startswith("throttle?"):
-                            _print_throttle(motor, print)
+                            _print_throttle(motor, print, True)
                         elif request[0].startswith("fc?"):
-                            _print_state(h100, print)
+                            _print_state(h100, print, True)
                         elif request[0].startswith("elec?"):
-                            _print_electric(h100, load, print)
+                            _print_electric(h100, load, print, True)
                         elif request[0].startswith("v?"):
-                            _print_voltage(h100, load, print)
+                            _print_voltage(h100, load, print, True)
                         elif request[0].startswith("i?"):
-                            _print_current(h100, load, print)
+                            _print_current(h100, load, print, True)
                         elif request[0].startswith("energy?"):
-                            _print_energy(h100, print)
+                            _print_energy(h100, print, True)
                         elif request[0].startswith("temp?"):
-                            _print_temperature(h100, print)
+                            _print_temperature(h100, print, True)
                         elif request[0].startswith("purg?"):
-                            _print_purge(h100, print)
+                            _print_purge(h100, print, True)
                         elif request[0].startswith("fly?"):
                             if profile and profile.running:
                                 print("Currently flying")
