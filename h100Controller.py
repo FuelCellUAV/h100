@@ -40,13 +40,15 @@ def enum(*sequential, **named):
 # Define class
 class PurgeControl():
     # Code to run when class is created
-    def __init__(self):
+    def __init__(self, user_purge):
         self.v = 0.0
         self.i = 0.0
         self.p = 0.0
         self.vLast = 0.0
         self.iLast = 0.0
         self.pLast = 0.0
+        self.__user_purge = user_purge
+        print("\nSelected purge strategy %s\n" % self.__user_purge)
         return
 
     # Method to update the class data
@@ -59,7 +61,20 @@ class PurgeControl():
     def updateLast(self):
         self.vLast = self.v
         self.iLast = self.i
-        self.pLast = self.p        
+        self.pLast = self.p      
+
+    # Purge controller state machine
+    def getPurgeFreq(self):
+        if self.__user_purge.startswith('horizon'):
+            return self.horizon()
+        elif self.__user_purge.startswith('power'):
+            return self.power()
+        elif self.__user_purge.startswith('polar'):
+            return self.polar()
+        elif self.__user_purge.startswith('derivative'):
+            return self.derivative()
+        else:
+            return self.horizon()          
 
     # Method to return the Horizon control strategy
     def horizon(self):
@@ -87,7 +102,7 @@ class PurgeControl():
 # Define class
 class H100():
     # Code to run when class is created
-    def __init__(self):
+    def __init__(self, user_purge):
         # Start the ADCPI
         self.__Adc1 = adcpi.MCP3424(0x6A)
         self.__Adc2 = adcpi.MCP3424(0x6B)
@@ -119,7 +134,7 @@ class H100():
         self.__maximum_voltage = 30  # Volts
 
         # Start the purge controller
-        self.__Purge_Controller = PurgeControl()
+        self.__Purge_Controller = PurgeControl(user_purge)
         
         # Define minimum and maximum purge frequencies
         self.__purge_frequency_minimum = 5
@@ -650,10 +665,7 @@ class H100():
         self.__Purge_Controller.updateNow(self.__voltage[0], self.__current[0], self.__power[0])
         
         # Pick one of these four controllers
-        self.purge_frequency = self.__Purge_Controller.horizon()
-#        self.purge_frequency = self.__Purge_Controller.power()
-#        self.purge_frequency = self.__Purge_Controller.polar()
-#        self.purge_frequency = self.__Purge_Controller.derivative()
+        self.purge_frequency = self.__Purge_Controller.getPurgeFreq()
 
         # Print results
 #        print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)

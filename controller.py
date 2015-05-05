@@ -37,6 +37,7 @@ def _parse_commandline():
     
     # Define aguments
     parser.add_argument('--out', type=str, default='', help='Save my data to USB stick')
+    parser.add_argument('--purge', type=str, default='horizon', help='Change purge controller')
     parser.add_argument('--verbose', type=int, default=0, help='Print log to screen')
     parser.add_argument('--profile', type=str, default='', help='Name of flight profile file')
     parser.add_argument('--timer', type=int, default=0, help='Performance monitor timer')
@@ -448,7 +449,7 @@ if __name__ == "__main__":
         
         ## Initialise classes
         # Initialise controller
-        h100 = H100()
+        h100 = H100(args.purge)
         
         # Initialise LED display
         display = h100Display.FuelCellDisplay()
