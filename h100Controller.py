@@ -629,6 +629,7 @@ class H100():
         self.__flow_rate  = self._getFlowRate(self.__Mfc, self.__Adc2, 0)
         self.__flow_moles = self._getFlowMoles(self.__Mfc, self.__Adc2, 0)
 
+        self.__temperature = self._get_temperature(self.__hybrid, self.__Temperature)
 
         return
         # HYBRID
@@ -657,7 +658,6 @@ class H100():
             energy = self._get_energy(self.__timer, self.__power[x])
             self.__energy[x] += energy # Cumulative
 
-        self.__temperature = self._get_temperature(self.__hybrid, self.__Temperature)
         
     # Method to run the purge controller
     def _purge_controller(self):
