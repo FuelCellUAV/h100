@@ -2,7 +2,7 @@
 
 # Mass Flow Controller Arduino driver
 
-# Copyright (C) 2014  Simon Howroyd
+# Copyright (C) 2015  Simon Howroyd, Jason James
 # 
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -32,10 +32,10 @@ class mfc:
     # External getter
     def get(self, fun, ch):
         raw = self._getRaw(fun, ch)
-        rate = raw/5.0*1.5
+        rate = raw/5.0*1.5 
         return rate
 
     # External getter
     def getMoles(self, fun, ch):
-        rate = self.get(fun,ch)*(7.0/6280.0)
+        rate = self.get(fun,ch)*(7.0/6280.0)  # TODO should be *125.718/134.82 (density H2 at 1.5bar)
         return rate

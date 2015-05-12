@@ -123,7 +123,7 @@ class H100():
         self.__timer = timer.My_Time()
 
         # Set start and stop duration
-        self.__start_time = 3  # Seconds
+        self.__start_time = 1  # Seconds
         self.__stop_time = 3  # Seconds
         
         # Set maximum temperature
@@ -142,7 +142,7 @@ class H100():
         
         # Set the default purge settings
         self.__purge_frequency = 30
-        self.__purge_time = 0.5
+        self.__purge_time = 0.4
         
         # Set the current time
         self.__time_change = time.time()
@@ -629,6 +629,7 @@ class H100():
         self.__flow_rate  = self._getFlowRate(self.__Mfc, self.__Adc2, 0)
         self.__flow_moles = self._getFlowMoles(self.__Mfc, self.__Adc2, 0)
 
+        self.__temperature = self._get_temperature(self.__hybrid, self.__Temperature)
 
         return
         # HYBRID
@@ -657,7 +658,6 @@ class H100():
             energy = self._get_energy(self.__timer, self.__power[x])
             self.__energy[x] += energy # Cumulative
 
-        self.__temperature = self._get_temperature(self.__hybrid, self.__Temperature)
         
     # Method to run the purge controller
     def _purge_controller(self):
