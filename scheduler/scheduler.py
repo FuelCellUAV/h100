@@ -90,6 +90,7 @@ class Scheduler():
     # Property - Set the scheduler as running
     @running.setter
     def running(self, state):
+        state = int(state)        
         # If we want to turn on and not already running...
         if state and not self.__running:
             self._start()

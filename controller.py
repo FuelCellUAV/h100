@@ -297,12 +297,12 @@ def _print_energy(h100, destination, verbose=False):
 def _print_temperature(h100, destination, verbose=False):
     # Get the data from the controller
     if verbose:
-        temperature = ["T_0:", h100.temperature[0],
-                       "T_1:", h100.temperature[1],
-                       "T_2:", h100.temperature[2],
-                       "T_3:", h100.temperature[3],
-                       "T_4:", h100.temperature[4],
-                       "T_5:", h100.temperature[5]]
+        temperature = ["T_h0:", h100.temperature[0],
+                       "T_h1:", h100.temperature[1],
+                       "T_0:",  h100.temperature[2],
+                       "T_1:",  h100.temperature[3],
+                       "T_2:",  h100.temperature[4],
+                       "T_3:",  h100.temperature[5]]
     else:
         temperature = [h100.temperature[0],
                        h100.temperature[1],
