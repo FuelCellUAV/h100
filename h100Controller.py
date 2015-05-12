@@ -123,7 +123,7 @@ class H100():
         self.__timer = timer.My_Time()
 
         # Set start and stop duration
-        self.__start_time = 1  # Seconds
+        self.__start_time = 3  # Seconds
         self.__stop_time = 3  # Seconds
         
         # Set maximum temperature
@@ -142,7 +142,7 @@ class H100():
         
         # Set the default purge settings
         self.__purge_frequency = 30
-        self.__purge_time = 0.4
+        self.__purge_time = 0.5
         
         # Set the current time
         self.__time_change = time.time()
