@@ -41,6 +41,7 @@ def _parse_commandline():
     parser.add_argument('--verbose', type=int, default=0, help='Print log to screen')
     parser.add_argument('--profile', type=str, default='', help='Name of flight profile file')
     parser.add_argument('--timer', type=int, default=0, help='Performance monitor timer')
+    parser.add_argument('--auto', type=float, default=0.0, help='Auto voltage hold')
 
     # Return what was argued
     return parser.parse_args()
@@ -523,11 +524,26 @@ if __name__ == "__main__":
         
         # Start a timer
         performance_timer = time.time()
+
+        flag=False
         
         # Try to run the main code loop
         try:
             while True:
                 
+                if args.auto:
+                    if not flag:
+                        h100.state = 'on'
+                        load.current_constant = str(0.01)
+                        load.load = True
+                        flag = True
+                    else:
+                        if load.voltage < (args.auto - 0.02):
+                            load.current_constant = str(float(load.current_constant) - 0.001)
+                        elif load.voltage > (args.auto + 0.02):
+                            load.current_constant = str(float(load.current_constant) + 0.001)
+
+
                 ## Handle the background processes
                 # Run the fuel cell controller
                 h100.run()
@@ -636,8 +652,17 @@ if __name__ == "__main__":
                             h100.state = _new_state
                         elif request[0].startswith("fly"):
                             profile.running = request[1]
+                        elif request[0].startswith("off"):
+                            load.current_constant = str(0.0)
+                            load.load = False
+                            h100.state = "off"
                         elif request[0].startswith("i"):
                             load.current_constant = str(request[1])
+                        elif request[0].startswith("v"):
+                            if args.auto > 0.0:
+                                args.auto = float(request[1])
+                            else:
+                                print("Don't understand!")
                         elif request[0].startswith("load"):
                             if request[1].startswith("on"):
                                 load.load = True

@@ -47,9 +47,16 @@ class PurgeControl():
         self.vLast = 0.0
         self.iLast = 0.0
         self.pLast = 0.0
-        self.__user_purge = user_purge
+        self.user_purge = user_purge
         print("\nSelected purge strategy %s\n" % self.__user_purge)
         return
+
+    @property
+    def user_purge(self):
+        return self.__user_purge
+    @user_purge.setter
+    def user_purge(self, user_input):
+        self.__user_purge = user_input
 
     # Method to update the class data
     def updateNow(self, v, i, p):
@@ -67,6 +74,10 @@ class PurgeControl():
     def getPurgeFreq(self):
         if self.__user_purge.startswith('horizon'):
             return self.horizon()
+        elif self.__user_purge.startswith('half'):
+            return self.horizon()*2.0
+        elif self.__user_purge.startswith('double'):
+            return self.horizon()/2.0
         elif self.__user_purge.startswith('power'):
             return self.power()
         elif self.__user_purge.startswith('polar'):
@@ -138,7 +149,7 @@ class H100():
         
         # Define minimum and maximum purge frequencies
         self.__purge_frequency_minimum = 5
-        self.__purge_frequency_maximum = 50
+        self.__purge_frequency_maximum = 120
         
         # Set the default purge settings
         self.__purge_frequency = 30
@@ -666,7 +677,7 @@ class H100():
         
         # Pick one of these four controllers
         self.purge_frequency = self.__Purge_Controller.getPurgeFreq()
-
+#        print("Got purge freq as: " + str(self.purge_frequency) + " from " + self.__Purge_Controller.user_purge)
         # Print results
 #        print('Freq: ',self.purge_frequency,'  Time: ',self.purge_time)
 
