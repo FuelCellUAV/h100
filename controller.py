@@ -475,13 +475,13 @@ if __name__ == "__main__":
             time.sleep(0.2)
             load.mode = 'CURRENT'
             time.sleep(0.2)
-            load.range = '4'
+            load.range = '9' # 4
             time.sleep(0.2)
-            load.current_limit = '60.0'
+            load.current_limit = '10.0' # 30.0
             time.sleep(0.2)
-            load.voltage_limit = '35.0'
+            load.voltage_limit = '4.0' # 35.0
             time.sleep(0.2)
-            load.voltage_minimum = '5.0'
+            load.voltage_minimum = '1.2' # 5.0
         
         # Initialise profile scheduler if argued
         if args.profile:
@@ -636,6 +636,13 @@ if __name__ == "__main__":
                             h100.state = _new_state
                         elif request[0].startswith("fly"):
                             profile.running = request[1]
+                        elif request[0].startswith("i"):
+                            load.current_constant = str(request[1])
+                        elif request[0].startswith("load"):
+                            if request[1].startswith("on"):
+                                load.load = True
+                            else:
+                                load.load = False
                         elif request[0].startswith("throttle"):
                             if request[1].startswith("calibration"):
                                 motor.calibration()

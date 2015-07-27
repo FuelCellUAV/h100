@@ -2,7 +2,7 @@
 
 # Fuel Cell Controller for the Horizon H100 PEMFC
 
-# Copyright (C) 2014  Simon Howroyd
+# Copyright (C) 2015  Simon Howroyd
 # 
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -130,8 +130,8 @@ class H100():
         self.__cutoff_temperature = 30  # Celsius
         
         # Set maximum and minimum voltages
-        self.__minimum_voltage = 10  # Volts
-        self.__maximum_voltage = 30  # Volts
+        self.__minimum_voltage = 1.2  # Volts
+        self.__maximum_voltage = 4  # Volts
 
         # Start the purge controller
         self.__Purge_Controller = PurgeControl(user_purge)
