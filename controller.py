@@ -404,14 +404,14 @@ def _shutdown(motor, h100, load, log, display):
         motor.throttle = 0
         print('...Throttle set to {:d}'.format(motor.throttle))
     
-        # Shutdown fuel cell
-        h100.shutdown()
-    
         # Shutdown loadbank
         if load:
             print('...Loadbank disconnected')
             if load.shutdown(): print('Done\n')
         
+        # Shutdown fuel cell
+        h100.shutdown()
+    
         # Shutdown datalog
         if log:
             print('...Datalogger closed')
@@ -472,17 +472,19 @@ if __name__ == "__main__":
             
         # Otherwise zero it and set safety limits
         else:
+            print("Setting up loadbank...")
+            mysleep = 0.4
             load.zero()
-            time.sleep(0.2)
-            load.mode = 'CURRENT'
-            time.sleep(0.2)
-            load.range = '9' # 4
-            time.sleep(0.2)
-            load.current_limit = '10.0' # 30.0
-            time.sleep(0.2)
-            load.voltage_limit = '4.0' # 35.0
-            time.sleep(0.2)
-            load.voltage_minimum = '1.2' # 5.0
+            time.sleep(mysleep)
+            load.mode = "CURRENT"
+            time.sleep(mysleep)
+            load.range = "9" # 4
+            time.sleep(mysleep)
+            load.current_limit = "15.0" # 30.0
+            time.sleep(mysleep)
+            load.voltage_limit = "4.5" # 35.0
+            time.sleep(mysleep)
+            load.voltage_minimum = "1.2" # 5.0
         
         # Initialise profile scheduler if argued
         if args.profile:
@@ -539,9 +541,9 @@ if __name__ == "__main__":
                         flag = True
                     else:
                         if load.voltage < (args.auto - 0.02):
-                            load.current_constant = str(float(load.current_constant) - 0.001)
+                            load.current_constant = str(float(load.current_constant) - 0.01)
                         elif load.voltage > (args.auto + 0.02):
-                            load.current_constant = str(float(load.current_constant) + 0.001)
+                            load.current_constant = str(float(load.current_constant) + 0.01)
 
 
                 ## Handle the background processes
