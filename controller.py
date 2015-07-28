@@ -28,7 +28,7 @@ from tdiLoadbank import loadbank
 from scheduler import scheduler
 from esc import esc
 from timer import timer
-
+import os
 
 # Inspect user input arguments
 def _parse_commandline():
@@ -447,6 +447,9 @@ if __name__ == "__main__":
         # Otherwise open nothing to prevent errors
         else:
             log = open("/dev/null", 'w')
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+
         
         ## Initialise classes
         # Initialise controller
@@ -484,7 +487,7 @@ if __name__ == "__main__":
             time.sleep(mysleep)
             load.voltage_limit = "4.5" # 35.0
             time.sleep(mysleep)
-            load.voltage_minimum = "1.2" # 5.0
+            load.voltage_minimum = "0.01"#"1.2" # 5.0
         
         # Initialise profile scheduler if argued
         if args.profile:
