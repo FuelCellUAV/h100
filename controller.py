@@ -539,14 +539,34 @@ if __name__ == "__main__":
                 if args.auto:
                     if not flag:
                         h100.state = 'on'
-                        load.current_constant = str(0.01)
+                        load.current_constant = "0.01"
                         load.load = True
                         flag = True
                     else:
-                        if load.voltage < (args.auto - 0.02):
-                            load.current_constant = str(float(load.current_constant) - 0.01)
-                        elif load.voltage > (args.auto + 0.02):
-                            load.current_constant = str(float(load.current_constant) + 0.01)
+                       if load.load:  
+                            # End time & routine
+                            #if (time.time() - timeStart) > (60*30*5): raise KeyboardInterrupt
+
+                            # Purge strategy controller
+                            #if   (time.time() - timeStart) < (60*20): h100.change_purge = "half"
+                            #elif (time.time() - timeStart) < (60*20*2): h100.change_purge = "horizon"
+                            #elif (time.time() - timeStart) < (60*20*3): h100.change_purge = "double"
+                            #elif (time.time() - timeStart) < (60*20*4): h100.change_purge = "horizon"
+                            #elif (time.time() - timeStart) < (60*20*5): h100.change_purge = "half"
+   
+                            controller_current = 0
+
+                            # Voltage hold controller
+                            if load.voltage < (args.auto - 0.01):
+                                controller_current = float(load.current_constant) - 0.001
+                            elif load.voltage > (args.auto + 0.01):
+                                controller_current = float(load.current_constant) + 0.001
+                            #elif load.voltage < (args.auto - 0.01):
+                            #    load.current_constant = str(float(load.current_constant) - 0.01)
+                            #elif load.voltage > (args.auto + 0.01):
+                            #    load.current_constant = str(float(load.current_constant) + 0.01)
+                            if controller_current < 0.0: controller_current = 0.0
+                            load.current_constant = str(controller_current)
 
 
                 ## Handle the background processes
@@ -581,12 +601,13 @@ if __name__ == "__main__":
                             mode = load.mode
                             
                             # Set the setpoint for the electrical profile for now
-                            if "VOLTAGE" in mode:
-                                load.voltage_constant = str(setpoint)
-                            elif "CURRENT" in mode:
-                                load.current_constant = str(setpoint)
-                            elif "POWER" in mode:
-                                load.power_constant = str(setpoint)
+#                            if "VOLTAGE" in mode:
+#                                load.voltage_constant = str(setpoint)
+#                            elif "CURRENT" in mode:
+#                                load.current_constant = str(setpoint)
+#                            elif "POWER" in mode:
+#                                load.power_constant = str(setpoint)
+                            args.auto = float(setpoint)
                                 
                         # Setpoint is in an error mode (eg profile finished) so turn off
                         else:
@@ -756,6 +777,7 @@ if __name__ == "__main__":
             pass
     
     except KeyboardInterrupt:
+        print("Shutdon initiated after %.0f sec" % (time.time() - timeStart))
         _shutdown(motor, h100, load, log, display)
         
     #######

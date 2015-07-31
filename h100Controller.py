@@ -74,6 +74,8 @@ class PurgeControl():
     def getPurgeFreq(self):
         if self.__user_purge.startswith('horizon'):
             return self.horizon()
+        elif self.__user_purge.startswith('quarter'):
+            return self.horizon()*4.0
         elif self.__user_purge.startswith('half'):
             return self.horizon()*2.0
         elif self.__user_purge.startswith('double'):
@@ -250,6 +252,14 @@ class H100():
         
         # Tell the user we have shut down
         print('done')
+
+
+    @property
+    def change_purge(self):
+        return self.__Purge_Controller.user_purge
+    @change_purge.setter
+    def change_purge(self, user_purge):
+        self.__Purge_Controller.user_purge = user_purge
 
     # Property - What's the current state?
     @property
