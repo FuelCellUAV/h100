@@ -148,6 +148,177 @@ def _reader():
     # If we get here something went wrong so return blank
     return ''
 
+# Function to write list data
+def _writer(function, data):
+    try:
+        function("{0:.1f}".format(data) + '\t', end='')
+    except (ValueError, TypeError):  # Not a print function
+        function(str(data) + '\t')
+
+    return data
+
+# Function to print the header
+def _display_header(*destination):
+    header = ("\n\n\n"
+              + "Hybrid Powertrain Controller \n"
+              + "with PEMFC Control \n"
+              + "for the Horizon H-100 Fuel Cell \n"
+              + "(c) Simon Howroyd and Jason James 2014 \n"
+              + "Loughborough University \n"
+              + "\n"
+              + "This program is distributed in the hope that it will be useful, \n"
+              + "but WITHOUT ANY WARRANTY; without even the implied warranty of \n"
+              + "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the \n"
+              + "GNU General Public License for more details. \n\n"
+              + str(time.asctime())
+              + "\n\n")
+    
+    # Write the data to destination
+    for write in destination:
+        _writer(write, header),
+
+    # Return the data
+    return header
+
+# Function to print the time
+def _print_time(my_time, *destination):
+    # Get the time data
+    delta = [
+        time.time(),
+        time.time() - timeStart,
+        my_time.delta,
+    ]
+
+    # Write the data to destination
+    for write in destination:
+        for cell in delta:
+            _writer(write, cell)
+
+    # Return the data
+    return delta
+
+# Function to print the state
+def _print_state(h100, *destination):
+    # Get the state from the controller
+    state = h100.state
+
+    # Convert state to code for Matlab compatibility
+    if "off" in state:
+        state = 1
+    elif "startup" in state: 
+        state = 2
+    elif "on" in state:
+        state = 3
+    elif "shutdown" in state:
+        state = 4
+    elif "error" in state:
+        state = -1
+    else:
+        state = 999
+
+    # Write the data to destination
+    for write in destination:
+        _writer(write, state),
+
+    # Return the data
+    return state
+
+# Function to print the electrical data
+def _print_electric(h100, load='', *destination):
+    # Get the data from the controller
+    electric = [h100.voltage[0], # FC output
+                h100.current[1],
+                h100.power[0],
+                h100.voltage[1], # Battery output
+                h100.current[2],
+                h100.power[1],
+                h100.voltage[2], # System output
+                h100.current[4],
+                h100.power[2]]
+
+    # If there is a digital loadbank connected get that data
+    if load:
+        
+        # Convert mode to a code for Matlab compatibility
+        if "CURRENT" in load.mode:
+            mode_code = "1 " + load.mode.split()[1]
+        elif "VOLTAGE" in load.mode:
+            mode_code = "2 " + load.mode.split()[1]
+        elif "POWER" in load.mode:
+            mode_code = "3 " + load.mode.split()[1]
+        else:
+            mode_code = 999
+
+        # Add the load data to the controller data
+        electric = electric + [mode_code,
+                               load.voltage,
+                               load.current,
+                               load.power]
+    
+    # Write the data to destination
+    for write in destination:
+        for cell in electric:
+            _writer(write, cell)
+
+    # Return the data
+    return electric
+
+# Function to print the energy data
+def _print_energy(h100, *destination):
+    
+    # Write the data to destination
+    for write in destination:
+        for cell in h100.energy:
+            _writer(write, cell)
+            
+    # Return the data
+    return h100.energy
+
+# Function to print the temperature
+def _print_temperature(h100, *destination):
+    # Get the data from the controller
+    temperature = [h100.temperature[0],
+                   h100.temperature[1],
+                   h100.temperature[2],
+                   h100.temperature[3],
+                   h100.temperature[4],
+                   h100.temperature[5]]
+
+    # Write the data to destination
+    for write in destination:
+        for cell in temperature:
+            _writer(write, cell)
+
+    # Return the data
+    return temperature
+
+# Function to print the purge data
+def _print_purge(h100, *destination):
+    # Get the data from the controller
+    purge = [h100.flow_rate,
+             h100.purge_frequency,
+             h100.purge_time]
+             
+    # Write the data to destination
+    for write in destination:
+        for cell in purge:
+            _writer(write, cell)
+
+    # Return the data
+    return purge
+    
+# Function to print the throttle
+def _print_throttle(motor, *destination):
+    # Get the throttle from the motor controller
+    throttle = motor.throttle
+
+    # Write the data to destination
+    for write in destination:
+        _writer(write, throttle)
+
+    # Return the data
+    return throttle
+
 # Main run function
 if __name__ == "__main__":
     try:
@@ -186,7 +357,7 @@ if __name__ == "__main__":
 #        my_time.local
         
         # Print the header to the screen
-        #_display_header(print)
+        _display_header(print)
         
         # Display a list of available user commands
         print("Type command: [time, throttle, fc, elec, v, i, energy, temp, purg, fly] ")
