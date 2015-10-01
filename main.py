@@ -118,6 +118,36 @@ def _performance_monitor(is_active, performance_timer, function_name):
         print(function_name + '\t' + str(dt) + 'us')
         return time.time()
 
+# Function to read user input while running (stdin)
+def _reader():
+    # Get data from screen
+    __inputlist = [sys.stdin]
+
+    # Parse the typed in characters
+    while __inputlist:
+        __ready = select.select(__inputlist, [], [], 0.001)[0]
+
+        # If no data has been typed then return blank
+        if not __ready:
+            return ''
+            
+        # Otherwise parse line
+        else:
+            # Read the line
+            for __file in __ready:
+                __line = __file.readline()
+
+            # If there is nothing it is the end of the line
+            if not __line:
+               __inputlist.remove(__file)
+               
+            # Otherwise return line with no whitespace and all letters in lowercase
+            elif __line.rstrip():  # optional: skipping empty lines
+                return __line.lower().strip()
+                
+    # If we get here something went wrong so return blank
+    return ''
+
 # Main run function
 if __name__ == "__main__":
     try:
@@ -417,3 +447,41 @@ if __name__ == "__main__":
     #######
     # End #
     #######
+
+
+
+#<!------------ SUPER MARIO BROS. 30TH ---------------
+#
+#
+#               \\\\\\\\\\\\\\\
+#               \\\\\\\\\\\\\\\
+#            \\\\\\\\\\\\\\\\\\\\\\\\\\\
+#            \\\\\\\\\\\\\\\\\\\\\\\\\\\
+#            #########++++++###+++
+#            #########++++++###+++
+#         ###+++###+++++++++###++++++
+#         ###+++###+++++++++###++++++
+#         ###+++######+++++++++###+++++++++
+#         ###+++######+++++++++###+++++++++
+#         ######++++++++++++###############
+#         ######++++++++++++###############
+#               +++++++++++++++++++++
+#               +++++++++++++++++++++
+#            ######\\\#########
+#            ######\\\#########
+#         #########\\\######\\\#########
+#         #########\\\######\\\#########
+#      ############\\\\\\\\\\\\############
+#      ############\\\\\\\\\\\\############
+#      ++++++###\\\+++\\\\\\+++\\\###++++++
+#      ++++++###\\\+++\\\\\\+++\\\###++++++
+#      +++++++++\\\\\\\\\\\\\\\\\\+++++++++
+#      +++++++++\\\\\\\\\\\\\\\\\\+++++++++
+#      ++++++\\\\\\\\\\\\\\\\\\\\\\\\++++++
+#      ++++++\\\\\\\\\\\\\\\\\\\\\\\\++++++
+#            \\\\\\\\\      \\\\\\\\\
+#            \\\\\\\\\      \\\\\\\\\
+#         #########            #########
+#         #########            #########
+#
+#---------------       THANK YOU!      -------------->
