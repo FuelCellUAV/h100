@@ -19,7 +19,7 @@
 
 #############################################################################
 
-import argparse, os, time
+import argparse, os, time, sys, select
 from pragma4Controller import Fuelcell
 from timer import timer
 from tdiLoadbank import loadbank
