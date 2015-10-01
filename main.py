@@ -185,7 +185,7 @@ def _print_time(my_time, *destination):
     # Get the time data
     delta = [
         time.time(),
-        time.time() - timeStart,
+        time.time() - my_time.start,
         my_time.delta,
     ]
 
@@ -233,7 +233,7 @@ def _print_electric(h100, load='', *destination):
                 h100.current[2],
                 h100.power[1],
                 h100.voltage[2], # System output
-                h100.current[4],
+                h100.current[0],
                 h100.power[2]]
 
     # If there is a digital loadbank connected get that data
