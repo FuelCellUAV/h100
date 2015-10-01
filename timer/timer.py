@@ -71,6 +71,11 @@ class My_Time():
     @property
     def start(self):
         return self.__start
+
+    # Property - Time since start?
+    @property
+    def local(self):
+        return self.__start - time.time()
 	
     # Property - What's the last time?
     @property
