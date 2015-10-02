@@ -49,7 +49,7 @@ def _parse_commandline():
 def _writer(function, data):
     if type(data) is float:
         try:
-            function("{0:.1f}".format(data) + '\t', end='')
+            function("{0:.2f}".format(data) + '\t', end='')
         except (ValueError, TypeError):  # Not a print function
             function(str(data) + '\t')
     else: # Assume type(data) is str:
@@ -448,10 +448,6 @@ if __name__ == "__main__":
             log = open("/dev/null", 'w')
         
         ## Initialise classes
-        # Initialise controller
-        h100 = H100(args.purge)
-        purge_control = PurgeControl(args.purge)
-        
         # Initialise LED display
         display = h100Display.FuelCellDisplay()
         
@@ -483,6 +479,11 @@ if __name__ == "__main__":
             load.voltage_limit = '35.0'
             time.sleep(0.2)
             load.voltage_minimum = '0.1'
+
+        # Initialise controller
+        h100 = H100(args.purge)
+#        purge_control = PurgeControl(args.purge)
+        
         
         # Initialise profile scheduler if argued
         if args.profile:
@@ -532,8 +533,8 @@ if __name__ == "__main__":
                 ## Handle the background processes
                 # Run the fuel cell controller
                 h100.run()
-                purge_control.updateNow(load.current, load.voltage, load.power)
-                h100.purge_frequency = purge_control.getPurgeFreq()                
+#                purge_control.updateNow(load.current, load.voltage, load.power)
+#                h100.purge_frequency = purge_control.getPurgeFreq()                
  
         
                 # Update the performance monitor timer
@@ -585,6 +586,11 @@ if __name__ == "__main__":
                 # If there is a loadbank connected, update the sensor values
                 if load:
                     load.update()
+                    if "power" in args.purge:
+                        h100.Purge_Controller.power = load.power
+                    elif "voltage" in args.purge:
+                        h100.Purge_Controller.power = load.power
+                        h100.Purge_Controller.current = load.current
         
                 # Update the performance monitor timer
                 performance_timer = _performance_monitor(args.timer, performance_timer, loadbank.TdiLoadbank.__name__)
