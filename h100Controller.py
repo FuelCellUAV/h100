@@ -28,6 +28,7 @@ from temperature import tmp102
 from switch import switch
 from timer import timer
 from mfc import mfc
+from abc import ABCMeta, abstractmethod
 
 
 # Function to mimic an 'enum'. Won't be needed after Python3.4 update
@@ -37,63 +38,65 @@ def enum(*sequential, **named):
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 
+class PurgeHorizon(PurgeControl):
+    timeLast = 0.0
+    
+    def algorithm(self):
+        if (time.time()-timeLast) > 30.0:
+            timeLast = time.time()
+            return True
+        else:
+            return False
+
 # Define class
 class PurgeControl():
+    __metaclass__ = ABCMeta
+    
     # Code to run when class is created
-    def __init__(self, user_purge):
-        self.v = 0.0
-        self.i = 0.0
-        self.p = 0.0
-        self.vLast = 0.0
-        self.iLast = 0.0
-        self.pLast = 0.0
+    def __init__(self, on, off):
         self.__user_purge = user_purge
-        print("\nSelected purge strategy %s\n" % self.__user_purge)
+        self.__on = on
+        self.__off = off
+        self.__purging_timer = 0.0
+        self.__purge_time  = 0.5
+        print("\nSelected purge strategy %s\n" % self.__class__.__name__)
         return
-
-    # Method to update the class data
-    def updateNow(self, v, i, p):
-        self.v = v
-        self.i = i
-        self.p = p        
-
-    # Method to update the class' last data
-    def updateLast(self):
-        self.vLast = self.v
-        self.iLast = self.i
-        self.pLast = self.p      
-
-    # Purge controller state machine
-    def getPurgeFreq(self):
-        if self.__user_purge.startswith('horizon'):
-            return self.horizon()
-        elif self.__user_purge.startswith('power'):
-            return self.power()
-        elif self.__user_purge.startswith('polar'):
-            return self.polar()
-        elif self.__user_purge.startswith('derivative'):
-            return self.derivative()
+    
+    # Purge now
+    @property
+    def purge(self):
+        return self.__purge
+    @purge.setter
+    def purge(self, state):
+        if state and not self.__purge:
+            self.__purge = True
+            self.__purging_timer = time.time()
+            self.__on
+        elif not state and self.__purge:
+            # Stopping purge but already in a cycle
+            pass;
         else:
-            return self.horizon()          
+            self.__purge = False
+            
+    @abstractmethod
+    def algorithm(): pass
+    
+    def run(self, running = true):
+        if running:
+            if self.purge:
+                # Already purging
+                if (time.time()-self.__purging_timer) > self.__purge_time:
+                    # Time to stop purging
+                    self.__off
+                    self.__purging_timer = 0.0
+                    self.purge = False
+            else:
+                # Not purging, check to see if we need to
+                self.purge = self.algorithm()
+        return self.purge
 
-    # Method to return the Horizon control strategy
-    def horizon(self):
-        return 30.0
-
-    # Method to return the power control strategy
-    def power(self):
-        return (30.0 - (self.p * 0.25))
-
-    # Method to return the polar control strategy
-    def polar(self):
-        vTarget = -1.2 * self.i + 21  # From polarisation curve
-        vError = self.v - vTarget
-        return 10*vError
-
-    # Method to return the derivative control strategy
-    def derivative(self):
-        return (self.v - self.vLast) \
-                / (-0.03*self.v**4 + 1.94*self.v**3 - 46.5*self.v**2 + 421.2*self.v - 1489)
+    def __del__(self):
+        self.__off
 
 
 #############################################################################
@@ -134,8 +137,9 @@ class H100():
         self.__maximum_voltage = 30  # Volts
 
         # Start the purge controller
-        self.__Purge_Controller = PurgeControl(user_purge)
-        
+        if "horizon" in user_purge:
+            self.__Purge_Controller = PurgeHorizon(self.__hybrid.purge_on, self.__hybrid.purge_off)
+
         # Define minimum and maximum purge frequencies
         self.__purge_frequency_minimum = 5
         self.__purge_frequency_maximum = 50
@@ -158,7 +162,7 @@ class H100():
         # Define output switches
         self.__fan   = switch.Switch(self.__hybrid.fan_on,   self.__hybrid.fan_off)
         self.__h2    = switch.Switch(self.__hybrid.h2_on,    self.__hybrid.h2_off)
-        self.__purge = switch.Switch(self.__hybrid.purge_on, self.__hybrid.purge_off)
+        #self.__purge = switch.Switch(self.__hybrid.purge_on, self.__hybrid.purge_off)
 
         # Define variables
         self.__currentHybrid = [0.0] * 3
@@ -367,31 +371,36 @@ class H100():
 #       self._purge_controller() # not needed #
 #       self.__h2.write(False)
        self.__fan.write(False)
-       self.__purge.write(False)
+       #self.__purge.write(False)
+       self.__Purge_Controller.run(False)
 
     # State Startup Routine
     def _state_startup(self):
 #        self.__h2.timed(0, self.__start_time)
         self.__fan.timed(0, self.__start_time)
-        self.__purge.timed(0, self.__start_time)
+        #self.__purge.timed(0, self.__start_time)
+        self.__Purge_Controller.run()
 
     # State On Routine
     def _state_on(self):
         self._purge_controller()
 #        self.__h2.write(True)
         self.__fan.write(True)
-        self.__purge.timed(self.purge_frequency, self.__purge_time)
+        #self.__purge.timed(self.purge_frequency, self.__purge_time)
+        self.__Purge_Controller.run()
 
     # State Shutdown Routine
     def _state_shutdown(self):
 #        self.__h2.write(False)
         self.__fan.timed(0, self.__stop_time)
-        self.__purge.timed(0, self.__stop_time)
+        #self.__purge.timed(0, self.__stop_time)
+        self.__Purge_Controller.run()
 
     # State Error Routine
     def _state_error(self):
 #        self.__h2.write(False)
         self.__purge.write(False)
+        #self.__Purge_Controller.run(False)
         
         # Wait for temperature to cool down before turning fan off
         if max(self.__temperature) > self.__cutoff_temperature:
