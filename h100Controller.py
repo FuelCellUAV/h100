@@ -82,7 +82,7 @@ class PurgeControl():
 
     # Method to return the power control strategy
     def power(self):
-        return (30.0 - (self.p * 0.25))
+        return (60.0 - (self.p * 3.0))
 
     # Method to return the polar control strategy
     def polar(self):
@@ -130,15 +130,15 @@ class H100():
         self.__cutoff_temperature = 30  # Celsius
         
         # Set maximum and minimum voltages
-        self.__minimum_voltage = 10  # Volts
+        self.__minimum_voltage = 1  # Volts
         self.__maximum_voltage = 30  # Volts
 
         # Start the purge controller
-        self.__Purge_Controller = PurgeControl(user_purge)
+        #self.__Purge_Controller = PurgeControl(user_purge)
         
         # Define minimum and maximum purge frequencies
         self.__purge_frequency_minimum = 5
-        self.__purge_frequency_maximum = 50
+        self.__purge_frequency_maximum = 100
         
         # Set the default purge settings
         self.__purge_frequency = 30
@@ -377,7 +377,7 @@ class H100():
 
     # State On Routine
     def _state_on(self):
-        self._purge_controller()
+        #self._purge_controller()
 #        self.__h2.write(True)
         self.__fan.write(True)
         self.__purge.timed(self.purge_frequency, self.__purge_time)

@@ -22,7 +22,7 @@
 # Import libraries
 import argparse, sys, time, select
 from display import h100Display
-from h100Controller import H100
+from h100Controller import H100, PurgeControl
 from switch import switch
 from tdiLoadbank import loadbank
 from scheduler import scheduler
@@ -450,6 +450,7 @@ if __name__ == "__main__":
         ## Initialise classes
         # Initialise controller
         h100 = H100(args.purge)
+        purge_control = PurgeControl(args.purge)
         
         # Initialise LED display
         display = h100Display.FuelCellDisplay()
@@ -475,13 +476,13 @@ if __name__ == "__main__":
             time.sleep(0.2)
             load.mode = 'CURRENT'
             time.sleep(0.2)
-            load.range = '4'
+            load.range = '9'
             time.sleep(0.2)
             load.current_limit = '60.0'
             time.sleep(0.2)
             load.voltage_limit = '35.0'
             time.sleep(0.2)
-            load.voltage_minimum = '5.0'
+            load.voltage_minimum = '0.1'
         
         # Initialise profile scheduler if argued
         if args.profile:
@@ -531,6 +532,9 @@ if __name__ == "__main__":
                 ## Handle the background processes
                 # Run the fuel cell controller
                 h100.run()
+                purge_control.updateNow(load.current, load.voltage, load.power)
+                h100.purge_frequency = purge_control.getPurgeFreq()                
+ 
         
                 # Update the performance monitor timer
                 performance_timer = _performance_monitor(args.timer, performance_timer, H100.__name__)
