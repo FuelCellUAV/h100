@@ -28,7 +28,7 @@ from tdiLoadbank import loadbank
 from scheduler import scheduler
 from esc import esc
 from timer import timer
-
+import os
 
 # Inspect user input arguments
 def _parse_commandline():
@@ -41,6 +41,7 @@ def _parse_commandline():
     parser.add_argument('--verbose', type=int, default=0, help='Print log to screen')
     parser.add_argument('--profile', type=str, default='', help='Name of flight profile file')
     parser.add_argument('--timer', type=int, default=0, help='Performance monitor timer')
+    parser.add_argument('--auto', type=float, default=0.0, help='Auto voltage hold')
 
     # Return what was argued
     return parser.parse_args()
@@ -403,14 +404,14 @@ def _shutdown(motor, h100, load, log, display):
         motor.throttle = 0
         print('...Throttle set to {:d}'.format(motor.throttle))
     
-        # Shutdown fuel cell
-        h100.shutdown()
-    
         # Shutdown loadbank
         if load:
             print('...Loadbank disconnected')
             if load.shutdown(): print('Done\n')
         
+        # Shutdown fuel cell
+        h100.shutdown()
+    
         # Shutdown datalog
         if log:
             print('...Datalogger closed')
@@ -446,6 +447,9 @@ if __name__ == "__main__":
         # Otherwise open nothing to prevent errors
         else:
             log = open("/dev/null", 'w')
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+
         
         ## Initialise classes
         # Initialise LED display
@@ -468,22 +472,19 @@ if __name__ == "__main__":
             
         # Otherwise zero it and set safety limits
         else:
+            print("Setting up loadbank...")
+            mysleep = 0.4
             load.zero()
-            time.sleep(0.2)
-            load.mode = 'CURRENT'
-            time.sleep(0.2)
-            load.range = '9'
-            time.sleep(0.2)
-            load.current_limit = '60.0'
-            time.sleep(0.2)
-            load.voltage_limit = '35.0'
-            time.sleep(0.2)
-            load.voltage_minimum = '0.1'
-
-        # Initialise controller
-        h100 = H100(args.purge)
-#        purge_control = PurgeControl(args.purge)
-        
+            time.sleep(mysleep)
+            load.mode = "CURRENT"
+            time.sleep(mysleep)
+            load.range = "9" # 4
+            time.sleep(mysleep)
+            load.current_limit = "15.0" # 30.0
+            time.sleep(mysleep)
+            load.voltage_limit = "5.0" # 35.0
+            time.sleep(mysleep)
+            load.voltage_minimum = "0.01"#"1.2" # 5.0
         
         # Initialise profile scheduler if argued
         if args.profile:
@@ -501,6 +502,10 @@ if __name__ == "__main__":
         else:
             profile = ''
         
+        # Initialise controller
+        h100 = H100(args.purge)
+#        purge_control = PurgeControl(args.purge)
+
         # Initiaise the ESC
         motor = esc.esc()
         
@@ -525,11 +530,46 @@ if __name__ == "__main__":
         
         # Start a timer
         performance_timer = time.time()
+
+        flag=False
         
         # Try to run the main code loop
         try:
             while True:
                 
+                if args.auto:
+                    if not flag:
+                        h100.state = 'on'
+                        load.current_constant = "0.01"
+                        load.load = True
+                        flag = True
+                    else:
+                       if load.load:  
+                            # End time & routine
+                            #if (time.time() - timeStart) > (60*30*5): raise KeyboardInterrupt
+
+                            # Purge strategy controller
+                            #if   (time.time() - timeStart) < (60*20): h100.change_purge = "half"
+                            #elif (time.time() - timeStart) < (60*20*2): h100.change_purge = "horizon"
+                            #elif (time.time() - timeStart) < (60*20*3): h100.change_purge = "double"
+                            #elif (time.time() - timeStart) < (60*20*4): h100.change_purge = "horizon"
+                            #elif (time.time() - timeStart) < (60*20*5): h100.change_purge = "half"
+   
+                            controller_current = 0
+
+                            # Voltage hold controller
+                            if load.voltage < (args.auto - 0.01):
+                                controller_current = float(load.current_constant) - 0.001
+                            elif load.voltage > (args.auto + 0.01):
+                                controller_current = float(load.current_constant) + 0.001
+                            #elif load.voltage < (args.auto - 0.01):
+                            #    load.current_constant = str(float(load.current_constant) - 0.01)
+                            #elif load.voltage > (args.auto + 0.01):
+                            #    load.current_constant = str(float(load.current_constant) + 0.01)
+                            if controller_current < 0.0: controller_current = 0.0
+                            load.current_constant = str(controller_current)
+
+
                 ## Handle the background processes
                 # Run the fuel cell controller
                 h100.run()
@@ -565,12 +605,13 @@ if __name__ == "__main__":
                             mode = load.mode
                             
                             # Set the setpoint for the electrical profile for now
-                            if "VOLTAGE" in mode:
-                                load.voltage_constant = str(setpoint)
-                            elif "CURRENT" in mode:
-                                load.current_constant = str(setpoint)
-                            elif "POWER" in mode:
-                                load.power_constant = str(setpoint)
+#                            if "VOLTAGE" in mode:
+#                                load.voltage_constant = str(setpoint)
+#                            elif "CURRENT" in mode:
+#                                load.current_constant = str(setpoint)
+#                            elif "POWER" in mode:
+#                                load.power_constant = str(setpoint)
+                            args.auto = float(setpoint)
                                 
                         # Setpoint is in an error mode (eg profile finished) so turn off
                         else:
@@ -646,6 +687,22 @@ if __name__ == "__main__":
                             h100.state = _new_state
                         elif request[0].startswith("fly"):
                             profile.running = request[1]
+                        elif request[0].startswith("off"):
+                            load.current_constant = str(0.0)
+                            load.load = False
+                            h100.state = "off"
+                        elif request[0].startswith("i"):
+                            load.current_constant = str(request[1])
+                        elif request[0].startswith("v"):
+                            if args.auto > 0.0:
+                                args.auto = float(request[1])
+                            else:
+                                print("Don't understand!")
+                        elif request[0].startswith("load"):
+                            if request[1].startswith("on"):
+                                load.load = True
+                            else:
+                                load.load = False
                         elif request[0].startswith("throttle"):
                             if request[1].startswith("calibration"):
                                 motor.calibration()
@@ -729,6 +786,7 @@ if __name__ == "__main__":
             pass
     
     except KeyboardInterrupt:
+        print("Shutdon initiated after %.0f sec" % (time.time() - timeStart))
         _shutdown(motor, h100, load, log, display)
         
     #######

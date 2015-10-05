@@ -2,7 +2,7 @@
 
 # Fuel Cell Controller for the Horizon H100 PEMFC
 
-# Copyright (C) 2014  Simon Howroyd
+# Copyright (C) 2015  Simon Howroyd
 # 
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -296,7 +296,7 @@ class H100():
         
         # Set maximum and minimum voltages
         self.__minimum_voltage = 1  # Volts
-        self.__maximum_voltage = 30  # Volts
+        self.__maximum_voltage = 5  # Volts
 
         # Start the purge controller
         if "horizon" in user_purge:
@@ -401,6 +401,14 @@ class H100():
         
         # Tell the user we have shut down
         print('done')
+
+
+    @property
+    def change_purge(self):
+        return self.__Purge_Controller.user_purge
+    @change_purge.setter
+    def change_purge(self, user_purge):
+        self.__Purge_Controller.user_purge = user_purge
 
     # Property - What's the current state?
     @property
