@@ -1,8 +1,8 @@
 ##!/usr/bin/env python3
 
-# TMP102 Temperature Sensor Driver
+# Mass Flow Controller Arduino driver
 
-# Copyright (C) 2014  Simon Howroyd
+# Copyright (C) 2015  Simon Howroyd, Jason James
 # 
 #     This program is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
@@ -20,27 +20,22 @@
 #############################################################################
 
 # Import libraries
-from quick2wire.i2c import I2CMaster, reading
-
+from time import sleep
+#from quick2wire.i2c import I2CMaster, reading
 
 # Define class
-class Tmp102:
-    # Method to get the current reading
+class mfc:
     @staticmethod
-    def get(address):
-        try:
-            # Using the I2C databus...
-            with I2CMaster(1) as master:
-                
-                # Read two bytes of data
-                msb, lsb = master.transaction(reading(address, 2))[0]
-                
-                # Assemble the two bytes into a 16bit integer
-                temperature = ((( msb * 256 ) + lsb) >> 4 ) * 0.0625
-                
-                # Return the value
-                return temperature
+    def _getRaw(fun, ch):
+        return fun.get(ch)
 
-        # If I2C error return -1
-        except IOError:
-            return -1
+    # External getter
+    def get(self, fun, ch):
+        raw = self._getRaw(fun, ch)
+        rate = raw/5.0*1.5 
+        return rate
+
+    # External getter
+    def getMoles(self, fun, ch):
+        rate = self.get(fun,ch)*(7.0/6280.0)  # TODO should be *125.718/134.82 (density H2 at 1.5bar)
+        return rate

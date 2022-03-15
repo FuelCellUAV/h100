@@ -17,41 +17,54 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from time import time
+#############################################################################
 
+# Import libraries
+from time import time
 import pifacedigitalio
 
 
-# Class to enable controlled switching
+# Define class
 class Switch:
-
-    def __init__(self, pin):
-        self.pin = pin
+    # Code to run when class is created
+    def __init__(self, on, off):
+        self.__on = on
+        self.__off = off
         self.state = False
         self.lastTime = 0
         self.lastOff = 0
-        self.pfio = pifacedigitalio.PiFaceDigital()
         self.state = False
         self.lastTime = time()
 
+    # Method for a timed flipflop
     def timed(self, freq, duration):
         # Deactivate if time is up
         if (time() - self.lastTime) >= duration and self.state == True:
+            # Set switch to off
             return self.write(False)
-
-        # Activate
-        if (time() - self.lastTime) >= freq and self.state == False:
+        
+        # Activate if wait is up
+        elif (time() - self.lastTime) >= freq and self.state == False:
+            # Set switch to on
             return self.write(True)
 
+    # Method to turn a switch on or off
     def write(self, state):
+        # If we want to turn on...
         if state:
-            self.pfio.output_pins[self.pin].turn_on()
+            self.__on()
+            
+        # Otherwise assume turn off
         else:
-            self.pfio.output_pins[self.pin].turn_off()
+            self.__off()
+            
+        # Save the time and state of this change to memory
         self.lastTime = time()
-        self.state = self.pfio.output_pins[self.pin].value
+        self.state = state
+        
+        # Return the new state
         return self.state
 
+    # Method to turn all switches off when code is cancelled
     def __del__(self):
         self.write(False)
-        print('\nSwitch %d off\n' % self.pin)
